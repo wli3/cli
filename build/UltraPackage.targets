@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LinuxDistrosNeedNativeInstaller>debian.8-x64</LinuxDistrosNeedNativeInstaller>
+    <LinuxDistrosNeedNativeInstaller>rhel.7-x64</LinuxDistrosNeedNativeInstaller>
+    <LinuxDistrosNeedNativeInstaller>ubuntu.14.04-x64</LinuxDistrosNeedNativeInstaller>
+    <LinuxDistrosNeedNativeInstaller>ubuntu.16.04-x64</LinuxDistrosNeedNativeInstaller>
+    <LinuxDistrosNeedNativeInstaller>ubuntu.16.10-x64</LinuxDistrosNeedNativeInstaller>
+  </PropertyGroup>
+</Project>
