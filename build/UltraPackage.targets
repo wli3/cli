@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <_RepoRootFiles Include="$(RepoRoot)\**\*.*" Exclude="$(RepoRoot)\artifactsSandBox\**\*.*;$(RepoRoot)\.git\**\*.*;$(RepoRoot)\.nuget\**\*.* " />
+      <_RepoRootFiles Include="$(RepoRoot)\**\*.*" Exclude="$(RepoRoot)\artifactsSandBox\**\*.*;$(RepoRoot)\.nuget\**\*.* " />
       <_SandBoxFiles Include="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)\**\*.*"/>
   </ItemGroup>
 
