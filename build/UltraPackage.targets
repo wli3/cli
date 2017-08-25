@@ -2,16 +2,27 @@
 <Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <LinuxDistrosNeedNativeInstaller>ubuntu.16.04-x64</LinuxDistrosNeedNativeInstaller>
-    <LinuxDistrosNeedNativeInstaller>ubuntu.16.10-x64</LinuxDistrosNeedNativeInstaller>
+    <SandBoxRoot>$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)</SandBoxRoot>
   </PropertyGroup>
 
-  <Target Name="PrepareSandBox">
-    <ItemGroup>
-      <_RepoRootFiles Include="$(RepoRoot)\*.*" Exclude="$(RepoRoot)\artifactsSandBox\*.*"/>
-    </ItemGroup>
+  <ItemGroup>
+      <_RepoRootFiles Include="$(RepoRoot)\**\*.*" Exclude="$(RepoRoot)\artifactsSandBox\**\*.*;$(RepoRoot)\.git\**\*.*;$(RepoRoot)\.nuget\**\*.* " />
+      <_SandBoxFiles Include="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)\**\*.*"/>
+  </ItemGroup>
+
+
+  <Target Name="UltraAll" DependsOnTargets="PackageWithDocker">
+
+  </Target>
+
+  <Target Name="PrepareSandBox" Inputs="@(_RepoRootFiles)" Outputs="@(_SandBoxFiles)">
     <Copy
       SourceFiles="@(_RepoRootFiles)"
-      DestinationFolder="$(RepoRoot)\artifactsSandBox\ubuntu.16.04-x64"
+      DestinationFolder="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/%(RecursiveDir)"
       />
   </Target>
+
+  <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
+    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --skip-prereqs --configuration $(BuildConfiguration) --docker ubuntu.16.04"/>  
+  </Target >
 </Project>
