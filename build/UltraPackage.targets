@@ -15,7 +15,7 @@
 
   </Target>
 
-  <Target Name="PrepareSandBox" Inputs="@(_RepoRootFiles)">
+  <Target Name="PrepareSandBox" Inputs="@(_RepoRootFiles)" Outputs="@(_SandBoxFiles->%(File.RecursiveDir)%(File.Filename)%(File.Extension))">
     <Copy
       SourceFiles="@(_RepoRootFiles)"
       DestinationFolder="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/%(RecursiveDir)"
