@@ -23,6 +23,6 @@
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
-    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --skip-prereqs --configuration $(BuildConfiguration) --docker ubuntu.16.04"/>  
+    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --skip-prereqs --configuration $(BuildConfiguration) --docker ubuntu.16.04 /t:Package"/>  
   </Target >
 </Project>
