@@ -11,7 +11,7 @@
   </ItemGroup>
 
 
-  <Target Name="UltraAll" DependsOnTargets="PackageWithDocker">
+  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;Test;PackageWithDocker">
 
   </Target>
 
