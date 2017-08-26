@@ -3,12 +3,12 @@
   <PropertyGroup>
     <LinuxDistrosNeedNativeInstaller>ubuntu.16.04-x64</LinuxDistrosNeedNativeInstaller>
     <SandBoxRoot>$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)</SandBoxRoot>
+    <RelativePackageInputFolder>artifacts\$(Rid)</RelativePackageInputFolder>
   </PropertyGroup>
 
   <ItemGroup>
-      <_RepoRootFiles Include="$(RepoRoot)\**\*.*" Exclude="$(RepoRoot)\artifactsSandBox\**\*.*;$(RepoRoot)\.nuget\**\*.*;;$(RepoRoot)\artifacts\**\*.* " />
-      <_RepoRootFiles2 Include="$(RepoRoot)\artifacts\$(rid)\**\*.*" />
-      <_SandBoxFiles Include="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)\**\*.*"/>
+      <_RepoRootFiles Include="$(RepoRoot)\**\*.*" Exclude="$(RepoRoot)\artifactsSandBox\**\*.*;$(RepoRoot)\.nuget\**\*.*;$(RepoRoot)\artifacts\**\*.* " />
+      <_RepoRootFiles2 Include="$(RepoRoot)\$(PackageInputFolder)\**\*.*" />
   </ItemGroup>
 
 
@@ -22,7 +22,7 @@
       DestinationFolder="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/%(RecursiveDir)"/>
     <Copy
       SourceFiles="@(_RepoRootFiles2)"
-      DestinationFolder="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/artifacts/$(rid)/%(RecursiveDir)"/>
+      DestinationFolder="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/$(RelativePackageInputFolder)/%(RecursiveDir)"/>
     <Exec Command="sh -c 'cd $(SandBoxRoot) &amp;&amp; git clean -fxd'"/>
   </Target>
 
