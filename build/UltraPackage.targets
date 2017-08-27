@@ -3,6 +3,7 @@
   <PropertyGroup>
     <LinuxDistrosNeedNativeInstaller>ubuntu.16.04-x64</LinuxDistrosNeedNativeInstaller>
     <SandBoxRoot>$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)</SandBoxRoot>
+    <RelativeSandBoxPackageOutputFolder>RelativeSandBoxPackageOutputFolder</RelativeSandBoxPackageOutputFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,8 +11,7 @@
       <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
-
-  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;Test;PackageWithDocker">
+  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;Test;PackageWithDocker;CopyPackageResult">
 
   </Target>
 
@@ -26,7 +26,16 @@
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
-    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --configuration $(BuildConfiguration) --docker ubuntu.16.04 --skip-prereqs /target:GenerateInstallers"/>
+    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --configuration $(BuildConfiguration) --docker ubuntu.16.04 --skip-prereqs /target:GenerateInstallers;CopySandBoxPackageOut /p:RelativeSandBoxPackageOutputFolder=$(RelativeSandBoxPackageOutputFolder)"/>
+  </Target >
+
+  <Target Name="CopyPackageResult">
+    <ItemGroup>
+      <_SandboxPackageResultFiles Include="$(SandBoxRoot)/$(RelativeSandBoxPackageOutputFolder)/**/*.*"/>
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_SandboxPackageResultFiles)"
+      DestinationFolder="$(InstallerOutputDirectory)/%(RecursiveDir)"/>
   </Target >
 </Project>
   
