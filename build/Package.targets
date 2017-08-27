@@ -7,6 +7,7 @@
   <Import Project="$(MSBuildThisFileDirectory)/package/Installer.MSI.targets" />
   <Import Project="$(MSBuildThisFileDirectory)/package/Installer.PKG.targets" />
   <Import Project="$(MSBuildThisFileDirectory)/package/Installer.RPM.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)/package/CopySandBoxPackageOut.targets" />
 
   <Target Name="GenerateInstallers"
           Condition=" '$(SkipBuildingInstallers)' != 'true' "
@@ -19,4 +20,7 @@
                             GenerateNugetPackages;
                             GenerateArchives;
                             GenerateInstallers"  />
+
+  <Target Name="GenerateInstallersAndCopyOutOfSandBox"
+          DependsOnTargets="GenerateInstallers;CopySandBoxPackageOut" />
 </Project>
