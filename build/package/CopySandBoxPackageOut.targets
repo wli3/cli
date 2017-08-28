@@ -4,7 +4,13 @@
         <_SandBoxPackageOutputFile Include="$(SdkInstallerFile)" />
     </ItemGroup>
 
-    <Target Name="CopySandBoxPackageOut">
+    <Target Name="CopySandBoxPackageOut" Condition="'$(IsDebianBaseDistro)' == 'true'" DependsOnTargets="SetupDebProps">
+      <Copy
+      SourceFiles="@(_SandBoxPackageOutputFile)"
+      DestinationFolder="$(RepoRoot)/$(RelativeSandBoxPackageOutputFolder)"/>
+    </Target>
+
+    <Target Name="CopySandBoxPackageOut" Condition=" '$(IsRPMBasedDistro)' == true " DependsOnTargets="SetupRpmProps">
       <Copy
       SourceFiles="@(_SandBoxPackageOutputFile)"
       DestinationFolder="$(RepoRoot)/$(RelativeSandBoxPackageOutputFolder)"/>
