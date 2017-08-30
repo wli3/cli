@@ -19,7 +19,7 @@
       <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
-  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;Test;PackageWithDocker;CopyPackageResult">
+  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;PackageWithDocker;CopyPackageResult">
 
   </Target>
 
