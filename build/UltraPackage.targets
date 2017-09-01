@@ -19,8 +19,9 @@
             " />
   </Target>
 
-<ItemGroup>
-  <GeneratedInstallers Include="$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)%(LinuxDistrosNeedNativeInstaller.Identity).%(LinuxDistrosNeedNativeInstaller.InstallerExtension)"/>
-</ItemGroup>
-
+  <Target Name="OverrideGeneratedInstaller">
+        <ItemGroup>
+            <GeneratedInstallers Include="$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)%(LinuxDistrosNeedNativeInstaller.Identity).%(LinuxDistrosNeedNativeInstaller.InstallerExtension)" />
+        </ItemGroup>
+    </Target>
 </Project>
