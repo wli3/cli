@@ -20,7 +20,7 @@
   </Target>
 
   <Target Name="RunAllSandBoxAndPackage" >
-      <MSBuild Projects="SandBoxAndPackage.proj" 
+      <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackage.proj" 
       Targets="SandBoxAndPackage"
             Properties="RepoRoot=$(RepoRoot);
             LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
