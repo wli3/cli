@@ -10,25 +10,15 @@
     </LinuxDistrosNeedNativeInstaller>
   </ItemGroup>
 
-  <ItemGroup>
-      <_RepoRootFiles Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
-      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
-  </ItemGroup>
 
-  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage">
-
-  </Target>
-
-  <Target Name="RunAllSandBoxAndPackage" >
-      <MSBuild Projects="$(MSBuildThisFileDirectory)/RunAllSandBoxAndPackageInParallel.proj" 
-      Targets="RunAllSandBoxAndPackageInParallel"
+  <Target Name="RunAllSandBoxAndPackageInParallel" >
+      <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackage.proj" 
+      Targets="SandBoxAndPackage"
             Properties="RepoRoot=$(RepoRoot);
             LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
             DockerFolder=%(LinuxDistrosNeedNativeInstaller.DockerFolder);
             BuildConfiguration=$(BuildConfiguration);
-            BuildInParallel='true'
             " />
-  </Target>
-
+  </Target >
 </Project>
   
