@@ -15,9 +15,19 @@
       <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
-  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;PackageWithDocker;CopyPackageResult">
+  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage">
 
   </Target>
+
+  <Target Name="RunAllSandBoxAndPackage" >
+      <MSBuild Projects="SandBoxAndPackage.proj" 
+      Targets="SandBoxAndPackage"
+            Properties="RepoRoot=$(RepoRoot);
+            LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
+            DockerFolder=%(LinuxDistrosNeedNativeInstaller.DockerFolder);
+            BuildConfiguration=$(BuildConfiguration);
+            " />
+  </Target >
 
   <Target Name="PrepareSandBox" >
     <PropertyGroup>

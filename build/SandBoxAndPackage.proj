@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+      <_RepoRootFiles Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
+      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
+  </ItemGroup>
+
+  <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult">
+
+  </Target>
+
+  <Target Name="PrepareSandBox" >
+    <PropertyGroup>
+      <RelativeSandBoxPackageOutputFolder>RelativeSandBoxPackageOutputFolder</RelativeSandBoxPackageOutputFolder>
+    </PropertyGroup>
+
+    <Copy
+      SourceFiles="@(_RepoRootFiles)"
+      DestinationFiles="@(_RepoRootFiles -> '$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+
+    <Exec Command="sh -c 'cd $(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller) &amp;&amp; git clean -fxd'"/>
+
+    <Copy
+      SourceFiles="@(_RepoRootFiles2)"
+      DestinationFiles="@(_RepoRootFiles2 -> '$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/artifacts/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+  </Target>
+
+  <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
+    <Exec Command="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/build.sh --configuration $(BuildConfiguration) --docker $(DockerFolder) --skip-prereqs /target:GenerateInstallersAndCopyOutOfSandBox /p:RelativeSandBoxPackageOutputFolder=$(RelativeSandBoxPackageOutputFolder)"/>
+  </Target >
+
+  <Target Name="CopyPackageResult">
+    <ItemGroup>
+      <_SandboxPackageResultFiles Include="$(RepoRoot)/artifactsSandBox/$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/$(RelativeSandBoxPackageOutputFolder)/**/*.*"/>
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_SandboxPackageResultFiles)"
+      DestinationFolder="$(InstallerOutputDirectory)/%(RecursiveDir)"/>
+  </Target >
+</Project>
+  
