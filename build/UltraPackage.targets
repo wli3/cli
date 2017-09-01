@@ -29,13 +29,13 @@
     </PropertyGroup>
     <Copy
       SourceFiles="@(_RepoRootFiles)"
-      DestinationFolder="@(_RepoRootFiles -> '$(RepoRoot)/artifactsSandBox/%(_LinuxDistrosNeedNativeInstallerIdentity)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+      DestinationFolder="@(_RepoRootFiles -> '$(RepoRoot)/artifactsSandBox/%(_LinuxDistrosNeedNativeInstallerIdentity)/%(RecursiveDir)')"/>
 
     <Exec Command="sh -c 'cd $(RepoRoot)/artifactsSandBox/%(_LinuxDistrosNeedNativeInstallerIdentity) &amp;&amp; git clean -fxd'"/>
 
     <Copy
       SourceFiles="@(_RepoRootFiles2)"
-      DestinationFolder="@(_RepoRootFiles2 -> '$(RepoRoot)/artifactsSandBox/%(_LinuxDistrosNeedNativeInstallerIdentity)/artifacts/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+      DestinationFolder="@(_RepoRootFiles2 -> '$(RepoRoot)/artifactsSandBox/%(_LinuxDistrosNeedNativeInstallerIdentity)/artifacts/$(Rid)/%(RecursiveDir)')"/>
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
