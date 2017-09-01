@@ -20,7 +20,7 @@
   </Target>
 
   <Target Name="RunAllSandBoxAndPackage" >
-      <MSBuild Projects="$(MSBuildThisFileDirectory)/RunAllSandBoxAndPackageInParallel.proj" 
+      <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackageInParallel.proj" 
       Targets="RunAllSandBoxAndPackageInParallel"
             Properties="RepoRoot=$(RepoRoot);
             LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
