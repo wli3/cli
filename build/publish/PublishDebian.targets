@@ -20,8 +20,8 @@
       Username="$(REPO_USER)"
       Password='$(REPO_PASS)'
       Server='$(REPO_SERVER)'
-      RepositoryId='$(REPO_ID)'
-      PathOfPackageToUpload='$(SdkInstallerFile)'
+      RepositoryId='$(LinuxDistrosNeedNativeInstaller.repoid)'
+      PathOfPackageToUpload='$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)%(LinuxDistrosNeedNativeInstaller.Identity).%(LinuxDistrosNeedNativeInstaller.InstallerExtension)'
       PackageNameInLinuxPackageRepository='$(SdkDebianPackageName)'
       PackageVersionInLinuxPackageRepository='$(NugetVersion)' />
   </Target>
