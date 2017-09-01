@@ -4,10 +4,6 @@
     <SdkDebianPackageName>dotnet-sdk-$(SdkVersion)</SdkDebianPackageName>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SdkDebianUploadUrl>$(DotnetBlobRootUrl)/$(Product)/$(FullNugetVersion)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)-$(Architecture)$(InstallerExtension)</SdkDebianUploadUrl>
-  </PropertyGroup>
-
   <Target Name="PublishDebFilesToDebianRepo"
           DependsOnTargets="SetupDebProps;"
           Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(SkipPublishToDebianRepo)' != 'true' AND '$(IslinuxPortable)' != 'true' " >
@@ -20,7 +16,7 @@
       Username="$(REPO_USER)"
       Password='$(REPO_PASS)'
       Server='$(REPO_SERVER)'
-      RepositoryId='$(LinuxDistrosNeedNativeInstaller.repoid)'
+      RepositoryId='$(LinuxDistrosNeedNativeInstaller.RepositoryId)'
       PathOfPackageToUpload='$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)%(LinuxDistrosNeedNativeInstaller.Identity).%(LinuxDistrosNeedNativeInstaller.InstallerExtension)'
       PackageNameInLinuxPackageRepository='$(SdkDebianPackageName)'
       PackageVersionInLinuxPackageRepository='$(NugetVersion)' />
