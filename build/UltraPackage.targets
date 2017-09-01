@@ -32,8 +32,7 @@
   </Target>
 
 <ItemGroup>
-  <GeneratedInstallers Include="$(InstallerOutputDirectory)/*.deb"/>
-  <GeneratedInstallers Include="$(InstallerOutputDirectory)/*.rpm"/>
+  <GeneratedInstallers Include="$(InstallerOutputDirectory)/$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)%(LinuxDistrosNeedNativeInstaller.Identity).%(LinuxDistrosNeedNativeInstaller.InstallerExtension)"/>
 </ItemGroup>
 
 </Project>
