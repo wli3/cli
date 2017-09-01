@@ -26,11 +26,13 @@
 
     <Copy
       SourceFiles="@(_RepoRootFiles)"
-      DestinationFolder="$(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity)/%(RecursiveDir)"/>
-      <Exec Command="sh -c 'cd $(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity) &amp;&amp; git clean -fxd'"/>
+      DestinationFolder="@(_RepoRootFiles -> '$(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+
+    <Exec Command="sh -c 'cd $(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity) &amp;&amp; git clean -fxd'"/>
+
     <Copy
       SourceFiles="@(_RepoRootFiles2)"
-      DestinationFolder="$(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity)/artifacts/$(Rid)/%(RecursiveDir)"/>
+      DestinationFolder="@(_RepoRootFiles2 -> '$(RepoRoot)/artifactsSandBox/%(LinuxDistrosNeedNativeInstaller.Identity)/artifacts/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
