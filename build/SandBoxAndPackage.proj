@@ -3,7 +3,7 @@
 
   <ItemGroup>
       <_RepoRootFiles Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
-      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
+      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" Exclude="$(RepoRoot)/artifacts/obj/**/*.*"/>
   </ItemGroup>
 
   <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult">
