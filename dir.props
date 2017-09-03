@@ -20,7 +20,7 @@
   <Import Condition=" '$(GeneratePropsFile)' != 'true' " Project="$(BuildInfoProps)" />
 
   <Import Project="build/BranchInfo.props" />
-
+  <Import Project="../nocheckin.props" />
   <Import Project="build/BundledTools.props" />
   <Import Project="build/BundledSdks.props" />
   <Import Project="build/BundledTemplates.props" />
