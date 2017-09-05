@@ -2,19 +2,17 @@
 <Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-      <_MirrorOfRepoRootForTools Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
-      <_ArtifactsToPackage Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" Exclude="$(RepoRoot)/artifacts/obj/**/*.*"/>
+    <_MirrorOfRepoRootForTools Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
+    <_ArtifactsToPackage Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" Exclude="$(RepoRoot)/artifacts/obj/**/*.*"/>
   </ItemGroup>
 
-  <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult">
+  <PropertyGroup>
+    <RelativeSandBoxPackageOutputFolder>RelativeSandBoxPackageOutputFolder</RelativeSandBoxPackageOutputFolder>
+  </PropertyGroup>
 
-  </Target>
+  <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult"/>
 
   <Target Name="PrepareSandBox" >
-    <PropertyGroup>
-      <RelativeSandBoxPackageOutputFolder>RelativeSandBoxPackageOutputFolder</RelativeSandBoxPackageOutputFolder>
-    </PropertyGroup>
-
     <Copy
       SourceFiles="@(_MirrorOfRepoRootForTools)"
       DestinationFiles="@(_MirrorOfRepoRootForTools -> '$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/%(RecursiveDir)%(Filename)%(Extension)')"/>
