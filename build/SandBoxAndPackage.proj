@@ -10,7 +10,7 @@
     <RelativeSandBoxPackageOutputFolder>RelativeSandBoxPackageOutputFolder</RelativeSandBoxPackageOutputFolder>
   </PropertyGroup>
 
-  <Target Name="SandBoxAndPackage" DependsOnTargets="CopyPackageResult"/>
+  <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult"/>
 
   <Target Name="PrepareSandBox" >
     <Copy
