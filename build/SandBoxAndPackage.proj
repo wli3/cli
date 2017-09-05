@@ -30,7 +30,7 @@
 
   <Target Name="CopyPackageResult">
     <ItemGroup>
-      <_SandboxPackageResultFiles Include="$(RepoRoot)/artifactsSandBox/$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/$(RelativeSandBoxPackageOutputFolder)/**/*.*"/>
+      <_SandboxPackageResultFiles Include="$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/$(RelativeSandBoxPackageOutputFolder)/**/*.*"/>
     </ItemGroup>
     <Copy
       SourceFiles="@(_SandboxPackageResultFiles)"
