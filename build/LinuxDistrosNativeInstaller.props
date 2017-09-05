@@ -1,0 +1,14 @@
+<Project>
+    <ItemGroup>
+    <LinuxDistrosNeedNativeInstaller Include="ubuntu.16.04-x64">
+      <DockerFolder>ubuntu.16.04</DockerFolder>
+      <InstallerExtension>deb</InstallerExtension>
+      <RepositoryId>$(ubuntu1604x64RepositoryId)</RepositoryId>
+    </LinuxDistrosNeedNativeInstaller>
+    <LinuxDistrosNeedNativeInstaller Include="ubuntu.16.10-x64">
+      <DockerFolder>ubuntu.16.10</DockerFolder>
+      <InstallerExtension>deb</InstallerExtension>
+      <RepositoryId>$(ubuntu1610x64RepositoryId)</RepositoryId>
+    </LinuxDistrosNeedNativeInstaller>
+  </ItemGroup>
+</Project>
