@@ -12,7 +12,7 @@
     <Error Condition="'$(REPO_PASS)' == ''" Text="REPO_PASS must be set as a MsBuild Property variable for debian publishing." />
     <Error Condition="'$(REPO_SERVER)' == ''" Text="REPO_SERVER must be set as a MsBuild Property variable for debian publishing." />
 
-    <UploadToLinuxPackageRepository
+    <UploadToLinuxPackageRepository Condition=" '$(LinuxDistrosNeedNativeInstaller.RepositoryId)' != '' "
       Username="$(REPO_USER)"
       Password='$(REPO_PASS)'
       Server='$(REPO_SERVER)'
