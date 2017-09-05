@@ -7,7 +7,7 @@
       <_ArtifactsToPackage Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
-  <Target Name="AllLinuxDistrosNativeInstallers" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage;MultiPublish">
+  <Target Name="AllLinuxDistrosNativeInstaller" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage;MultiPublish">
   </Target>
 
   <Target Name="RunAllSandBoxAndPackage" >
