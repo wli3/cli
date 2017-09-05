@@ -7,15 +7,13 @@
       <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
-  <Target Name="UltraAll" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage">
+  <Target Name="AllLinuxDistrosNativeInstallers" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage;MultiPublish">
   </Target>
 
   <Target Name="RunAllSandBoxAndPackage" >
       <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackageInParallel.proj" 
-      Targets="RunAllSandBoxAndPackageInParallel"
+      Targets="RunInSandBoxAndPackage"
             Properties="RepoRoot=$(RepoRoot);
-            LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
-            DockerFolder=%(LinuxDistrosNeedNativeInstaller.DockerFolder);
             BuildConfiguration=$(BuildConfiguration);
             InstallerOutputDirectory=$(InstallerOutputDirectory);
             BuildInParallel='true'
@@ -23,7 +21,6 @@
   </Target>
 
   <Target Name="MultiPublish" DependsOnTargets="OverrideGeneratedInstaller;Publish">
-    
   </Target>
 
   <Target Name="OverrideGeneratedInstaller">

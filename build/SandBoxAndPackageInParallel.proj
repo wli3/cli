@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Target Name="RunAllSandBoxAndPackageInParallel" >
+  <Import Project="$(MSBuildThisFileDirectory)/LinuxDistrosNativeInstaller.props" />
+
+  <Target Name="RunInSandBoxAndPackage" >
       <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackage.proj" 
       Targets="SandBoxAndPackage"
             Properties="RepoRoot=$(RepoRoot);
-            LinuxDistrosNeedNativeInstaller=$(LinuxDistrosNeedNativeInstaller);
-            DockerFolder=$(DockerFolder);
+            LinuxDistrosNeedNativeInstaller=%(LinuxDistrosNeedNativeInstaller.Identity);
+            DockerFolder=%(LinuxDistrosNeedNativeInstaller.DockerFolder);
             BuildConfiguration=$(BuildConfiguration);
             InstallerOutputDirectory=$(InstallerOutputDirectory);
             " />
