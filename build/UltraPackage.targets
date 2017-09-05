@@ -4,7 +4,7 @@
 
   <ItemGroup>
       <_RepoRootFiles Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
-      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
+      <_ArtifactsToPackage Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" />
   </ItemGroup>
 
   <Target Name="AllLinuxDistrosNativeInstallers" DependsOnTargets="Prepare;Compile;RunAllSandBoxAndPackage;MultiPublish">

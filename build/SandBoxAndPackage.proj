@@ -3,7 +3,7 @@
 
   <ItemGroup>
       <_RepoRootFiles Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/artifactsSandBox/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/artifacts/**/*.*" />
-      <_RepoRootFiles2 Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" Exclude="$(RepoRoot)/artifacts/obj/**/*.*"/>
+      <_ArtifactsToPackage Include="$(RepoRoot)/artifacts/$(Rid)/**/*.*" Exclude="$(RepoRoot)/artifacts/obj/**/*.*"/>
   </ItemGroup>
 
   <Target Name="SandBoxAndPackage" DependsOnTargets="PackageWithDocker;CopyPackageResult">
@@ -22,8 +22,8 @@
     <Exec Command="sh -c 'cd $(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller) &amp;&amp; git clean -fxd'"/>
 
     <Copy
-      SourceFiles="@(_RepoRootFiles2)"
-      DestinationFiles="@(_RepoRootFiles2 -> '$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/artifacts/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+      SourceFiles="@(_ArtifactsToPackage)"
+      DestinationFiles="@(_ArtifactsToPackage -> '$(RepoRoot)/artifactsSandBox/$(LinuxDistrosNeedNativeInstaller)/artifacts/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
