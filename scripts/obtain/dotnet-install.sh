@@ -658,7 +658,7 @@ install_dotnet() {
     say "Downloading link: $download_link"
     # Failures are expected in legacy case. Do not output to stderr, since
     # the output stderr are considered an error
-    download "$download_link" $zip_path >out 2>&1 || download_failed=true
+    download "$download_link" $zip_path 2>&1 || download_failed=true
 
     #  if the download fails, download the legacy_download_link
     if [ "$download_failed" = true ] && [ "$valid_legacy_download_link" = true ]; then
