@@ -5,6 +5,8 @@
     <_MirrorOfRepoRootForTools Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/sandBoxBin/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/bin/2/**/*.*" />
     <_ArtifactsToPackage Include="$(RepoRoot)/bin/2/$(Rid)/**/*.*" Exclude="$(RepoRoot)/bin/2/obj/**/*.*"/>
     <_ArtifactsToPackage Include="$(RepoRoot)/bin/Directory.Build.props"/>
+    <_ToolsCacheToSpeedUp Include="$(RepoRoot)/$(RelativeCLIBuildBinaries)/**/*.*"  />
+    <_NugetCacheToSpeedUp Include="$(RepoRoot)/.nuget/**/*.*" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -23,6 +25,14 @@
     <Copy
       SourceFiles="@(_ArtifactsToPackage)"
       DestinationFiles="@(_ArtifactsToPackage -> '$(RepoRoot)/sandBoxBin/$(LinuxDistrosNeedNativeInstaller)/bin/2/$(Rid)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+
+    <Copy
+      SourceFiles="@(_ToolsCacheToSpeedUp)"
+      DestinationFiles="@(_ToolsCacheToSpeedUp -> '$(RepoRoot)/sandBoxBin/$(LinuxDistrosNeedNativeInstaller)/$(RelativeCLIBuildBinaries)/%(RecursiveDir)%(Filename)%(Extension)')"/>
+
+    <Copy
+      SourceFiles="@(_NugetCacheToSpeedUp)"
+      DestinationFiles="@(_NugetCacheToSpeedUp -> '$(RepoRoot)/sandBoxBin/$(LinuxDistrosNeedNativeInstaller)/.nuget/%(RecursiveDir)%(Filename)%(Extension)')"/>
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
