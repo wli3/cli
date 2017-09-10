@@ -2,10 +2,10 @@
 <Project ToolsVersion="14.0" DefaultTargets="Layout" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-    <_MirrorOfRepoRootForTools Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/sandBoxBin/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/bin/**/*.*;$(GeneratedPropsDir)" />
-    <_ArtifactsToPackage Include="$(RepoRoot)/bin/2/$(Rid)/**/*.*"/>
+    <_MirrorOfRepoRootForTools Include="$(RepoRoot)/**/*.*" Exclude="$(RepoRoot)/sandBoxBin/**/*.*;$(RepoRoot)/nuget/**/*.*;$(RepoRoot)/bin/**/*.*" />
+    <_ArtifactsToPackage Include="$(RepoRoot)/bin/2/$(Rid)/**/*.*" Exclude="$(GeneratedPropsDir)/**/*.*" />
     <_ArtifactsToPackage Include="$(RepoRoot)/bin/Directory.Build.props"/>
-    <_ToolsCacheToSpeedUp Include="$(RepoRoot)/$(RelativeCLIBuildBinaries)/**/*.*"  />
+    <_ToolsCacheToSpeedUp Include="$(RepoRoot)/$(RelativeCLIBuildBinaries)/**/*.*" Exclude="$(GeneratedPropsDir)/**/*.*"/>
     <_NugetCacheToSpeedUp Include="$(RepoRoot)/.nuget/**/*.*" />
   </ItemGroup>
 
