@@ -34,7 +34,7 @@
       SourceFiles="@(_NugetCacheToSpeedUp)"
       DestinationFiles="@(_NugetCacheToSpeedUp -> '$(RepoRoot)/sandBoxBin/$(LinuxDistrosNeedNativeInstaller)/.nuget/%(RecursiveDir)%(Filename)%(Extension)')"/>
 
-    <RemoveDir Directories="$(GeneratedPropsDir)" />
+    <RemoveDir Directories="$(RepoRoot)/sandBoxBin/$(LinuxDistrosNeedNativeInstaller)/$(RelativeGeneratedPropsDir)" />
   </Target>
 
   <Target Name="PackageWithDocker" DependsOnTargets="PrepareSandBox">
