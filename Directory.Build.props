@@ -20,7 +20,7 @@ tools\TestAssetsDependencies\TestAssetsDependencies.csproj
 
     <NuGetPackagesDir>$(NUGET_PACKAGES)</NuGetPackagesDir>
     <NuGetPackagesDir Condition=" '$(NuGetPackagesDir)' == '' ">$(RepoRoot)/.nuget/packages</NuGetPackagesDir>
-    
+
     <RelativeCLIBuildBinaries>build_projects/dotnet-cli-build/bin</RelativeCLIBuildBinaries>
     <RelativeCLIBuilddllName>dotnet-cli-build.dll</RelativeCLIBuilddllName>
     <CLIBuildDll>$(RepoRoot)/$(RelativeCLIBuildBinaries)/$(RelativeCLIBuilddllName)</CLIBuildDll>

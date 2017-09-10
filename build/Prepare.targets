@@ -13,7 +13,7 @@
                             CheckPrereqs;">
   </Target>
 
-  <Target Name="_SandBoxPrepare" 
+  <Target Name="_SandBoxPrepare"
           DependsOnTargets="PrintBuildInfo;
                             CheckPrereqs;
                             DownloadHostAndSharedFxArtifacts;
