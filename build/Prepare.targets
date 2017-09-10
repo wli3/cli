@@ -14,11 +14,17 @@
   </Target>
 
   <Target Name="_SandBoxPrepare"
-          DependsOnTargets="PrintBuildInfo;
+          DependsOnTargets="_CleanGeneratedPropsDir;
                             CheckPrereqs;
                             DownloadHostAndSharedFxArtifacts;
                             IsolateArtifactsFromDirectoryBuildFiles;
+                            _CleanGeneratedPropsDir;
+                            WriteHostInfoProps;
                             CreatePropsForNextStage">
+  </Target>
+
+  <Target Name="_CleanGeneratedPropsDir">
+    <RemoveDir Directories="$(GeneratedPropsDir)" />
   </Target>
 
   <Target Name="PrintBuildInfo">
