@@ -18,9 +18,7 @@
                             CheckPrereqs;
                             DownloadHostAndSharedFxArtifacts;
                             IsolateArtifactsFromDirectoryBuildFiles;
-                            WriteHostInfoProps;
-                            CreatePropsForNextStage;
-                            ">
+                            CreatePropsForNextStage">
   </Target>
 
   <Target Name="PrintBuildInfo">
