@@ -9,12 +9,11 @@
   </Target>
 
   <Target Name="RunAllSandBoxAndPackage" >
-      <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackageInParallel.proj" 
+      <MSBuild Projects="$(MSBuildThisFileDirectory)/SandBoxAndPackageInParallel.proj"
       Targets="RunInSandBoxAndPackage"
             Properties="RepoRoot=$(RepoRoot);
             BuildConfiguration=$(BuildConfiguration);
             InstallerOutputDirectory=$(InstallerOutputDirectory);
-            BuildInParallel='true'
             " />
   </Target>
 
