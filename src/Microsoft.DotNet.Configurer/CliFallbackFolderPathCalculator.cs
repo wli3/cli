@@ -12,9 +12,7 @@ namespace Microsoft.DotNet.Configurer
 {
     public class CliFallbackFolderPathCalculator
     {
-        public string CliFallbackFolderPath =>
-            Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
-            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
+        public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
 
         public string DotnetUserProfileFolderPath
         {
@@ -29,5 +27,11 @@ namespace Microsoft.DotNet.Configurer
 
         public string NuGetUserSettingsDirectory =>
             NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+        private static string GetExecutableBaseDirectory(string nugetfallbackfolder)
+        {
+            return Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
+                   Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, nugetfallbackfolder);
+        }
     }
 }
