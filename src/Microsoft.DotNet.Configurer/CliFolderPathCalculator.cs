@@ -10,7 +10,7 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Configurer
 {
-    public class CliFallbackFolderPathCalculator
+    public class CliFolderPathCalculator
     {
         public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
         

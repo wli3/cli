@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli
             var success = true;
             var command = string.Empty;
             var lastArg = 0;
-            var cliFallbackFolderPathCalculator = new CliFallbackFolderPathCalculator();
+            var cliFallbackFolderPathCalculator = new CliFolderPathCalculator();
             using (INuGetCacheSentinel nugetCacheSentinel = new NuGetCacheSentinel(cliFallbackFolderPathCalculator))
             using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
                 new FirstTimeUseNoticeSentinel(cliFallbackFolderPathCalculator))
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli
         private static void ConfigureDotNetForFirstTimeUse(
             INuGetCacheSentinel nugetCacheSentinel,
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
-            CliFallbackFolderPathCalculator cliFallbackFolderPathCalculator)
+            CliFolderPathCalculator cliFolderPathCalculator)
         {
             using (PerfTrace.Current.CaptureTiming())
             {
@@ -205,14 +205,14 @@ namespace Microsoft.DotNet.Cli
                 var nugetCachePrimer = new NuGetCachePrimer(
                     nugetPackagesArchiver,
                     nugetCacheSentinel,
-                    cliFallbackFolderPathCalculator);
+                    cliFolderPathCalculator);
                 var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
                     nugetCachePrimer,
                     nugetCacheSentinel,
                     firstTimeUseNoticeSentinel,
                     environmentProvider,
                     Reporter.Output,
-                    cliFallbackFolderPathCalculator.CliFallbackFolderPath);
+                    cliFolderPathCalculator.CliFallbackFolderPath);
 
                 dotnetConfigurer.Configure();
             }
