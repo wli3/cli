@@ -2,14 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using NuGet.Frameworks;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
@@ -19,7 +15,8 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public ShellShimMaker(string systemPathToPlaceShim)
         {
-            _systemPathToPlaceShim = systemPathToPlaceShim ?? throw new ArgumentNullException(nameof(systemPathToPlaceShim));
+            _systemPathToPlaceShim =
+                systemPathToPlaceShim ?? throw new ArgumentNullException(nameof(systemPathToPlaceShim));
         }
 
         public void CreateShim(FileInfo packageExecutablePath, string shellCommandName)
@@ -35,7 +32,16 @@ namespace Microsoft.DotNet.ShellShimMaker
                 throw new NotImplementedException("unix work in progress");
             }
 
-            File.WriteAllText($"{GetScriptPath(shellCommandName)}", script.ToString());
+            try
+            {
+                File.WriteAllText(GetScriptPath(shellCommandName), script.ToString());
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                throw new GracefulException(
+                    string.Format(LocalizableStrings.InstallCommandUnauthorizedAccessMessage,
+                        e.Message));
+            }
         }
 
         public void Remove(string shellCommandName)
@@ -47,13 +53,9 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             var scriptPath = Path.Combine(_systemPathToPlaceShim, shellCommandName);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 scriptPath += ".cmd";
-            }
             else
-            {
                 throw new NotImplementedException("unix work in progress");
-            }
 
             return scriptPath;
         }

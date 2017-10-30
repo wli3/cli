@@ -79,10 +79,5 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             taskOut.Wait();
             stdOut = outStream.CapturedOutput;
         }
-
-        [Fact(Skip = "Pending implementation")]
-        public void GivenAnExecutablePathThatRequiresPermission()
-        {
-        }
     }
 }
