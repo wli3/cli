@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ShellShimMaker
                 systemPathToPlaceShim ?? throw new ArgumentNullException(nameof(systemPathToPlaceShim));
         }
 
-        public void CreateShim(FileInfo packageExecutablePath, string shellCommandName)
+        public void CreateShim(string packageExecutablePath, string shellCommandName)
         {
             var script = new StringBuilder();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

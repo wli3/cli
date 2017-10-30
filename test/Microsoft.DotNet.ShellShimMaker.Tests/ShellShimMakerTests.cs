@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             var shellCommandName = nameof(ShellShimMakerTests) + Path.GetRandomFileName();
 
             shellShimMaker.CreateShim(
-                outputDll,
+                outputDll.FullName,
                 shellCommandName);
             var stdOut = ExecuteInShell(shellCommandName);
 
