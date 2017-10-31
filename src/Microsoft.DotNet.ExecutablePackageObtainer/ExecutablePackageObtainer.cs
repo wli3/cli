@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NuGet.Frameworks;
 
@@ -26,6 +27,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var result = new ProcessStartInfo
             {
                 FileName = "nuget.exe",
+                WorkingDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),
                 Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory {_toolsPath}",
                 UseShellExecute = false
             };
