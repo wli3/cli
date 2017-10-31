@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static Command Install() =>
             Create.Command(
-                "Install", "",
+                "install", "",
                 Accept.NoArguments(), CommonOptions.HelpOption(), InstallGlobaltool());
         
         public static Command InstallGlobaltool() =>
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli
                     .With(name: "packageId",
                         description: "Package Id in Nuget"),
                 Create.Option(
-                    "--package-version",
+                    "--version",
                     "Package version of the package in Nuget",
                     Accept.ExactlyOneArgument()),
                 CommonOptions.HelpOption());
