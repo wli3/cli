@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="nuget.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="nuget.exe" />
   </ItemGroup>
+
 </Project>
