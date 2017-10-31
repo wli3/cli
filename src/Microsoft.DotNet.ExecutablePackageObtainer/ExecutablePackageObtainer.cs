@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = nugetexePath,
-                Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory {_toolsPath}",
+                Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory \"{_toolsPath}\"",
                 UseShellExecute = false
             };
 
