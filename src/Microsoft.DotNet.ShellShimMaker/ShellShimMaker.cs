@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ShellShimMaker
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 script.AppendLine("@echo off");
-                script.AppendLine($"dotnet exec {packageExecutablePath} %*");
+                script.AppendLine($"dotnet exec \"{packageExecutablePath}\" %*");
             }
             else
             {

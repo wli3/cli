@@ -48,8 +48,9 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
         {
             const string target = "netcoreapp2.1";
             const string testAppName = "TestAppSimple";
+            const string emptySpaceToTestSpaceInPath = " ";
             var testInstance = TestAssets.Get(testAppName)
-                .CreateInstance(testAppName + "_" + target.Replace('.', '_'))
+                .CreateInstance(testAppName + emptySpaceToTestSpaceInPath + target.Replace('.', '_'))
                 .WithSourceFiles().WithRestoreFiles().WithBuildFiles();
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
