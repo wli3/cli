@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <ComponentGroup Id="AddToPath">
+      <Component Id="AddToolsToPath" Guid="{DA969326-42C4-4704-B426-000CF9AEA3A9}" Directory="TARGETDIR">
+        <Environment Id="PATH" Name="PATH" Value="[%HOMEPATH]\.dotnet\ExecutablePackages" Permanent="yes" Part="last" Action="set" System="no" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

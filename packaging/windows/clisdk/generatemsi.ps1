@@ -59,6 +59,7 @@ function RunCandle
         "$AuthWsxRoot\dotnet.wxs" `
         "$AuthWsxRoot\provider.wxs" `
         "$AuthWsxRoot\registrykeys.wxs" `
+        "$AuthWsxRoot\addtopath.wxs" `
         $InstallFileswsx | Out-Host
 
     if($LastExitCode -ne 0)
@@ -85,6 +86,7 @@ function RunLight
         dotnet.wixobj `
         provider.wixobj `
         registrykeys.wixobj `
+        addtopath.wixobj `
         $InstallFilesWixobj `
         -b "$inputDir" `
         -b "$AuthWsxRoot" `
