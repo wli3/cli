@@ -27,8 +27,8 @@ namespace Microsoft.DotNet.Cli
             }
 
             var executablePackageObtainer =
-                new ExecutablePackageObtainer.ExecutablePackageObtainer(new CliFolderPathCalculator()
-                    .ExecutablePackagesPath);
+                new ExecutablePackageObtainer.ExecutablePackageObtainer(
+                    new CliFolderPathCalculator().ExecutablePackagesPath);
             var executablePath = executablePackageObtainer.ObtainAndReturnExecutablePath(packageId, packageVersion);
 
             var shellShimMaker = new ShellShimMaker.ShellShimMaker(Path.GetDirectoryName(new Muxer().MuxerPath));
