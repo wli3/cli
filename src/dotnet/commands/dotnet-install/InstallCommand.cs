@@ -26,12 +26,13 @@ namespace Microsoft.DotNet.Cli
                 throw new NotImplementedException("Auto look up work in progress");
             }
 
+            var executablePackagesPath = new CliFolderPathCalculator().ExecutablePackagesPath;
             var executablePackageObtainer =
                 new ExecutablePackageObtainer.ExecutablePackageObtainer(
-                    new CliFolderPathCalculator().ExecutablePackagesPath);
+                    executablePackagesPath);
             var executablePath = executablePackageObtainer.ObtainAndReturnExecutablePath(packageId, packageVersion);
 
-            var shellShimMaker = new ShellShimMaker.ShellShimMaker(Path.GetDirectoryName(new Muxer().MuxerPath));
+            var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagesPath);
             shellShimMaker.CreateShim(executablePath, packageId);
 
             return 0;
