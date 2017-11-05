@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
-    internal class PathAdder : IPathAdder
+    public class PathAdder : IPathAdder
     {
         private readonly string _packageExecutablePath;
 

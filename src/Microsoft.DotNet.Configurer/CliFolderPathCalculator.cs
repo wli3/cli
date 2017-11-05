@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Configurer
     {
         public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
         
-        public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, "ExecutablePackages") ;
+        public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, "tools") ;
 
         public string DotnetUserProfileFolderPath
         {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.IO;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -15,6 +16,7 @@ namespace Microsoft.DotNet.Configurer
         private INuGetCacheSentinel _nugetCacheSentinel;
         private IFirstTimeUseNoticeSentinel _firstTimeUseNoticeSentinel;
         private string _cliFallbackFolderPath;
+        private readonly IPathAdder _pathAdder;
 
         public DotnetFirstTimeUseConfigurer(
             INuGetCachePrimer nugetCachePrimer,
@@ -22,7 +24,8 @@ namespace Microsoft.DotNet.Configurer
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
             IEnvironmentProvider environmentProvider,
             IReporter reporter,
-            string cliFallbackFolderPath)
+            string cliFallbackFolderPath,
+            IPathAdder pathAdder = null)
         {
             _nugetCachePrimer = nugetCachePrimer;
             _nugetCacheSentinel = nugetCacheSentinel;
@@ -30,6 +33,7 @@ namespace Microsoft.DotNet.Configurer
             _environmentProvider = environmentProvider;
             _reporter = reporter;
             _cliFallbackFolderPath = cliFallbackFolderPath;
+            _pathAdder = pathAdder;
         }
 
         public void Configure()
@@ -53,9 +57,9 @@ namespace Microsoft.DotNet.Configurer
                 }
             }
 
-            if (!_firstTimeUseNoticeSentinel.Exists())
+            if (!_firstTimeUseNoticeSentinel.Exists() && _pathAdder != null) // TODO NO CHECKIN proper null handing
             {
-              
+                _pathAdder.AddPackageExecutablePathToUserPath();
             }
         }
 

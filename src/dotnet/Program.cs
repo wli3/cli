@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.ShellShimMaker;
 using Microsoft.DotNet.Tools.Help;
 using NuGet.Frameworks;
 using Command = Microsoft.DotNet.Cli.Utils.Command;
@@ -212,7 +213,9 @@ namespace Microsoft.DotNet.Cli
                     firstTimeUseNoticeSentinel,
                     environmentProvider,
                     Reporter.Output,
-                    cliFolderPathCalculator.CliFallbackFolderPath);
+                    cliFolderPathCalculator.CliFallbackFolderPath,
+                    new PathAdder(cliFolderPathCalculator.ExecutablePackagesPath)
+                    );
 
                 dotnetConfigurer.Configure();
             }
