@@ -52,6 +52,11 @@ namespace Microsoft.DotNet.Configurer
                     _nugetCachePrimer.PrimeCache();
                 }
             }
+
+            if (!_firstTimeUseNoticeSentinel.Exists())
+            {
+              
+            }
         }
 
         private bool ShouldPrintFirstTimeUseNotice()
