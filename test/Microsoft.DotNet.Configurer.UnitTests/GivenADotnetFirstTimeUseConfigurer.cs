@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
         private Mock<IFirstTimeUseNoticeSentinel> _firstTimeUseNoticeSentinelMock;
         private Mock<IEnvironmentProvider> _environmentProviderMock;
         private Mock<IReporter> _reporterMock;
+        private Mock<IPathAdder> _pathAdder;
 
         public GivenADotnetFirstTimeUseConfigurer()
         {
@@ -28,6 +29,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _firstTimeUseNoticeSentinelMock = new Mock<IFirstTimeUseNoticeSentinel>();
             _environmentProviderMock = new Mock<IEnvironmentProvider>();
             _reporterMock = new Mock<IReporter>();
+            _pathAdder = new Mock<IPathAdder>();
 
             _environmentProviderMock
                 .Setup(e => e.GetEnvironmentVariableAsBool("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", false))
@@ -48,7 +50,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -70,7 +73,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -92,7 +96,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -111,7 +116,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -130,7 +136,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -148,7 +155,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -166,7 +174,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -187,7 +196,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -205,7 +215,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -224,7 +235,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -246,7 +258,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -256,6 +269,26 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 r => r.WriteLine(It.Is<string>(str => str == LocalizableStrings.NugetCachePrimeMessage)),
                 Times.Never);
             _reporterMock.Verify(r => r.Write(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public void It_adds_executable_package_path_to_environment_path_when_the_first_notice_sentinel_does_not_exist()
+        {
+            _nugetCacheSentinelMock.Setup(n => n.Exists()).Returns(true);
+            _firstTimeUseNoticeSentinelMock.Setup(n => n.Exists()).Returns(false);
+
+            var dotnetFirstTimeUseConfigurer = new DotnetFirstTimeUseConfigurer(
+                _nugetCachePrimerMock.Object,
+                _nugetCacheSentinelMock.Object,
+                _firstTimeUseNoticeSentinelMock.Object,
+                _environmentProviderMock.Object,
+                _reporterMock.Object,
+                CliFallbackFolderPath,
+                _pathAdder.Object);
+
+            dotnetFirstTimeUseConfigurer.Configure();
+            
+            _pathAdder.Verify(p => p.AddPackageExecutablePathToUserPath(), Times.AtLeastOnce);
         }
 
         [Fact]
@@ -269,7 +302,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 
@@ -295,7 +329,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _firstTimeUseNoticeSentinelMock.Object,
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
-                CliFallbackFolderPath);
+                CliFallbackFolderPath,
+                _pathAdder.Object);
 
             dotnetFirstTimeUseConfigurer.Configure();
 

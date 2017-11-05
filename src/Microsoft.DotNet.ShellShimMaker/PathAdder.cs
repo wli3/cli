@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
     public class PathAdder : IPathAdder
     {
+        private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
 
         public PathAdder(string packageExecutablePath)
@@ -17,12 +19,15 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public void AddPackageExecutablePathToUserPath()
         {
-            const string pathName = "PATH";
-            var existingPath = Environment.GetEnvironmentVariable(pathName);
+            var existingPath = Environment.GetEnvironmentVariable(PathName);
 
-            Environment.SetEnvironmentVariable(pathName,
-                $"{existingPath};{_packageExecutablePath}",
-                EnvironmentVariableTarget.User);
+            if (existingPath.Split(';').Contains(_packageExecutablePath))
+            {
+                Environment.SetEnvironmentVariable(
+                    PathName,
+                    $"{existingPath};{_packageExecutablePath}",
+                    EnvironmentVariableTarget.User);
+            }
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Configurer
             IEnvironmentProvider environmentProvider,
             IReporter reporter,
             string cliFallbackFolderPath,
-            IPathAdder pathAdder = null)
+            IPathAdder pathAdder)
         {
             _nugetCachePrimer = nugetCachePrimer;
             _nugetCacheSentinel = nugetCacheSentinel;
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Configurer
             _environmentProvider = environmentProvider;
             _reporter = reporter;
             _cliFallbackFolderPath = cliFallbackFolderPath;
-            _pathAdder = pathAdder;
+            _pathAdder = pathAdder ?? throw new ArgumentNullException(nameof(pathAdder));
         }
 
         public void Configure()
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Configurer
                 }
             }
 
-            if (!_firstTimeUseNoticeSentinel.Exists() && _pathAdder != null) // TODO NO CHECKIN proper null handing
+            if (!_firstTimeUseNoticeSentinel.Exists()) // TODO NO CHECKIN proper null handing
             {
                 _pathAdder.AddPackageExecutablePathToUserPath();
             }
