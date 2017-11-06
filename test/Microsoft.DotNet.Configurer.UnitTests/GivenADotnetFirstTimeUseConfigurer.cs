@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
         private Mock<IFirstTimeUseNoticeSentinel> _firstTimeUseNoticeSentinelMock;
         private Mock<IEnvironmentProvider> _environmentProviderMock;
         private Mock<IReporter> _reporterMock;
-        private Mock<IPathAdder> _pathAdder;
+        private Mock<IEnvironmentPath> _pathAdder;
 
         public GivenADotnetFirstTimeUseConfigurer()
         {
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _firstTimeUseNoticeSentinelMock = new Mock<IFirstTimeUseNoticeSentinel>();
             _environmentProviderMock = new Mock<IEnvironmentProvider>();
             _reporterMock = new Mock<IReporter>();
-            _pathAdder = new Mock<IPathAdder>();
+            _pathAdder = new Mock<IEnvironmentPath>();
 
             _environmentProviderMock
                 .Setup(e => e.GetEnvironmentVariableAsBool("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", false))
