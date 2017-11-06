@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -16,7 +17,7 @@ namespace Microsoft.DotNet.Configurer
         private INuGetCacheSentinel _nugetCacheSentinel;
         private IFirstTimeUseNoticeSentinel _firstTimeUseNoticeSentinel;
         private string _cliFallbackFolderPath;
-        private readonly IPathAdder _pathAdder;
+        private readonly IEnvironmentPath _pathAdder;
 
         public DotnetFirstTimeUseConfigurer(
             INuGetCachePrimer nugetCachePrimer,
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Configurer
             IEnvironmentProvider environmentProvider,
             IReporter reporter,
             string cliFallbackFolderPath,
-            IPathAdder pathAdder)
+            IEnvironmentPath pathAdder)
         {
             _nugetCachePrimer = nugetCachePrimer;
             _nugetCacheSentinel = nugetCacheSentinel;
@@ -38,7 +39,14 @@ namespace Microsoft.DotNet.Configurer
 
         public void Configure()
         {
-            if (!_firstTimeUseNoticeSentinel.Exists())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (!_firstTimeUseNoticeSentinel.Exists())
+                {
+                    _pathAdder.AddPackageExecutablePathToUserPath();
+                }
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 _pathAdder.AddPackageExecutablePathToUserPath();
             }

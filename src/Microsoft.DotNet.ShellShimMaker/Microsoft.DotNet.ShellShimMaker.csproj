@@ -11,6 +11,7 @@
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0-beta3" />
     <ProjectReference Include="..\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <PackageReference Include="XliffTasks" Version="$(XliffTasksVersion)" PrivateAssets="All" />

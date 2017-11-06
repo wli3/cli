@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -14,6 +15,7 @@ using Microsoft.DotNet.ShellShimMaker;
 using Microsoft.DotNet.Tools.Help;
 using NuGet.Frameworks;
 using Command = Microsoft.DotNet.Cli.Utils.Command;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -200,6 +202,16 @@ namespace Microsoft.DotNet.Cli
         {
             using (PerfTrace.Current.CaptureTiming())
             {
+                IEnvironmentPath environmentPath = null;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    environmentPath = new WindowsEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
+
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
                 var environmentProvider = new EnvironmentProvider();
                 var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
@@ -214,7 +226,7 @@ namespace Microsoft.DotNet.Cli
                     environmentProvider,
                     Reporter.Output,
                     cliFolderPathCalculator.CliFallbackFolderPath,
-                    new WindowsEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath)
+                    environmentPath
                     );
 
                 dotnetConfigurer.Configure();
