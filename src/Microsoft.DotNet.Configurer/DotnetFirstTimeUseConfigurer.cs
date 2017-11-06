@@ -38,6 +38,11 @@ namespace Microsoft.DotNet.Configurer
 
         public void Configure()
         {
+            if (!_firstTimeUseNoticeSentinel.Exists())
+            {
+                _pathAdder.AddPackageExecutablePathToUserPath();
+            }
+
             if (ShouldPrintFirstTimeUseNotice())
             {
                 PrintFirstTimeUseNotice();
@@ -55,11 +60,6 @@ namespace Microsoft.DotNet.Configurer
 
                     _nugetCachePrimer.PrimeCache();
                 }
-            }
-
-            if (!_firstTimeUseNoticeSentinel.Exists()) // TODO NO CHECKIN proper null handing
-            {
-                _pathAdder.AddPackageExecutablePathToUserPath();
             }
         }
 

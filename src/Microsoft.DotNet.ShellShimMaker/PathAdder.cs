@@ -19,15 +19,19 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public void AddPackageExecutablePathToUserPath()
         {
-            var existingPath = Environment.GetEnvironmentVariable(PathName);
+            if (PackageExecutablePathExists()) return;
 
-            if (existingPath.Split(';').Contains(_packageExecutablePath))
-            {
-                Environment.SetEnvironmentVariable(
-                    PathName,
-                    $"{existingPath};{_packageExecutablePath}",
-                    EnvironmentVariableTarget.User);
-            }
+            var existingUserEnvPath = Environment.GetEnvironmentVariable(PathName, EnvironmentVariableTarget.User);
+
+            Environment.SetEnvironmentVariable(
+                PathName,
+                $"{existingUserEnvPath};{_packageExecutablePath}",
+                EnvironmentVariableTarget.User);
+        }
+
+        private bool PackageExecutablePathExists()
+        {
+            return Environment.GetEnvironmentVariable(PathName).Split(';').Contains(_packageExecutablePath);
         }
     }
 }

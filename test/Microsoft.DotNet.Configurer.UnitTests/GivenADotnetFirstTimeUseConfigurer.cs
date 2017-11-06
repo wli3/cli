@@ -279,8 +279,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             var dotnetFirstTimeUseConfigurer = new DotnetFirstTimeUseConfigurer(
                 _nugetCachePrimerMock.Object,
-                _nugetCacheSentinelMock.Object,
-                _firstTimeUseNoticeSentinelMock.Object,
+                new FakeCreateWillExistNuGetCacheSentinel(false, true), 
+                new FakeCreateWillExistFirstTimeUseNoticeSentinel(false),
                 _environmentProviderMock.Object,
                 _reporterMock.Object,
                 CliFallbackFolderPath,
@@ -335,6 +335,63 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             dotnetFirstTimeUseConfigurer.Configure();
 
             _nugetCachePrimerMock.Verify(r => r.PrimeCache(), Times.Never);
+        }
+
+        private class FakeCreateWillExistFirstTimeUseNoticeSentinel : IFirstTimeUseNoticeSentinel
+        {
+            private bool _exists;
+
+            public FakeCreateWillExistFirstTimeUseNoticeSentinel(bool exists)
+            {
+                _exists = exists;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public bool Exists()
+            {
+                return _exists;
+            }
+
+            public void CreateIfNotExists()
+            {
+                _exists = true;
+            }
+        }
+
+        private class FakeCreateWillExistNuGetCacheSentinel : INuGetCacheSentinel
+        {
+            private bool _inProgressSentinelAlreadyExists;
+            private bool _exists;
+
+            public FakeCreateWillExistNuGetCacheSentinel(bool inProgressSentinelAlreadyExists, bool exists)
+            {
+                _inProgressSentinelAlreadyExists = inProgressSentinelAlreadyExists;
+                _exists = exists;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public bool InProgressSentinelAlreadyExists()
+            {
+                return _inProgressSentinelAlreadyExists;
+            }
+
+            public bool Exists()
+            {
+                return _exists;
+            }
+
+            public void CreateIfNotExists()
+            {
+                _exists = true;
+            }
+
+            public bool UnauthorizedAccess { get; set; }
         }
     }
 }
