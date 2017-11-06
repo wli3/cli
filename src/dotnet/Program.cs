@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.Cli
                     environmentProvider,
                     Reporter.Output,
                     cliFolderPathCalculator.CliFallbackFolderPath,
-                    new PathAdder(cliFolderPathCalculator.ExecutablePackagesPath)
+                    new WindowsEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath)
                     );
 
                 dotnetConfigurer.Configure();

@@ -7,12 +7,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
-    public class PathAdder : IPathAdder
+    public class WindowsEnvironmentPath : IPathAdder
     {
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
 
-        public PathAdder(string packageExecutablePath)
+        public WindowsEnvironmentPath(string packageExecutablePath)
         {
             _packageExecutablePath = packageExecutablePath;
         }
