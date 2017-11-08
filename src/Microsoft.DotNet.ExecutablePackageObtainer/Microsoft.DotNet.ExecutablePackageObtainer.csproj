@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <PropertyGroup>
     <Version>$(SdkVersion)</Version>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,18 +7,19 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="NuGet.Common" Version="$(CLI_NuGet_Version)" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="nuget.exe" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Reference Include="System.Xml.XmlSerializer, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\..\.nuget\packages\system.xml.xmlserializer\4.0.11\ref\netstandard1.3\System.Xml.XmlSerializer.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
