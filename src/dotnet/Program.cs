@@ -123,15 +123,18 @@ namespace Microsoft.DotNet.Cli
                         // It's the command, and we're done!
                         command = args[lastArg];
 
+                        var hasSuperUserAccess = false;
                         if (IsDotnetBeingInvokedFromNativeInstaller(command))
                         {
                             firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
+                            hasSuperUserAccess = true;
                         }
 
                         ConfigureDotNetForFirstTimeUse(
                             nugetCacheSentinel,
                             firstTimeUseNoticeSentinel,
-                            cliFallbackFolderPathCalculator);
+                            cliFallbackFolderPathCalculator,
+                            hasSuperUserAccess);
 
                         break;
                     }
@@ -198,16 +201,17 @@ namespace Microsoft.DotNet.Cli
         private static void ConfigureDotNetForFirstTimeUse(
             INuGetCacheSentinel nugetCacheSentinel,
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
-            CliFolderPathCalculator cliFolderPathCalculator)
+            CliFolderPathCalculator cliFolderPathCalculator,
+            bool hasSuperUserAccess)
         {
             using (PerfTrace.Current.CaptureTiming())
             {
-                IEnvironmentPath environmentPath = null;
+                IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     environmentPath = new WindowsEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
                 {
                     environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
                 }

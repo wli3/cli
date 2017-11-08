@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ShellShimMaker
     {
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
-        private const string ProfiledDotnetCliToolsPath = @"/etc/profile.d/dotnet_cli_tools.sh";
+        private const string ProfiledDotnetCliToolsPath = @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
 
         public LinuxEnvironmentPath(string packageExecutablePath)
         {
@@ -26,21 +26,8 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             if (PackageExecutablePathExists()) return;
 
-            if (new UnixFileInfo(ProfiledDotnetCliToolsPath).CanAccess(AccessModes.W_OK))
-            {
-                var script = $"export PATH=\"$PATH:{_packageExecutablePath}\"";
-                File.WriteAllText(ProfiledDotnetCliToolsPath, script);
-
-                var unixFileInfo = new UnixFileInfo(ProfiledDotnetCliToolsPath);
-                unixFileInfo.FileAccessPermissions = unixFileInfo.FileAccessPermissions |
-                                                     FileAccessPermissions.OtherExecute |
-                                                     FileAccessPermissions.GroupExecute |
-                                                     FileAccessPermissions.UserExecute;
-            }
-            else
-            {
-                Debug.WriteLine("DONT CHECK IN no permission to file");
-            }
+            var script = $"export PATH=\"$PATH:{_packageExecutablePath}\"";
+            File.WriteAllText(ProfiledDotnetCliToolsPath, script);
         }
 
         private bool PackageExecutablePathExists()
