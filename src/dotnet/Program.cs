@@ -215,6 +215,10 @@ namespace Microsoft.DotNet.Cli
                 {
                     environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
+                {
+                    environmentPath = new OsxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
 
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
                 var environmentProvider = new EnvironmentProvider();
