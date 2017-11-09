@@ -32,5 +32,8 @@
     <None Update="DotnetToolsConfigGolden.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestAssetLocalNugetFeed/*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

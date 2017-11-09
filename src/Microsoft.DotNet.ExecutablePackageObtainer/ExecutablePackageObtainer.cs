@@ -9,28 +9,30 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
     public class ExecutablePackageObtainer
     {
-        private readonly string _toolsPath;
+        private readonly DirectoryPath _toolsPath;
 
-        public ExecutablePackageObtainer(string toolsPath)
+        public ExecutablePackageObtainer(DirectoryPath toolsPath)
         {
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
-        public string ObtainAndReturnExecutablePath(string packageId, 
-            string packageVersion)
+        public FilePath ObtainAndReturnExecutablePath(string packageId, 
+            string packageVersion,
+            FilePath nugetconfig)
         {
             string nugetexePath = UnpackNugetexe();
 
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = nugetexePath,
-                Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory \"{_toolsPath}\"",
+                Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory {_toolsPath.ToEscapedString()}",
                 UseShellExecute = false
             };
 
@@ -40,8 +42,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             {
                 throw new Exception("Nuget install failed" + "stdout: "+ stdOut + "stderr: "+stdErr);
             }
-
-            return Path.Combine(_toolsPath, $"{packageId}.{packageVersion}", "lib", "netcoreapp2.0", "consoleappababab.dll"); // TODO how to get the dll name?? Metadata
+            return _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib", "netcoreapp2.0").CreateFilePath("consoleappababab.dll");
         }
 
         private static string UnpackNugetexe()
