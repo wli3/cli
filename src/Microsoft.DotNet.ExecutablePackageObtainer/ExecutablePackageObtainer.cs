@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 
@@ -16,92 +17,59 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
     public class ExecutablePackageObtainer
     {
+        private readonly ICommandFactory _commandFactory;
         private readonly DirectoryPath _toolsPath;
 
-        public ExecutablePackageObtainer(DirectoryPath toolsPath)
+        public ExecutablePackageObtainer(ICommandFactory commandFactory, DirectoryPath toolsPath)
         {
+            _commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
         public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(string packageId, 
             string packageVersion,
-            FilePath nugetconfig)
+            FilePath nugetconfig, 
+            string targetframework)
         {
-            string nugetexePath = UnpackNugetexe();
 
-            var processStartInfo = new ProcessStartInfo
-            {
-                FileName = nugetexePath,
-                Arguments = $"install {packageId} -version {packageVersion} -OutputDirectory {_toolsPath.ToEscapedString()}",
-                UseShellExecute = false
-            };
-
-            var exitcode = ExecuteAndCaptureOutput(processStartInfo, out var stdOut, out var stdErr);
-
-            if (exitcode != 0)
-            {
-                throw new Exception("Nuget install failed" + "stdout: "+ stdOut + "stderr: "+stdErr);
-            }
+            run(targetframework);
             return new ToolConfigurationAndExecutableDirectory(
                 toolConfiguration: new ToolConfiguration("a", "b"),
                 executableDirectory: _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib", "netcoreapp2.0"));
         }
 
-        private static string UnpackNugetexe()
+        private void run(string targetframework, FilePath nugetconfig)
         {
-            var thisAssembly = typeof(ExecutablePackageObtainer).GetTypeInfo().Assembly;
 
-            string nugetexePath = Path.Combine(Path.GetTempPath(), "nuget.exe");
+            EnsureToolboxDirExists();
 
-            using (Stream input = thisAssembly.GetManifestResourceStream("Microsoft.DotNet.ExecutablePackageObtainer.nuget.exe"))
-            using (Stream output = File.Create(nugetexePath))
+            // Create temp project to restore the tool
+            var restoreTargetFramework = targetframework;
+            var tempProjectDirectory = Path.GetTempPath();
+            var tempProjectPath = tempProjectDirectory + Path.GetTempFileName() + ".csproj";
+            Debug.WriteLine("Temp path: " + tempProjectPath);
+            File.WriteAllText(tempProjectPath , 
+                string.Format(DefaultProject, 
+                    restoreTargetFramework));
+
+            var comamnd = _commandFactory.Create("restore", new []{"--runtime", RuntimeEnvironment.GetRuntimeIdentifier()}, configuration: "release");
+            comamnd.WorkingDirectory(tempProjectPath);
+
+        }
+        
+        private void EnsureToolboxDirExists()
+        {
+            if (!Directory.Exists(_toolsPath.Value))
             {
-                CopyStream(input, output);
+                Directory.CreateDirectory(_toolsPath.Value);
             }
-
-            return nugetexePath;
         }
+        
+        public string DefaultProject = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>{0}</TargetFramework>
+  </PropertyGroup>
+</Project>";
 
-        private static void CopyStream(Stream input, Stream output)
-        {
-            byte[] buffer = new byte[8192];
-
-            int bytesRead;
-            while ((bytesRead = input.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                output.Write(buffer, 0, bytesRead);
-            }
-        }
-
-        private static int ExecuteAndCaptureOutput(ProcessStartInfo startInfo, out string stdOut, out string stdErr)
-        {
-            var outStream = new StreamForwarder().Capture();
-            var errStream = new StreamForwarder().Capture();
-
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
-
-            var process = new Process
-            {
-                StartInfo = startInfo
-            };
-
-            process.EnableRaisingEvents = true;
-
-            process.Start();
-
-            var taskOut = outStream.BeginRead(process.StandardOutput);
-            var taskErr = errStream.BeginRead(process.StandardError);
-
-            process.WaitForExit();
-
-            taskOut.Wait();
-            taskErr.Wait();
-
-            stdOut = outStream.CapturedOutput;
-            stdErr = errStream.CapturedOutput;
-
-            return process.ExitCode;
-        }
     }
 }

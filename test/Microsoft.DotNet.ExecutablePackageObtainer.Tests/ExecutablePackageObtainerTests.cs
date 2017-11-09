@@ -6,25 +6,31 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
 using NuGet.Protocol.Core.Types;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
     public class ExecutablePackageObtainerTests // TODO the PackageObtainer should be called Executalbe Package Obtainer
     {
         [Fact]
-        public void GivenSourceNameAndPasswordAndPackageNameAndVersionWhenCallItCanDownloadThePacakge()
+        public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var randomFileName = Path.GetRandomFileName();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName); // TODO Nocheck in make it mock file system or windows only 
+
+            var commandFactory = new CommandFactory();
+                
             var packageObtainer = new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
-            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath);
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath, "netcoreapp2.0");
+
             File.Exists(
                 Path.Combine(
                     toolConfigurationAndExecutableDirectory.ExecutableDirectory.Value))
@@ -42,6 +48,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 configname: nugetConfigName, 
                 localFeedPath: Path.Combine(execuateDir, "TestAssetLocalNugetFeed"));
             return new FilePath(nugetConfigName);
+        }
+
+        [Fact(Skip = "Pending")]
+        public void GivenNugetConfigAndPackageNameAndVersionWithoutTargetFrameworkWhenCallItCanDownloadThePacakge()
+        {
         }
     }
 }
