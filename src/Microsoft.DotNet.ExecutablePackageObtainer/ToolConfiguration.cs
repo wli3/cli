@@ -9,25 +9,38 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     {
         public ToolConfiguration(
             string commandName,
-            string toolAssemblyEntryPoint,
-            EntryPointType entryPointType)
+            string toolAssemblyEntryPoint)
         {
-            CommandName = 
-                commandName ?? throw new ArgumentNullException(nameof(commandName));
-            ToolAssemblyEntryPoint =
-                toolAssemblyEntryPoint ?? throw new ArgumentNullException(nameof(toolAssemblyEntryPoint));
-            EntryPointType = entryPointType;
+
+            if (string.IsNullOrWhiteSpace(commandName))
+            {
+                throw new ArgumentNullException(paramName: nameof(commandName), message: "Cannot be null or whitespace");
+            }
+
+            // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+            char[] invalideChar = new char[] { '/', '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+            if (commandName.IndexOfAny(invalideChar) != -1)
+            {
+                throw new ArgumentException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot contain following character " + new string(invalideChar));
+            }
+
+            if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
+            {
+                throw new ArgumentNullException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot be null or whitespace");
+            }
+
+            CommandName = commandName;
+            ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
         }
 
         public string CommandName { get; }
         public string ToolAssemblyEntryPoint { get; }
-        public EntryPointType EntryPointType { get; }
     }
 
-    public enum EntryPointType
+    public class ToolConfigurationException : ArgumentException
     {
-        DotnetNetCoreAssembly,
-        NativeBinary,
-        Script,
+        public ToolConfigurationException(string message) : base(message)
+        {
+        }
     }
 }

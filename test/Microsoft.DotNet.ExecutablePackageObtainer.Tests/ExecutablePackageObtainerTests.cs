@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
     public class ExecutablePackageObtainerTests // TODO the PackageObtainer should be called Executalbe Package Obtainer
     {
-        [Fact]
+        [Fact(Skip ="FEEd")]
         public void GivenSourceNameAndPasswordAndPackageNameAndVersionWhenCallItCanDownloadThePacakge()
         {
             var randomFileName = Path.GetRandomFileName();

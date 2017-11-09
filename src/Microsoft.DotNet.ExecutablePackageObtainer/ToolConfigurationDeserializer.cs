@@ -26,29 +26,29 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             using (var fs = new FileStream(pathToXml, FileMode.Open))
             {
                 var reader = XmlReader.Create(fs);
-                dotnetToolMetadata = (DotnetToolMetadata)serializer.Deserialize(reader);
+
+                try
+                {
+                    dotnetToolMetadata = (DotnetToolMetadata)serializer.Deserialize(reader);
+                }
+                catch (InvalidOperationException e) when (e.InnerException is XmlException)
+                {
+                    throw new ToolConfigurationException("Failed to retrive tool configuration exception, configuration is malformed xml. " + e.InnerException.Message);
+                }
             }
 
             var commandName = dotnetToolMetadata.CommandName;
             var toolAssemblyEntryPoint = dotnetToolMetadata.ToolAssemblyEntryPoint;
 
-            EntryPointType entryPointType;
-            switch (dotnetToolMetadata.EntryPointType)
+            try
             {
-                case DotnetToolMetadataEntryPointType.DotnetNetCoreAssembly:
-                    entryPointType = EntryPointType.DotnetNetCoreAssembly;
-                    break;
-                case DotnetToolMetadataEntryPointType.NativeBinary:
-                    entryPointType = EntryPointType.NativeBinary;
-                    break;
-                case DotnetToolMetadataEntryPointType.Script:
-                    entryPointType = EntryPointType.Script;
-                    break;
-                default:
-                    throw new Exception("TODO no checkin xml dersializtion failed, handle it outside!");
+                return new ToolConfiguration(commandName, toolAssemblyEntryPoint);
             }
-
-            return new ToolConfiguration(commandName, toolAssemblyEntryPoint, entryPointType);
+            catch (ArgumentException e)
+            {
+                throw new ToolConfigurationException("Configuration content error. " + e.Message);
+            }
+            
         }
     }
 }
