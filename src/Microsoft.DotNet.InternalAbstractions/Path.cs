@@ -49,14 +49,14 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             Value = value;
         }
         
-        public string ToEscaped()
+        public string ToEscapedString()
         {
             return $"\"{Value}\"";
         }
 
         public override string ToString()
         {
-            return ToEscaped();
+            return ToEscapedString();
         }
     }
 }

@@ -26,50 +26,69 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
-        public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(string packageId, 
+        public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(
+            string packageId, 
             string packageVersion,
             FilePath nugetconfig, 
             string targetframework)
         {
 
-            run(targetframework);
+            EnsureDirExists(_toolsPath);
+            var individualTool = _toolsPath.WithCombineFollowing(packageId);
+            EnsureDirExists(individualTool);
+            var individualToolVersion = _toolsPath.WithCombineFollowing(packageId);
+            EnsureDirExists(individualToolVersion);
+            
+            InvokeRestore(targetframework, nugetconfig, packageId, individualToolVersion);
             return new ToolConfigurationAndExecutableDirectory(
                 toolConfiguration: new ToolConfiguration("a", "b"),
                 executableDirectory: _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib", "netcoreapp2.0"));
         }
 
-        private void run(string targetframework, FilePath nugetconfig)
+        private void InvokeRestore(string targetframework, FilePath nugetconfig, string packageId, DirectoryPath restoreDirectory)
         {
-
-            EnsureToolboxDirExists();
 
             // Create temp project to restore the tool
             var restoreTargetFramework = targetframework;
-            var tempProjectDirectory = Path.GetTempPath();
-            var tempProjectPath = tempProjectDirectory + Path.GetTempFileName() + ".csproj";
-            Debug.WriteLine("Temp path: " + tempProjectPath);
-            File.WriteAllText(tempProjectPath , 
-                string.Format(DefaultProject, 
-                    restoreTargetFramework));
+            var tempProjectDirectory = new DirectoryPath(Path.GetTempPath());
+            var tempProjectPath = tempProjectDirectory.CreateFilePath(Path.GetTempFileName() + ".csproj") ;
+                        
+            Debug.WriteLine("Temp path: " + tempProjectPath.ToEscapedString());
+            File.WriteAllText(tempProjectPath.Value , 
+                string.Format(ProjectTemplate, 
+                    restoreTargetFramework, restoreDirectory.ToEscapedString()));
 
-            var comamnd = _commandFactory.Create("restore", new []{"--runtime", RuntimeEnvironment.GetRuntimeIdentifier()}, configuration: "release");
-            comamnd.WorkingDirectory(tempProjectPath);
-
+            var addPackageComamnd = _commandFactory.Create(
+                "add", 
+                new []{
+                    tempProjectPath.ToEscapedString(), 
+                    "package", packageId}, 
+                configuration: "release");
+            addPackageComamnd.WorkingDirectory(tempProjectPath.Value);
+            addPackageComamnd.Execute();
+            
+            var comamnd = _commandFactory.Create(
+                "restore", 
+                new []{"--runtime", RuntimeEnvironment.GetRuntimeIdentifier(), 
+                    "--configfile", nugetconfig.ToEscapedString()}, 
+                configuration: "release");
+            comamnd.WorkingDirectory(tempProjectPath.Value);
+            comamnd.Execute();
         }
-        
-        private void EnsureToolboxDirExists()
+
+        private static void EnsureDirExists(DirectoryPath path)
         {
-            if (!Directory.Exists(_toolsPath.Value))
+            if (!Directory.Exists(path.Value))
             {
-                Directory.CreateDirectory(_toolsPath.Value);
+                Directory.CreateDirectory(path.Value);
             }
         }
-        
-        public string DefaultProject = @"<Project Sdk=""Microsoft.NET.Sdk"">
+
+        private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{0}</TargetFramework>
+    <RestorePackagesPath>{1}</RestorePackagesPath>
   </PropertyGroup>
 </Project>";
-
     }
 }
