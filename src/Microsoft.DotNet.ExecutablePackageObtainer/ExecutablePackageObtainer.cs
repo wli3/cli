@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
-        public FilePath ObtainAndReturnExecutablePath(string packageId, 
+        public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(string packageId, 
             string packageVersion,
             FilePath nugetconfig)
         {
@@ -42,7 +42,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             {
                 throw new Exception("Nuget install failed" + "stdout: "+ stdOut + "stderr: "+stdErr);
             }
-            return _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib", "netcoreapp2.0").CreateFilePath("consoleappababab.dll");
+            return new ToolConfigurationAndExecutableDirectory(
+                toolConfiguration: new ToolConfiguration("a", "b"),
+                executableDirectory: _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib", "netcoreapp2.0"));
         }
 
         private static string UnpackNugetexe()

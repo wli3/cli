@@ -24,8 +24,12 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var randomFileName = Path.GetRandomFileName();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName); // TODO Nocheck in make it mock file system or windows only 
             var packageObtainer = new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
-            var executablePath = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath);
-            File.Exists(Path.Combine(executablePath.Value)).Should().BeTrue(executablePath + " should have the executable");
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath);
+            File.Exists(
+                Path.Combine(
+                    toolConfigurationAndExecutableDirectory.ExecutableDirectory.Value))
+                .Should()
+                .BeTrue(toolConfigurationAndExecutableDirectory + " should have the executable");
         }
 
         private static FilePath WriteNugetConfigFileToPointToTheFeed()
