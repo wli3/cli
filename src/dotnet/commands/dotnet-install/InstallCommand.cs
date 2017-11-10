@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Cli
 
             FilePath configFile = null;
             var configFilePath = parseResult.ValueOrDefault<string>("configfile");
+
             if (string.IsNullOrWhiteSpace(configFilePath))
             {
                 configFile = new FilePath(parseResult.ValueOrDefault<string>("configfile"));
@@ -32,6 +33,13 @@ namespace Microsoft.DotNet.Cli
             if (packageVersion == null)
             {
                 throw new NotImplementedException("Auto look up work in progress");
+            }
+
+            var framework = parseResult.ValueOrDefault<string>("framework");
+
+            if (string.IsNullOrWhiteSpace(framework))
+            {
+                throw new NotImplementedException("Auto look up framework in progress");
             }
 
             var executablePackagePath = new DirectoryPath(new CliFolderPathCalculator().ExecutablePackagesPath);
@@ -43,7 +51,7 @@ namespace Microsoft.DotNet.Cli
                 packageId: packageId,
                 packageVersion: packageVersion,
                 nugetconfig: configFile,
-                targetframework: "netcoreapp2.0");
+                targetframework: framework);
 
 
             var executable = toolConfigurationAndExecutableDirectory
