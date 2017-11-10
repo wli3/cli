@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -26,9 +27,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var randomFileName = Path.GetRandomFileName();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName); // TODO Nocheck in make it mock file system or windows only 
 
-            var commandFactory = new CommandFactory();
+            var commandFactory = new DotNetCommandFactory();
                 
-            var packageObtainer = new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
+            var packageObtainer = new ExecutablePackageObtainer(commandFactory, new DirectoryPath(toolsPath));
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath, "netcoreapp2.0");
 
             File.Exists(

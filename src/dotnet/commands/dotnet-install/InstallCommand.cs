@@ -27,13 +27,13 @@ namespace Microsoft.DotNet.Cli
             }
 
             var executablePackagesPath = new CliFolderPathCalculator().ExecutablePackagesPath;
-            var executablePackageObtainer =
-                new ExecutablePackageObtainer.ExecutablePackageObtainer(
-                    executablePackagesPath);
-            var executablePath = executablePackageObtainer.ObtainAndReturnExecutablePath(packageId, packageVersion);
-
-            var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagesPath);
-            shellShimMaker.CreateShim(executablePath, packageId);
+//            var executablePackageObtainer =
+//                new ExecutablePackageObtainer.ExecutablePackageObtainer(
+//                    executablePackagesPath);
+//            var executablePath = executablePackageObtainer.ObtainAndReturnExecutablePath(packageId, packageVersion);
+//
+//            var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagesPath);
+//            shellShimMaker.CreateShim(executablePath, packageId);
 
             return 0;
         }
