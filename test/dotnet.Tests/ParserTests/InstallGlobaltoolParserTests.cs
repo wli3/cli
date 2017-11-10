@@ -38,5 +38,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
             packageVersion.Should().Be("1.0.1");
         }
 
+        [Fact]
+        public void InstallGlobaltoolParserCanGetFollowingArguments()
+        {
+            var command = Parser.Instance;
+            var result = command.Parse(@"dotnet install globaltool console.wul.test.app.1 --version 1.0.1 --framework netcoreapp2.0 --configfile C:\TestAssetLocalNugetFeed");
+
+
+            var parseResult = result["dotnet"]["install"]["globaltool"];
+
+            var packageId = parseResult.Arguments.Single();
+            var packageVersion = parseResult.ValueOrDefault<string>("version");
+
+            var configFilePath = parseResult.ValueOrDefault<string>("configfile").Should().Be(@"C:\TestAssetLocalNugetFeed");
+
+            var framework = parseResult.ValueOrDefault<string>("framework").Should().Be("netcoreapp2.0");
+
+        }
+
     }
 }

@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Cli
                     "--configfile",
                     "TODO loc no check in Nuget config file",
                     Accept.ExactlyOneArgument()),
-                CommonOptions.HelpOption(),
                 Create.Option(
                     "-f|--framework",
                     "TODO loc no check in TFM of tools",
