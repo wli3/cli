@@ -40,14 +40,14 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var individualToolVersion = _toolsPath.WithCombineFollowing(packageVersion);
             EnsureDirExists(individualToolVersion);
 
-            InvokeRestore(targetframework, nugetconfig, packageId, individualToolVersion);
+            InvokeRestore(targetframework, nugetconfig, packageId,packageVersion, individualToolVersion);
             return new ToolConfigurationAndExecutableDirectory(
                 toolConfiguration: new ToolConfiguration("a", "b"),
                 executableDirectory: _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib",
                     "netcoreapp2.0"));
         }
 
-        private void InvokeRestore(string targetframework, FilePath nugetconfig, string packageId,
+        private void InvokeRestore(string targetframework, FilePath nugetconfig, string packageId, string packageVersion,
             DirectoryPath restoreDirectory)
         {
             // Create temp project to restore the tool
@@ -59,40 +59,23 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             Debug.WriteLine("Temp path: " + tempProjectPath.ToEscapedString());
             File.WriteAllText(tempProjectPath.Value,
                 string.Format(ProjectTemplate,
-                    restoreTargetFramework, restoreDirectory.ToEscapedString()));
-
-            File.Copy(nugetconfig.Value, Path.Combine(tempProjectDirectory.Value, "NuGet.config"), true);
-            
-            var addPackageComamnd = _commandFactory.Create(
-                "add",
-                new[]
-                {
-                    
-                    tempProjectPath.ToEscapedString(),
-                    "package", packageId
-                });
-            
-            
-            addPackageComamnd
-                .CaptureStdOut()
-                .CaptureStdErr()
-                .WorkingDirectory(tempProjectDirectory.Value);
-            
-            var result = addPackageComamnd.Execute();
-            if (result.ExitCode != 0)
-            {
-                throw new Exception(result.StdErr + result.StdOut);
-            }
+                    restoreTargetFramework, restoreDirectory.ToEscapedString(), packageId, packageVersion));
 
             var comamnd = _commandFactory.Create(
                 "restore",
                 new[]
                 {
                      "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
-                    "--configfile", nugetconfig.ToEscapedString()
-                });
-            comamnd.WorkingDirectory(tempProjectDirectory.Value);
-            comamnd.Execute();
+                     "--configfile", nugetconfig.ToEscapedString()
+                })
+                .CaptureStdOut()
+                .CaptureStdErr()
+                .WorkingDirectory(tempProjectDirectory.Value);
+            var result  = comamnd.Execute();
+            if (result.ExitCode != 0)
+            {
+                throw new Exception(result.StdErr + result.StdOut);
+            }
         }
 
         private static void EnsureDirExists(DirectoryPath path)

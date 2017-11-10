@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var commandFactory = new DotNetCommandFactory();
                 
             var packageObtainer = new ExecutablePackageObtainer(commandFactory, new DirectoryPath(toolsPath));
-            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.1", "1.0.1", nugetConfigPath, "netcoreapp2.0");
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.one", "1.0.5", nugetConfigPath, "netcoreapp2.0");
 
             File.Exists(
                 Path.Combine(
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 directory: execuateDir , 
                 configname: nugetConfigName, 
                 localFeedPath: Path.Combine(execuateDir, "TestAssetLocalNugetFeed"));
-            return new FilePath(nugetConfigName);
+            return new FilePath(Path.GetFullPath(nugetConfigName));
         }
 
         [Fact(Skip = "Pending")]
