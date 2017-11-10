@@ -30,8 +30,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var packageObtainer = new ExecutablePackageObtainer(new DotNetCommandFactory(), new DirectoryPath(toolsPath));
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.one", "1.0.5", nugetConfigPath, "netcoreapp2.0");
 
-            var executable = toolConfigurationAndExecutableDirectory.ExecutableDirectory.CreateFilePath(toolConfigurationAndExecutableDirectory.Configuration.ToolAssemblyEntryPoint).Value;
-            File.Exists(executable)
+            var executable = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .CreateFilePath(toolConfigurationAndExecutableDirectory.Configuration.ToolAssemblyEntryPoint);
+
+            File.Exists(executable.Value)
                 .Should()
                 .BeTrue(executable + " should have the executable");
         }

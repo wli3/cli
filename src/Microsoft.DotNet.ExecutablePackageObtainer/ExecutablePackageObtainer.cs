@@ -41,8 +41,14 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             EnsureDirExists(individualToolVersion);
 
             InvokeRestore(targetframework, nugetconfig, packageId,packageVersion, individualToolVersion);
+
+            var toolConfigurationPath = individualToolVersion.WithCombineFollowing(packageId, packageVersion, "tools")
+                .CreateFilePath("DotnetToolsConfig.xml");
+
+            var toolConfiguration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+                
             return new ToolConfigurationAndExecutableDirectory(
-                toolConfiguration: new ToolConfiguration("a", "consoleappababab.dll"), //TODO hard code no checkin
+                toolConfiguration: toolConfiguration,
                 executableDirectory: individualToolVersion.WithCombineFollowing(
                     packageId,
                     packageVersion,
