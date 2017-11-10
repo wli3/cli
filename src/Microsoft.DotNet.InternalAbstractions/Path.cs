@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             return new DirectoryPath(Path.Combine(insertValueInFront));
         }
 
-        public FilePath CreateFilePath(string fileName)
+        public FilePath CreateFilePathWithCombineFollowing(string fileName)
         {
             return new FilePath(Path.Combine(Value, fileName));
         }
@@ -57,6 +57,11 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
         public override string ToString()
         {
             return ToEscapedString();
+        }
+
+        public DirectoryPath GetDirectoryPath()
+        {
+            return new DirectoryPath(Path.GetDirectoryName(Value));
         }
     }
 }

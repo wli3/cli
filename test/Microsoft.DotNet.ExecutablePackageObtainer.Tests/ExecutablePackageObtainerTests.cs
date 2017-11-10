@@ -18,21 +18,27 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
-    public class ExecutablePackageObtainerTests // TODO the PackageObtainer should be called Executalbe Package Obtainer
+    public class ExecutablePackageObtainerTests
     {
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var randomFileName = Path.GetRandomFileName();
-            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName); // TODO Nocheck in make it mock file system or windows only 
-                
-            var packageObtainer = new ExecutablePackageObtainer(new DotNetCommandFactory(), new DirectoryPath(toolsPath));
-            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.one", "1.0.5", nugetConfigPath, "netcoreapp2.0");
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName);
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(new DotNetCommandFactory(), new DirectoryPath(toolsPath));
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
+                packageId: "console.wul.test.app.one",
+                packageVersion: "1.0.5",
+                nugetconfig: nugetConfigPath,
+                targetframework: "netcoreapp2.0");
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
-                .CreateFilePath(toolConfigurationAndExecutableDirectory.Configuration.ToolAssemblyEntryPoint);
+                .CreateFilePathWithCombineFollowing(toolConfigurationAndExecutableDirectory.Configuration
+                    .ToolAssemblyEntryPoint);
 
             File.Exists(executable.Value)
                 .Should()
@@ -45,8 +51,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var execuateDir =
                 Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             NuGetConfig.Write(
-                directory: execuateDir , 
-                configname: nugetConfigName, 
+                directory: execuateDir,
+                configname: nugetConfigName,
                 localFeedPath: Path.Combine(execuateDir, "TestAssetLocalNugetFeed"));
             return new FilePath(Path.GetFullPath(nugetConfigName));
         }
