@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
             FilePath configFile = null;
             var configFilePath = parseResult.ValueOrDefault<string>("configfile");
 
-            if (string.IsNullOrWhiteSpace(configFilePath))
+            if (!string.IsNullOrWhiteSpace(configFilePath))
             {
                 configFile = new FilePath(parseResult.ValueOrDefault<string>("configfile"));
             }
