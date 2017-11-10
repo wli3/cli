@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -24,11 +23,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
-            var randomFileName = Path.GetRandomFileName();
-            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName);
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DotNetCommandFactory(), new DirectoryPath(toolsPath));
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -37,7 +35,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
-                .CreateFilePathWithCombineFollowing(toolConfigurationAndExecutableDirectory.Configuration
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                    .Configuration
                     .ToolAssemblyEntryPoint);
 
             File.Exists(executable.Value)
@@ -49,7 +49,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         {
             var nugetConfigName = Path.GetRandomFileName() + ".config";
             var execuateDir =
-                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                Path.GetDirectoryName(
+                    System.Reflection
+                        .Assembly
+                        .GetExecutingAssembly()
+                        .Location);
             NuGetConfig.Write(
                 directory: execuateDir,
                 configname: nugetConfigName,

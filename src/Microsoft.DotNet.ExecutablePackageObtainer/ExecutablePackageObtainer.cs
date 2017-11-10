@@ -17,12 +17,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
     public class ExecutablePackageObtainer
     {
-        private readonly ICommandFactory _commandFactory;
         private readonly DirectoryPath _toolsPath;
 
-        public ExecutablePackageObtainer(ICommandFactory commandFactory, DirectoryPath toolsPath)
+        public ExecutablePackageObtainer(DirectoryPath toolsPath)
         {
-            _commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
@@ -36,27 +34,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             if (packageVersion == null) throw new ArgumentNullException(nameof(packageVersion));
 
             var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersion);
-
+            
             var tempProjectPath = CreateTempProject(packageId, packageVersion, targetframework, individualToolVersion);
 
-            var fa = new CommandFactory();
-            var comamnd = fa.Create(
-                    "dotnet",
-                    new[]
-                    {
-                        "restore",
-                        "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
-                        "--configfile", nugetconfig.ToEscapedString()
-                    })
-                .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
-                .CaptureStdOut()
-                .CaptureStdErr();
-
-            var result = comamnd.Execute();
-            if (result.ExitCode != 0)
-            {
-                throw new Exception(result.StdErr + result.StdOut);
-            }
+            InvokeRestore(nugetconfig, tempProjectPath);
 
             var toolConfigurationPath = individualToolVersion
                 .WithCombineFollowing(packageId, packageVersion, "tools")
@@ -71,6 +52,32 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     packageVersion,
                     "tools",
                     targetframework));
+        }
+
+        private static void InvokeRestore(FilePath nugetconfig, FilePath tempProjectPath)
+        {
+            var comamnd = new CommandFactory()
+                .Create(
+                    "dotnet",
+                    new[]
+                    {
+                        "restore",
+                        "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
+                        "--configfile", nugetconfig.ToEscapedString()
+                    })
+                .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
+                .CaptureStdOut()
+                .CaptureStdErr();
+
+            var result = comamnd.Execute();
+            if (result.ExitCode != 0)
+            {
+                throw new PackageObtainException("Failed to restore package. " +
+                                                 "WorkingDirectory: " +
+                                                 result.StartInfo.WorkingDirectory + "Arguments: " +
+                                                 result.StartInfo.Arguments + "Output: " +
+                                                 result.StdErr + result.StdOut);
+            }
         }
 
         private static FilePath CreateTempProject(string packageId, string packageVersion, string targetframework,
