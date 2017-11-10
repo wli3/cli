@@ -37,13 +37,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             
             var tempProjectPath = CreateTempProject(packageId, packageVersion, targetframework, individualToolVersion);
 
-            InvokeRestore(nugetconfig, tempProjectPath);
+            InvokeRestore(nugetconfig, tempProjectPath, individualToolVersion);
 
-            var toolConfigurationPath = individualToolVersion
-                .WithCombineFollowing(packageId, packageVersion, "tools")
-                .CreateFilePathWithCombineFollowing("DotnetToolsConfig.xml");
-
-            var toolConfiguration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            var toolConfiguration = GetConfiguration(packageId, packageVersion, individualToolVersion);
 
             return new ToolConfigurationAndExecutableDirectory(
                 toolConfiguration: toolConfiguration,
@@ -54,7 +50,18 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     targetframework));
         }
 
-        private static void InvokeRestore(FilePath nugetconfig, FilePath tempProjectPath)
+        private static ToolConfiguration GetConfiguration(string packageId, string packageVersion,
+            DirectoryPath individualToolVersion)
+        {
+            var toolConfigurationPath = individualToolVersion
+                .WithCombineFollowing(packageId, packageVersion, "tools")
+                .CreateFilePathWithCombineFollowing("DotnetToolsConfig.xml");
+
+            var toolConfiguration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            return toolConfiguration;
+        }
+
+        private void InvokeRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion)
         {
             var comamnd = new CommandFactory()
                 .Create(
@@ -63,7 +70,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     {
                         "restore",
                         "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
-                        "--configfile", nugetconfig.ToEscapedString()
+                        "--configfile", nugetconfig.ToEscapedString(),
+                        $"/p:BaseIntermediateOutputPath={individualToolVersion.ToEscapedString()}", 
                     })
                 .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
                 .CaptureStdOut()
@@ -80,7 +88,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
         }
 
-        private static FilePath CreateTempProject(string packageId, string packageVersion, string targetframework,
+        private FilePath CreateTempProject(string packageId, string packageVersion, string targetframework,
             DirectoryPath individualToolVersion)
         {
             var tempProjectDirectory =
@@ -89,8 +97,12 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var tempProjectPath =
                 tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
             File.WriteAllText(tempProjectPath.Value,
-                string.Format(TemporaryProjectTemplate,
-                    targetframework, individualToolVersion.Value, packageId, packageVersion));
+                string.Format(
+                    TemporaryProjectTemplate,
+                    targetframework,
+                    individualToolVersion.Value,
+                    packageId,
+                    packageVersion));
             return tempProjectPath;
         }
 

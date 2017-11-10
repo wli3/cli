@@ -38,6 +38,11 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
         {
             return ToEscapedString();
         }
+
+        public DirectoryPath GetParentPath()
+        {
+            return new DirectoryPath(Directory.GetParent(Path.GetFullPath(Value)).FullName);
+        }
     }
 
     public class FilePath

@@ -45,6 +45,33 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .BeTrue(executable + " should have the executable");
         }
 
+        [Fact]
+        public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCreateAssetFile()
+        {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
+                packageId: "console.wul.test.app.one",
+                packageVersion: "1.0.5",
+                nugetconfig: nugetConfigPath,
+                targetframework: "netcoreapp2.0");
+
+            var assetJsonPath = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .GetParentPath()
+                .GetParentPath()
+                .GetParentPath()
+                .GetParentPath()
+                .CreateFilePathWithCombineFollowing("project.assets.json").Value;   
+                
+            File.Exists(assetJsonPath)
+                .Should()
+                .BeTrue(assetJsonPath + " should be created");
+        }
+
         private static FilePath WriteNugetConfigFileToPointToTheFeed()
         {
             var nugetConfigName = Path.GetRandomFileName() + ".config";
