@@ -37,13 +37,16 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             EnsureDirExists(_toolsPath);
             var individualTool = _toolsPath.WithCombineFollowing(packageId);
             EnsureDirExists(individualTool);
-            var individualToolVersion = _toolsPath.WithCombineFollowing(packageVersion);
+            var individualToolVersion = individualTool.WithCombineFollowing(packageVersion);
             EnsureDirExists(individualToolVersion);
 
             InvokeRestore(targetframework, nugetconfig, packageId,packageVersion, individualToolVersion);
             return new ToolConfigurationAndExecutableDirectory(
                 toolConfiguration: new ToolConfiguration("a", "consoleappababab.dll"), //TODO hard code no checkin
-                executableDirectory: individualToolVersion.WithCombineFollowing($"{packageId}.{packageVersion}", "tools",
+                executableDirectory: individualToolVersion.WithCombineFollowing(
+                    packageId,
+                    packageVersion,
+                    "tools",
                     targetframework));
         }
 
@@ -61,10 +64,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 string.Format(ProjectTemplate,
                     restoreTargetFramework, restoreDirectory.Value, packageId, packageVersion));
 
-            var comamnd = _commandFactory.Create(
-                "restore",
+            var fa = new CommandFactory();
+            var comamnd = fa.Create(
+                "dotnet",
                 new[]
-                {
+                {"restore",
                      "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
                      "--configfile", nugetconfig.ToEscapedString()
                 })
