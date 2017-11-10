@@ -42,9 +42,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 
             InvokeRestore(targetframework, nugetconfig, packageId,packageVersion, individualToolVersion);
             return new ToolConfigurationAndExecutableDirectory(
-                toolConfiguration: new ToolConfiguration("a", "b"),
-                executableDirectory: _toolsPath.WithCombineFollowing($"{packageId}.{packageVersion}", "lib",
-                    "netcoreapp2.0"));
+                toolConfiguration: new ToolConfiguration("a", "consoleappababab.dll"), //TODO hard code no checkin
+                executableDirectory: individualToolVersion.WithCombineFollowing($"{packageId}.{packageVersion}", "tools",
+                    targetframework));
         }
 
         private void InvokeRestore(string targetframework, FilePath nugetconfig, string packageId, string packageVersion,
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             Debug.WriteLine("Temp path: " + tempProjectPath.ToEscapedString());
             File.WriteAllText(tempProjectPath.Value,
                 string.Format(ProjectTemplate,
-                    restoreTargetFramework, restoreDirectory.ToEscapedString(), packageId, packageVersion));
+                    restoreTargetFramework, restoreDirectory.Value, packageId, packageVersion));
 
             var comamnd = _commandFactory.Create(
                 "restore",
@@ -68,9 +68,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                      "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
                      "--configfile", nugetconfig.ToEscapedString()
                 })
-                .CaptureStdOut()
-                .CaptureStdErr()
-                .WorkingDirectory(tempProjectDirectory.Value);
+                    .WorkingDirectory(tempProjectDirectory.Value)
+                    .CaptureStdOut()
+                    .CaptureStdErr();
+            
             var result  = comamnd.Execute();
             if (result.ExitCode != 0)
             {

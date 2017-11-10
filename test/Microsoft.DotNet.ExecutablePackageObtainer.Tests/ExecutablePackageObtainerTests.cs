@@ -26,10 +26,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var randomFileName = Path.GetRandomFileName();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), randomFileName); // TODO Nocheck in make it mock file system or windows only 
-
-            var commandFactory = new DotNetCommandFactory();
                 
-            var packageObtainer = new ExecutablePackageObtainer(commandFactory, new DirectoryPath(toolsPath));
+            var packageObtainer = new ExecutablePackageObtainer(new DotNetCommandFactory(), new DirectoryPath(toolsPath));
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath("console.wul.test.app.one", "1.0.5", nugetConfigPath, "netcoreapp2.0");
 
             File.Exists(
