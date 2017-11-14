@@ -17,21 +17,25 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
     public class ExecutablePackageObtainer
     {
+        private readonly Func<FilePath> _getTempProjectPath;
         private readonly DirectoryPath _toolsPath;
 
-        public ExecutablePackageObtainer(DirectoryPath toolsPath)
+        public ExecutablePackageObtainer(DirectoryPath toolsPath, Func<FilePath> getTempProjectPath)
         {
+            _getTempProjectPath = getTempProjectPath;
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
         public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(
             string packageId,
             string packageVersion,
-            FilePath nugetconfig,
-            string targetframework)
+            FilePath nugetconfig = null,
+            string targetframework = null)
         {
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
             if (packageVersion == null) throw new ArgumentNullException(nameof(packageVersion));
+            if (nugetconfig == null) throw new ArgumentNullException(nameof(nugetconfig));
+            if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
 
             var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersion);
             
@@ -91,11 +95,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
         private FilePath CreateTempProject(string packageId, string packageVersion, string targetframework,
             DirectoryPath individualToolVersion)
         {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            EnsureDirectoryExists(tempProjectDirectory);
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
+            var tempProjectPath = _getTempProjectPath();
+            //  TODO  EnsureDirectoryExists(tempProjectDirectory);
             File.WriteAllText(tempProjectPath.Value,
                 string.Format(
                     TemporaryProjectTemplate,
@@ -103,6 +104,15 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     individualToolVersion.Value,
                     packageId,
                     packageVersion));
+            return tempProjectPath;
+        }
+
+        private static FilePath GetTempProjectPath()
+        {
+            var tempProjectDirectory =
+                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
+            var tempProjectPath =
+                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
             return tempProjectPath;
         }
 

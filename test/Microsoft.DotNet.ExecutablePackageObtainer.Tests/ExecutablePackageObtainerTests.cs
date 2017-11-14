@@ -19,6 +19,16 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
     public class ExecutablePackageObtainerTests
     {
+
+        private static Func<FilePath> getTempProjectPath = () =>
+        {
+            var tempProjectDirectory =
+                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
+            var tempProjectPath =
+                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
+            return tempProjectPath;
+        };
+        
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
@@ -26,7 +36,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), getTempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -37,8 +47,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .ExecutableDirectory
                 .CreateFilePathWithCombineFollowing(
                     toolConfigurationAndExecutableDirectory
-                    .Configuration
-                    .ToolAssemblyEntryPoint);
+                        .Configuration
+                        .ToolAssemblyEntryPoint);
 
             File.Exists(executable.Value)
                 .Should()
@@ -52,7 +62,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath));
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), getTempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -65,8 +75,34 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .GetParentPath()
                 .GetParentPath()
                 .GetParentPath()
-                .CreateFilePathWithCombineFollowing("project.assets.json").Value;   
-                
+                .CreateFilePathWithCombineFollowing("project.assets.json").Value;
+
+            File.Exists(assetJsonPath)
+                .Should()
+                .BeTrue(assetJsonPath + " should be created");
+        }
+
+        [Fact]
+        public void GivenPackageNameAndVersionAndTargetFrameworkWhenCallItCreateAssetFile()
+        {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), TODO);
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
+                packageId: "console.wul.test.app.one",
+                packageVersion: "1.0.5",
+                targetframework: "netcoreapp2.0");
+
+            var assetJsonPath = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .GetParentPath()
+                .GetParentPath()
+                .GetParentPath()
+                .GetParentPath()
+                .CreateFilePathWithCombineFollowing("project.assets.json").Value;
+
             File.Exists(assetJsonPath)
                 .Should()
                 .BeTrue(assetJsonPath + " should be created");
