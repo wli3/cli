@@ -25,16 +25,6 @@ namespace Microsoft.DotNet.Cli
             FilePath configFile = null;
             var configFilePath = parseResult.ValueOrDefault<string>("configfile");
 
-            if (!string.IsNullOrWhiteSpace(configFilePath))
-            {
-                configFile = new FilePath(parseResult.ValueOrDefault<string>("configfile"));
-            }
-
-            if (packageVersion == null)
-            {
-                throw new NotImplementedException("Auto look up work in progress");
-            }
-
             var framework = parseResult.ValueOrDefault<string>("framework");
 
             if (string.IsNullOrWhiteSpace(framework))
@@ -50,11 +40,12 @@ namespace Microsoft.DotNet.Cli
                         .WithCombineFollowing(Path.GetRandomFileName())
                         .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"));
 
-            var toolConfigurationAndExecutableDirectory = executablePackageObtainer.ObtainAndReturnExecutablePath(
-                packageId: packageId,
-                packageVersion: packageVersion,
-                nugetconfig: configFile,
-                targetframework: framework);
+            var toolConfigurationAndExecutableDirectory =
+                executablePackageObtainer.ObtainAndReturnExecutablePath(
+                    packageId: packageId,
+                    packageVersion: packageVersion,
+                    nugetconfig: configFile,
+                    targetframework: framework);
 
 
             var executable = toolConfigurationAndExecutableDirectory

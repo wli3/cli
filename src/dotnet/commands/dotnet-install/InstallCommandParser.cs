@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
             Create.Command(
                 "install", "",
                 Accept.NoArguments(), CommonOptions.HelpOption(), InstallGlobaltool());
-        
+
         public static Command InstallGlobaltool() =>
             Create.Command("globaltool",
                 "Install globaltool",

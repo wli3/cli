@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ShellShimMaker
     {
         public void AddPackageExecutablePathToUserPath()
         {
-            
+
         }
     }
 }
