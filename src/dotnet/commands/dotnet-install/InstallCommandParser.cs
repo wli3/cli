@@ -21,7 +21,15 @@ namespace Microsoft.DotNet.Cli
                         description: "Package Id in Nuget"),
                 Create.Option(
                     "--version",
-                    "Package version of the package in Nuget",
+                    "TODO loc no check in Package version of the package in Nuget",
+                    Accept.ExactlyOneArgument()),
+                Create.Option(
+                    "--configfile",
+                    "TODO loc no check in Nuget config file",
+                    Accept.ExactlyOneArgument()),
+                Create.Option(
+                    "-f|--framework",
+                    "TODO loc no check in TFM of tools",
                     Accept.ExactlyOneArgument()),
                 CommonOptions.HelpOption());
     }

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -21,19 +22,48 @@ namespace Microsoft.DotNet.Cli
             var packageId = parseResult.Arguments.Single();
             var packageVersion = parseResult.ValueOrDefault<string>("version");
 
+            FilePath configFile = null;
+            var configFilePath = parseResult.ValueOrDefault<string>("configfile");
+
+            if (!string.IsNullOrWhiteSpace(configFilePath))
+            {
+                configFile = new FilePath(parseResult.ValueOrDefault<string>("configfile"));
+            }
+
             if (packageVersion == null)
             {
                 throw new NotImplementedException("Auto look up work in progress");
             }
 
-            var executablePackagesPath = new CliFolderPathCalculator().ExecutablePackagesPath;
-//            var executablePackageObtainer =
-//                new ExecutablePackageObtainer.ExecutablePackageObtainer(
-//                    executablePackagesPath);
-//            var executablePath = executablePackageObtainer.ObtainAndReturnExecutablePath(packageId, packageVersion);
-//
-//            var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagesPath);
-//            shellShimMaker.CreateShim(executablePath, packageId);
+            var framework = parseResult.ValueOrDefault<string>("framework");
+
+            if (string.IsNullOrWhiteSpace(framework))
+            {
+                throw new NotImplementedException("Auto look up framework in progress");
+            }
+
+            var executablePackagePath = new DirectoryPath(new CliFolderPathCalculator().ExecutablePackagesPath);
+            var executablePackageObtainer =
+                new ExecutablePackageObtainer.ExecutablePackageObtainer(
+                    executablePackagePath);
+
+            var toolConfigurationAndExecutableDirectory = executablePackageObtainer.ObtainAndReturnExecutablePath(
+                packageId: packageId,
+                packageVersion: packageVersion,
+                nugetconfig: configFile,
+                targetframework: framework);
+
+
+            var executable = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                    .Configuration
+                    .ToolAssemblyEntryPoint);
+
+
+            var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagePath.Value);
+            shellShimMaker.CreateShim(executable.Value, toolConfigurationAndExecutableDirectory.Configuration.CommandName);
 
             return 0;
         }

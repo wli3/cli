@@ -138,6 +138,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
   <PropertyGroup>
     <TargetFramework>{0}</TargetFramework>
     <RestorePackagesPath>{1}</RestorePackagesPath>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>
