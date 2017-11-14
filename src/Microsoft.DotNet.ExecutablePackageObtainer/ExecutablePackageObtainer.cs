@@ -96,6 +96,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             DirectoryPath individualToolVersion)
         {
             var tempProjectPath = _getTempProjectPath();
+            if (Path.GetExtension(tempProjectPath.Value) != "csproj")
+            {
+                tempProjectPath = new FilePath(Path.ChangeExtension(tempProjectPath.Value, "csproj"));
+            }
+
             EnsureDirectoryExists(tempProjectPath.GetDirectoryPath());
             File.WriteAllText(tempProjectPath.Value,
                 string.Format(
@@ -107,20 +112,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             return tempProjectPath;
         }
 
-        private static FilePath GetTempProjectPath()
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        }
-
         private DirectoryPath CreateIndividualToolVersionDirectory(string packageId, string packageVersion)
         {
-            EnsureDirectoryExists(_toolsPath);
             var individualTool = _toolsPath.WithCombineFollowing(packageId);
-            EnsureDirectoryExists(individualTool);
             var individualToolVersion = individualTool.WithCombineFollowing(packageVersion);
             EnsureDirectoryExists(individualToolVersion);
             return individualToolVersion;
