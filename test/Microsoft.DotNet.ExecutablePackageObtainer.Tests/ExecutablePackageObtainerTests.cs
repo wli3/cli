@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var tempProjectDirectory = uniqueTempProjectPath.GetDirectoryPath();
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
- 
+
             Directory.CreateDirectory(tempProjectDirectory.Value);
             File.Copy(nugetConfigPath.Value,
                 tempProjectDirectory.CreateFilePathWithCombineFollowing("nuget.config").Value);
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .Should()
                 .BeTrue(executable + " should have the executable");
         }
-        
+
         [Fact]
         public void GivenPackageNameAndNuGetConfigAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
@@ -131,16 +131,16 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         private static FilePath WriteNugetConfigFileToPointToTheFeed()
         {
             var nugetConfigName = Path.GetRandomFileName() + ".config";
-            var execuateDir =
+            var executeDirectory =
                 Path.GetDirectoryName(
                     System.Reflection
                         .Assembly
                         .GetExecutingAssembly()
                         .Location);
             NuGetConfig.Write(
-                directory: execuateDir,
+                directory: executeDirectory,
                 configname: nugetConfigName,
-                localFeedPath: Path.Combine(execuateDir, "TestAssetLocalNugetFeed"));
+                localFeedPath: Path.Combine(executeDirectory, "TestAssetLocalNugetFeed"));
             return new FilePath(Path.GetFullPath(nugetConfigName));
         }
 

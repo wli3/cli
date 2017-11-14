@@ -35,26 +35,29 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
             if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
 
-            PackageVersion packageVesionOrPlaceHolder = new PackageVersion(packageVersion);
-            
-            var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVesionOrPlaceHolder);
+            PackageVersion packageVersionOrPlaceHolder = new PackageVersion(packageVersion);
 
-            var tempProjectPath = CreateTempProject(packageId, packageVesionOrPlaceHolder, targetframework, individualToolVersion);
+            var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersionOrPlaceHolder);
 
-            if (packageVesionOrPlaceHolder.IsPlaceHolder)
+            var tempProjectPath = CreateTempProject(packageId, packageVersionOrPlaceHolder, targetframework, individualToolVersion);
+
+            if (packageVersionOrPlaceHolder.IsPlaceHolder)
             {
                 InvokeAddPackageRestore(nugetconfig, tempProjectPath, individualToolVersion, packageId);
             }
 
             InvokeRestore(nugetconfig, tempProjectPath, individualToolVersion);
 
-            if (packageVesionOrPlaceHolder.IsPlaceHolder)
+            if (packageVersionOrPlaceHolder.IsPlaceHolder)
             {
-                var concreteVersion = Directory.GetDirectories(individualToolVersion.WithCombineFollowing(packageId).Value).Single();
-                Directory.Move(individualToolVersion.Value, individualToolVersion.GetParentPath().WithCombineFollowing(concreteVersion).Value);
+                var concreteVersion = new DirectoryInfo(Directory.GetDirectories(individualToolVersion.WithCombineFollowing(packageId).Value).Single()).Name;
+                var concreteVersionIndividualToolVersion = individualToolVersion.GetParentPath().WithCombineFollowing(concreteVersion);
+                Directory.Move(individualToolVersion.Value, concreteVersionIndividualToolVersion.Value);
+
+                individualToolVersion = concreteVersionIndividualToolVersion;
                 packageVersion = concreteVersion;
             }
-            
+
             var toolConfiguration = GetConfiguration(packageId, packageVersion, individualToolVersion);
 
             return new ToolConfigurationAndExecutableDirectory(
