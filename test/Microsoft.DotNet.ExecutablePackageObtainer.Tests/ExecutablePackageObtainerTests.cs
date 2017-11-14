@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
     public class ExecutablePackageObtainerTests
     {
 
-        private static Func<FilePath> getTempProjectPath = () =>
+        private static readonly Func<FilePath> GetTempProjectPath = () =>
         {
             var tempProjectDirectory =
                 new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), getTempProjectPath);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetTempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), getTempProjectPath);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetTempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), TODO);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), WriteNugetConfigFileToPointToTheFeed);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",

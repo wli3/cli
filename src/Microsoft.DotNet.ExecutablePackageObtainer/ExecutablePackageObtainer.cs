@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             DirectoryPath individualToolVersion)
         {
             var tempProjectPath = _getTempProjectPath();
-            //  TODO  EnsureDirectoryExists(tempProjectDirectory);
+            EnsureDirectoryExists(tempProjectPath.GetDirectoryPath());
             File.WriteAllText(tempProjectPath.Value,
                 string.Format(
                     TemporaryProjectTemplate,
