@@ -34,11 +34,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
         {
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
             if (packageVersion == null) throw new ArgumentNullException(nameof(packageVersion));
-            if (nugetconfig == null) throw new ArgumentNullException(nameof(nugetconfig));
             if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
 
             var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersion);
-            
+
             var tempProjectPath = CreateTempProject(packageId, packageVersion, targetframework, individualToolVersion);
 
             InvokeRestore(nugetconfig, tempProjectPath, individualToolVersion);
@@ -67,16 +66,25 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 
         private void InvokeRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion)
         {
+            var argsToPassToRestore = new List<string>();
+            argsToPassToRestore.Add("restore");
+            if (nugetconfig != null)
+            {
+                argsToPassToRestore.Add("--configfile");
+                argsToPassToRestore.Add(nugetconfig.ToEscapedString());
+            }
+
+            argsToPassToRestore.AddRange(new List<string>
+            {
+                "--runtime",
+                RuntimeEnvironment.GetRuntimeIdentifier(),
+                $"/p:BaseIntermediateOutputPath={individualToolVersion.ToEscapedString()}"
+            });
+
             var comamnd = new CommandFactory()
                 .Create(
                     "dotnet",
-                    new[]
-                    {
-                        "restore",
-                        "--runtime", RuntimeEnvironment.GetRuntimeIdentifier(),
-                        "--configfile", nugetconfig.ToEscapedString(),
-                        $"/p:BaseIntermediateOutputPath={individualToolVersion.ToEscapedString()}", 
-                    })
+                    argsToPassToRestore)
                 .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
                 .CaptureStdOut()
                 .CaptureStdErr();

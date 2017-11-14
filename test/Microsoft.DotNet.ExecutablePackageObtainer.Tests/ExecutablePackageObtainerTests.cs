@@ -19,16 +19,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
     public class ExecutablePackageObtainerTests
     {
-
-        private static readonly Func<FilePath> GetTempProjectPath = () =>
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        };
-        
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
@@ -36,7 +26,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetTempProjectPath);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -62,7 +52,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetTempProjectPath);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -88,8 +78,17 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
+            var tempProjectDirectory =
+                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
+            var tempProjectPath =
+                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
+
+            Directory.CreateDirectory(tempProjectDirectory.Value);
+            File.Copy(nugetConfigPath.Value,
+                tempProjectDirectory.CreateFilePathWithCombineFollowing("nuget.config").Value);
+
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), WriteNugetConfigFileToPointToTheFeed);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), () => tempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -128,5 +127,14 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         public void GivenNugetConfigAndPackageNameAndVersionWithoutTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
         }
+
+        private static readonly Func<FilePath> GetUniqueTempProjectPathEachTest = () =>
+        {
+            var tempProjectDirectory =
+                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
+            var tempProjectPath =
+                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
+            return tempProjectPath;
+        };
     }
 }

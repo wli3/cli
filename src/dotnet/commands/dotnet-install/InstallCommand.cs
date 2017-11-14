@@ -45,7 +45,10 @@ namespace Microsoft.DotNet.Cli
             var executablePackagePath = new DirectoryPath(new CliFolderPathCalculator().ExecutablePackagesPath);
             var executablePackageObtainer =
                 new ExecutablePackageObtainer.ExecutablePackageObtainer(
-                    executablePackagePath, GetTempProjectPathFromRandomPath);
+                    executablePackagePath,
+                    () => new DirectoryPath(Path.GetTempPath())
+                        .WithCombineFollowing(Path.GetRandomFileName())
+                        .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"));
 
             var toolConfigurationAndExecutableDirectory = executablePackageObtainer.ObtainAndReturnExecutablePath(
                 packageId: packageId,
@@ -68,14 +71,5 @@ namespace Microsoft.DotNet.Cli
 
             return 0;
         }
-
-        private static readonly Func<FilePath> GetTempProjectPathFromRandomPath = () =>
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        };
     }
 }
