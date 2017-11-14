@@ -28,12 +28,11 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 
         public ToolConfigurationAndExecutableDirectory ObtainAndReturnExecutablePath(
             string packageId,
-            string packageVersion,
+            string packageVersion = null,
             FilePath nugetconfig = null,
             string targetframework = null)
         {
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
-            if (packageVersion == null) throw new ArgumentNullException(nameof(packageVersion));
             if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
 
             var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersion);

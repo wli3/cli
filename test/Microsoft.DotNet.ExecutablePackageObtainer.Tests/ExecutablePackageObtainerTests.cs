@@ -73,38 +73,59 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         }
 
         [Fact]
-        public void GivenPackageNameAndVersionAndTargetFrameworkWhenCallItCreateAssetFile()
+        public void GivenPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
+            var uniqueTempProjectPath = GetUniqueTempProjectPathEachTest();
+            var tempProjectDirectory = uniqueTempProjectPath.GetDirectoryPath();
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
-
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
-
+ 
             Directory.CreateDirectory(tempProjectDirectory.Value);
             File.Copy(nugetConfigPath.Value,
                 tempProjectDirectory.CreateFilePathWithCombineFollowing("nuget.config").Value);
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), () => tempProjectPath);
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), () => uniqueTempProjectPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
                 targetframework: "netcoreapp2.0");
 
-            var assetJsonPath = toolConfigurationAndExecutableDirectory
+            var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
-                .GetParentPath()
-                .GetParentPath()
-                .GetParentPath()
-                .GetParentPath()
-                .CreateFilePathWithCombineFollowing("project.assets.json").Value;
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                        .Configuration
+                        .ToolAssemblyEntryPoint);
 
-            File.Exists(assetJsonPath)
+            File.Exists(executable.Value)
                 .Should()
-                .BeTrue(assetJsonPath + " should be created");
+                .BeTrue(executable + " should have the executable");
+        }
+        
+        [Fact]
+        public void GivenPackageNameAndNuGetConfigAndTargetFrameworkWhenCallItCanDownloadThePacakge()
+        {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
+                packageId: "console.wul.test.app.one",
+                nugetconfig: nugetConfigPath,
+                targetframework: "netcoreapp2.0");
+
+            var executable = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                        .Configuration
+                        .ToolAssemblyEntryPoint);
+
+            File.Exists(executable.Value)
+                .Should()
+                .BeTrue(executable + " should have the executable");
         }
 
         private static FilePath WriteNugetConfigFileToPointToTheFeed()
