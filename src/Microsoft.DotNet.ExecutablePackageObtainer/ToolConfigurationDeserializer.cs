@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             {
                 throw new ToolConfigurationException("Configuration content error. " + e.Message);
             }
-            
+
         }
     }
 }

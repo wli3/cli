@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
 
             // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
-            char[] invalideChar = new char[] { '/', '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
-            if (commandName.IndexOfAny(invalideChar) != -1)
+            char[] invalidCharactors = new char[] { '/', '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+            if (commandName.IndexOfAny(invalidCharactors) != -1)
             {
-                throw new ArgumentException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot contain following character " + new string(invalideChar));
+                throw new ArgumentException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot contain following character " + new string(invalidCharactors));
             }
 
             if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))

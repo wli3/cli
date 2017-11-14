@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 $"/p:BaseIntermediateOutputPath={individualToolVersion.ToEscapedString()}"
             });
 
-            var comamnd = new CommandFactory()
+            var command = new CommandFactory()
                 .Create(
                     "dotnet",
                     argsToPassToRestore)
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            var result = comamnd.Execute();
+            var result = command.Execute();
             if (result.ExitCode != 0)
             {
                 throw new PackageObtainException("Failed to restore package. " +
@@ -117,8 +117,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
         }
 
         private FilePath CreateTempProject(
-            string packageId, 
-            PackageVersion packageVersion, 
+            string packageId,
+            PackageVersion packageVersion,
             string targetframework,
             DirectoryPath individualToolVersion)
         {
@@ -149,17 +149,17 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
             return tempProjectPath;
         }
-        
+
         private void InvokeAddPackageRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion, string packageId)
         {
             if (nugetconfig != null)
             {
                 File.Copy(nugetconfig.Value, tempProjectPath.GetDirectoryPath().CreateFilePathWithCombineFollowing("nuget.config").Value);
             }
-            
+
             var argsToPassToRestore = new List<string> {"add", tempProjectPath.Value, "package", packageId, "--no-restore"};
 
-            var comamnd = new CommandFactory()
+            var command = new CommandFactory()
                 .Create(
                     "dotnet",
                     argsToPassToRestore)
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            var result = comamnd.Execute();
+            var result = command.Execute();
             if (result.ExitCode != 0)
             {
                 throw new PackageObtainException("Failed to add package. " +
@@ -202,10 +202,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""{2}"" Version=""{3}""/>    
+    <PackageReference Include=""{2}"" Version=""{3}""/>
   </ItemGroup>
 </Project>";
-        
+
         private const string TemporaryProjectTemplateWithoutPackage = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{0}</TargetFramework>
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 IsPlaceHolder = isPlaceHolder;
                 Value = value;
             }
-            
+
             public PackageVersion(string packageVersion)
             {
                 if (packageVersion == null)
