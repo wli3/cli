@@ -35,12 +35,26 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
             if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
 
-            var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersion);
+            PackageVersion packageVesionOrPlaceHolder = new PackageVersion(packageVersion);
+            
+            var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVesionOrPlaceHolder);
 
-            var tempProjectPath = CreateTempProject(packageId, packageVersion, targetframework, individualToolVersion);
+            var tempProjectPath = CreateTempProject(packageId, packageVesionOrPlaceHolder, targetframework, individualToolVersion);
+
+            if (packageVesionOrPlaceHolder.IsPlaceHolder)
+            {
+                InvokeAddPackageRestore(nugetconfig, tempProjectPath, individualToolVersion, packageId);
+            }
 
             InvokeRestore(nugetconfig, tempProjectPath, individualToolVersion);
 
+            if (packageVesionOrPlaceHolder.IsPlaceHolder)
+            {
+                var concreteVersion = Directory.GetDirectories(individualToolVersion.WithCombineFollowing(packageId).Value).Single();
+                Directory.Move(individualToolVersion.Value, individualToolVersion.GetParentPath().WithCombineFollowing(concreteVersion).Value);
+                packageVersion = concreteVersion;
+            }
+            
             var toolConfiguration = GetConfiguration(packageId, packageVersion, individualToolVersion);
 
             return new ToolConfigurationAndExecutableDirectory(
@@ -99,7 +113,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
         }
 
-        private FilePath CreateTempProject(string packageId, string packageVersion, string targetframework,
+        private FilePath CreateTempProject(
+            string packageId, 
+            PackageVersion packageVersion, 
+            string targetframework,
             DirectoryPath individualToolVersion)
         {
             var tempProjectPath = _getTempProjectPath();
@@ -109,20 +126,59 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
 
             EnsureDirectoryExists(tempProjectPath.GetDirectoryPath());
-            File.WriteAllText(tempProjectPath.Value,
-                string.Format(
-                    TemporaryProjectTemplate,
-                    targetframework,
-                    individualToolVersion.Value,
-                    packageId,
-                    packageVersion));
+            if (packageVersion.IsConcreteValue)
+            {
+                File.WriteAllText(tempProjectPath.Value,
+                    string.Format(
+                        TemporaryProjectTemplate,
+                        targetframework,
+                        individualToolVersion.Value,
+                        packageId,
+                        packageVersion.Value));
+            }
+            else
+            {
+                File.WriteAllText(tempProjectPath.Value,
+                    string.Format(
+                        TemporaryProjectTemplateWithoutPackage,
+                        targetframework,
+                        individualToolVersion.Value));
+            }
             return tempProjectPath;
         }
+        
+        private void InvokeAddPackageRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion, string packageId)
+        {
+            if (nugetconfig != null)
+            {
+                File.Copy(nugetconfig.Value, tempProjectPath.GetDirectoryPath().CreateFilePathWithCombineFollowing("nuget.config").Value);
+            }
+            
+            var argsToPassToRestore = new List<string> {"add", tempProjectPath.Value, "package", packageId, "--no-restore"};
 
-        private DirectoryPath CreateIndividualToolVersionDirectory(string packageId, string packageVersion)
+            var comamnd = new CommandFactory()
+                .Create(
+                    "dotnet",
+                    argsToPassToRestore)
+                .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
+                .CaptureStdOut()
+                .CaptureStdErr();
+
+            var result = comamnd.Execute();
+            if (result.ExitCode != 0)
+            {
+                throw new PackageObtainException("Failed to add package. " +
+                                                 "WorkingDirectory: " +
+                                                 result.StartInfo.WorkingDirectory + "Arguments: " +
+                                                 result.StartInfo.Arguments + "Output: " +
+                                                 result.StdErr + result.StdOut);
+            }
+        }
+
+        private DirectoryPath CreateIndividualToolVersionDirectory(string packageId, PackageVersion packageVersion)
         {
             var individualTool = _toolsPath.WithCombineFollowing(packageId);
-            var individualToolVersion = individualTool.WithCombineFollowing(packageVersion);
+            var individualToolVersion = individualTool.WithCombineFollowing(packageVersion.Value);
             EnsureDirectoryExists(individualToolVersion);
             return individualToolVersion;
         }
@@ -146,5 +202,40 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     <PackageReference Include=""{2}"" Version=""{3}""/>    
   </ItemGroup>
 </Project>";
+        
+        private const string TemporaryProjectTemplateWithoutPackage = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>{0}</TargetFramework>
+    <RestorePackagesPath>{1}</RestorePackagesPath>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+</Project>";
+
+        private class PackageVersion
+        {
+            public bool IsPlaceHolder { get; }
+            public string Value { get; }
+            public bool IsConcreteValue => !IsPlaceHolder;
+
+            public PackageVersion(string value, bool isPlaceHolder)
+            {
+                IsPlaceHolder = isPlaceHolder;
+                Value = value;
+            }
+            
+            public PackageVersion(string packageVersion)
+            {
+                if (packageVersion == null)
+                {
+                    Value = Path.GetRandomFileName();
+                    IsPlaceHolder = true;
+                }
+                else
+                {
+                    Value = packageVersion;
+                    IsPlaceHolder = false;
+                }
+            }
+        }
     }
 }
