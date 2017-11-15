@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var argsToPassToRestore = new List<string>
             {
                 "add",
-                tempProjectPath.ToEscapedString(),
+                tempProjectPath.Value,
                 "package",
                 packageId,
                 "--no-restore"
