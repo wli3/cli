@@ -27,10 +27,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(
-                    new DirectoryPath(toolsPath),
-                    GetUniqueTempProjectPathEachTest,
-                    new Lazy<string>());
+                ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -49,6 +46,14 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .BeTrue(executable + " should have the executable");
         }
 
+        private static ExecutablePackageObtainer ConstructDefaultPackageObtainer(string toolsPath)
+        {
+            return new ExecutablePackageObtainer(
+                new DirectoryPath(toolsPath),
+                GetUniqueTempProjectPathEachTest,
+                new Lazy<string>());
+        }
+
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCreateAssetFile()
         {
@@ -56,10 +61,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(
-                    new DirectoryPath(toolsPath),
-                    GetUniqueTempProjectPathEachTest,
-                    new Lazy<string>());
+                ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory =
                 packageObtainer.ObtainAndReturnExecutablePath(
                     packageId: "console.wul.test.app.one",
@@ -121,10 +123,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(
-                    new DirectoryPath(toolsPath),
-                    GetUniqueTempProjectPathEachTest,
-                    new Lazy<string>());
+                ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 nugetconfig: nugetConfigPath,

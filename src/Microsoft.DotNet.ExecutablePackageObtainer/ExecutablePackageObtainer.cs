@@ -112,6 +112,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
         {
             var argsToPassToRestore = new List<string>();
             argsToPassToRestore.Add("restore");
+
+            argsToPassToRestore.Add(tempProjectPath.ToEscapedString());
             if (nugetconfig != null)
             {
                 argsToPassToRestore.Add("--configfile");
@@ -129,7 +131,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 .Create(
                     "dotnet",
                     argsToPassToRestore)
-                .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
