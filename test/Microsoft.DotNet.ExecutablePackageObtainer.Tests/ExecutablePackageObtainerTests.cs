@@ -144,6 +144,31 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             return new FilePath(Path.GetFullPath(nugetConfigName));
         }
 
+        [Fact]
+        public void GivenNugetConfigAndPackageNameAndVersionWhenCallItCanDownloadThePacakge()
+        {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
+            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
+                packageId: "console.wul.test.app.one",
+                packageVersion: "1.0.5",
+                nugetconfig: nugetConfigPath);
+
+            var executable = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                        .Configuration
+                        .ToolAssemblyEntryPoint);
+
+            File.Exists(executable.Value)
+                .Should()
+                .BeTrue(executable + " should have the executable");
+        }
+
         [Fact(Skip = "Pending")]
         public void GivenNugetConfigAndPackageNameAndVersionWithoutTargetFrameworkWhenCallItCanDownloadThePacakge()
         {

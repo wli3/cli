@@ -20,7 +20,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
         private readonly Func<FilePath> _getTempProjectPath;
         private readonly DirectoryPath _toolsPath;
 
-        public ExecutablePackageObtainer(DirectoryPath toolsPath, Func<FilePath> getTempProjectPath)
+        public ExecutablePackageObtainer(
+            DirectoryPath toolsPath,
+            Func<FilePath> getTempProjectPath)
         {
             _getTempProjectPath = getTempProjectPath;
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
@@ -37,21 +39,34 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
 
             PackageVersion packageVersionOrPlaceHolder = new PackageVersion(packageVersion);
 
-            var individualToolVersion = CreateIndividualToolVersionDirectory(packageId, packageVersionOrPlaceHolder);
+            var individualToolVersion =
+                CreateIndividualToolVersionDirectory(packageId, packageVersionOrPlaceHolder);
 
-            var tempProjectPath = CreateTempProject(packageId, packageVersionOrPlaceHolder, targetframework, individualToolVersion);
+            var tempProjectPath = CreateTempProject(
+                packageId,
+                packageVersionOrPlaceHolder,
+                targetframework,
+                individualToolVersion);
 
             if (packageVersionOrPlaceHolder.IsPlaceHolder)
             {
-                InvokeAddPackageRestore(nugetconfig, tempProjectPath, individualToolVersion, packageId);
+                InvokeAddPackageRestore(
+                    nugetconfig,
+                    tempProjectPath,
+                    individualToolVersion,
+                    packageId);
             }
 
             InvokeRestore(nugetconfig, tempProjectPath, individualToolVersion);
 
             if (packageVersionOrPlaceHolder.IsPlaceHolder)
             {
-                var concreteVersion = new DirectoryInfo(Directory.GetDirectories(individualToolVersion.WithCombineFollowing(packageId).Value).Single()).Name;
-                var concreteVersionIndividualToolVersion = individualToolVersion.GetParentPath().WithCombineFollowing(concreteVersion);
+                var concreteVersion =
+                    new DirectoryInfo(
+                        Directory.GetDirectories(
+                            individualToolVersion.WithCombineFollowing(packageId).Value).Single()).Name;
+                var concreteVersionIndividualToolVersion =
+                    individualToolVersion.GetParentPath().WithCombineFollowing(concreteVersion);
                 Directory.Move(individualToolVersion.Value, concreteVersionIndividualToolVersion.Value);
 
                 individualToolVersion = concreteVersionIndividualToolVersion;
@@ -69,18 +84,25 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     targetframework));
         }
 
-        private static ToolConfiguration GetConfiguration(string packageId, string packageVersion,
+        private static ToolConfiguration GetConfiguration(
+            string packageId,
+            string packageVersion,
             DirectoryPath individualToolVersion)
         {
-            var toolConfigurationPath = individualToolVersion
-                .WithCombineFollowing(packageId, packageVersion, "tools")
-                .CreateFilePathWithCombineFollowing("DotnetToolsConfig.xml");
+            var toolConfigurationPath =
+                individualToolVersion
+                    .WithCombineFollowing(packageId, packageVersion, "tools")
+                    .CreateFilePathWithCombineFollowing("DotnetToolsConfig.xml");
 
-            var toolConfiguration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            var toolConfiguration
+                = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
             return toolConfiguration;
         }
 
-        private void InvokeRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion)
+        private void InvokeRestore(
+            FilePath nugetconfig,
+            FilePath tempProjectPath,
+            DirectoryPath individualToolVersion)
         {
             var argsToPassToRestore = new List<string>();
             argsToPassToRestore.Add("restore");
@@ -150,14 +172,30 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             return tempProjectPath;
         }
 
-        private void InvokeAddPackageRestore(FilePath nugetconfig, FilePath tempProjectPath, DirectoryPath individualToolVersion, string packageId)
+        private static void InvokeAddPackageRestore(
+            FilePath nugetconfig,
+            FilePath tempProjectPath,
+            DirectoryPath individualToolVersion,
+            string packageId)
         {
             if (nugetconfig != null)
             {
-                File.Copy(nugetconfig.Value, tempProjectPath.GetDirectoryPath().CreateFilePathWithCombineFollowing("nuget.config").Value);
+                File.Copy(
+                    nugetconfig.Value,
+                    tempProjectPath
+                        .GetDirectoryPath()
+                        .CreateFilePathWithCombineFollowing("nuget.config")
+                        .Value);
             }
 
-            var argsToPassToRestore = new List<string> {"add", tempProjectPath.Value, "package", packageId, "--no-restore"};
+            var argsToPassToRestore = new List<string>
+            {
+                "add",
+                tempProjectPath.Value,
+                "package",
+                packageId,
+                "--no-restore"
+            };
 
             var command = new CommandFactory()
                 .Create(
@@ -178,7 +216,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             }
         }
 
-        private DirectoryPath CreateIndividualToolVersionDirectory(string packageId, PackageVersion packageVersion)
+        private DirectoryPath CreateIndividualToolVersionDirectory(
+            string packageId,
+            PackageVersion packageVersion)
         {
             var individualTool = _toolsPath.WithCombineFollowing(packageId);
             var individualToolVersion = individualTool.WithCombineFollowing(packageVersion.Value);
