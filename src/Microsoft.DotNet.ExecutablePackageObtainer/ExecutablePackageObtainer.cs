@@ -100,8 +100,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                     .WithCombineFollowing(packageId, packageVersion, "tools")
                     .CreateFilePathWithCombineFollowing("DotnetToolsConfig.xml");
 
-            var toolConfiguration
-                = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            var toolConfiguration =
+                ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
             return toolConfiguration;
         }
 
@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var argsToPassToRestore = new List<string>
             {
                 "add",
-                tempProjectPath.Value,
+                tempProjectPath.ToEscapedString(),
                 "package",
                 packageId,
                 "--no-restore"
@@ -208,7 +208,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 .Create(
                     "dotnet",
                     argsToPassToRestore)
-                .WorkingDirectory(tempProjectPath.GetDirectoryPath().Value)
                 .CaptureStdOut()
                 .CaptureStdErr();
 

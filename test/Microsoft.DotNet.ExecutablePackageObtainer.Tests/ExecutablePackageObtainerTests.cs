@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         }
 
         [Fact]
-        public void GivenPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
+        public void GivenAllButNoNugetConfigFilePathtCanDownloadThePacakge()
         {
             var uniqueTempProjectPath = GetUniqueTempProjectPathEachTest();
             var tempProjectDirectory = uniqueTempProjectPath.GetDirectoryPath();
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         }
 
         [Fact]
-        public void GivenPackageNameAndNuGetConfigAndTargetFrameworkWhenCallItCanDownloadThePacakge()
+        public void GivenAllButNoPackageVersionItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         }
 
         [Fact]
-        public void GivenNugetConfigAndPackageNameAndVersionAndLazyTargetFrameworkWhenCallItCanDownloadThePacakge()
+        public void GivenAllButNoTargetFrameworkItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
