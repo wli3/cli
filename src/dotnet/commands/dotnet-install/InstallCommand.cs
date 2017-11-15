@@ -23,7 +23,12 @@ namespace Microsoft.DotNet.Cli
             var packageVersion = parseResult.ValueOrDefault<string>("version");
 
             FilePath configFile = null;
+
             var configFilePath = parseResult.ValueOrDefault<string>("configfile");
+            if (configFilePath != null)
+            {
+                configFile = new FilePath(configFilePath);
+            }
 
             var framework = parseResult.ValueOrDefault<string>("framework");
 
@@ -38,7 +43,8 @@ namespace Microsoft.DotNet.Cli
                     executablePackagePath,
                     () => new DirectoryPath(Path.GetTempPath())
                         .WithCombineFollowing(Path.GetRandomFileName())
-                        .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"));
+                        .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"),
+                    new Lazy<string>(() => BundledTargetFramework.TargetFrameworkMoniker));
 
             var toolConfigurationAndExecutableDirectory =
                 executablePackageObtainer.ObtainAndReturnExecutablePath(

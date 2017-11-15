@@ -3,9 +3,6 @@
 
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Runtime.Versioning;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
@@ -27,7 +24,7 @@ namespace Microsoft.DotNet.Tests
                 .Parse(targetFrameworkMoniker)
                 .GetShortFolderName();
             BundledTargetFramework
-                .GetTfm()
+                .TargetFrameworkMoniker
                 .Should().Be(shortFolderName);
         }
 

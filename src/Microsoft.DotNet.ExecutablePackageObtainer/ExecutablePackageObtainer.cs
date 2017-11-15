@@ -18,13 +18,16 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     public class ExecutablePackageObtainer
     {
         private readonly Func<FilePath> _getTempProjectPath;
+        private readonly Lazy<string> _bundledTargetFrameworkMoniker;
         private readonly DirectoryPath _toolsPath;
 
         public ExecutablePackageObtainer(
             DirectoryPath toolsPath,
-            Func<FilePath> getTempProjectPath)
+            Func<FilePath> getTempProjectPath,
+            Lazy<string> bundledTargetFrameworkMoniker)
         {
             _getTempProjectPath = getTempProjectPath;
+            _bundledTargetFrameworkMoniker = bundledTargetFrameworkMoniker;
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
@@ -35,7 +38,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             string targetframework = null)
         {
             if (packageId == null) throw new ArgumentNullException(nameof(packageId));
-            if (targetframework == null) throw new ArgumentNullException(nameof(targetframework));
+            if (targetframework == null)
+            {
+                targetframework = _bundledTargetFrameworkMoniker.Value;
+            }
 
             PackageVersion packageVersionOrPlaceHolder = new PackageVersion(packageVersion);
 

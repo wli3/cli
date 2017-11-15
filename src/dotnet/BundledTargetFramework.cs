@@ -6,16 +6,19 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class BundledTargetFramework
     {
-        public static string GetTfm()
+        public static string TargetFrameworkMoniker
         {
-            var targetFrameworkAttribute = typeof(BundledTargetFramework)
-                .GetTypeInfo()
-                .Assembly
-                .GetCustomAttribute<TargetFrameworkAttribute>();
+            get
+            {
+                var targetFrameworkAttribute = typeof(BundledTargetFramework)
+                    .GetTypeInfo()
+                    .Assembly
+                    .GetCustomAttribute<TargetFrameworkAttribute>();
 
-            return NuGetFramework
-                .Parse(targetFrameworkAttribute.FrameworkName)
-                .GetShortFolderName();
+                return NuGetFramework
+                    .Parse(targetFrameworkAttribute.FrameworkName)
+                    .GetShortFolderName();
+            }
         }
     }
 }

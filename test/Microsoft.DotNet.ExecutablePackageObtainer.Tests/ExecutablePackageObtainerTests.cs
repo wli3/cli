@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.DotNet.Cli;
 using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
 using NuGet.Protocol.Core.Types;
 using Xunit;
@@ -26,7 +27,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    GetUniqueTempProjectPathEachTest,
+                    new Lazy<string>());
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -52,12 +56,16 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
-            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
-                packageId: "console.wul.test.app.one",
-                packageVersion: "1.0.5",
-                nugetconfig: nugetConfigPath,
-                targetframework: "netcoreapp2.0");
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    GetUniqueTempProjectPathEachTest,
+                    new Lazy<string>());
+            var toolConfigurationAndExecutableDirectory =
+                packageObtainer.ObtainAndReturnExecutablePath(
+                    packageId: "console.wul.test.app.one",
+                    packageVersion: "1.0.5",
+                    nugetconfig: nugetConfigPath,
+                    targetframework: "netcoreapp2.0");
 
             var assetJsonPath = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -85,7 +93,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 tempProjectDirectory.CreateFilePathWithCombineFollowing("nuget.config").Value);
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), () => uniqueTempProjectPath);
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    () => uniqueTempProjectPath,
+                    new Lazy<string>());
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -110,7 +121,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    GetUniqueTempProjectPathEachTest,
+                    new Lazy<string>());
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 nugetconfig: nugetConfigPath,
@@ -145,17 +159,21 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
         }
 
         [Fact]
-        public void GivenNugetConfigAndPackageNameAndVersionWhenCallItCanDownloadThePacakge()
+        public void GivenNugetConfigAndPackageNameAndVersionAndLazyTargetFrameworkWhenCallItCanDownloadThePacakge()
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
             var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
 
             var packageObtainer =
-                new ExecutablePackageObtainer(new DirectoryPath(toolsPath), GetUniqueTempProjectPathEachTest);
-            var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
-                packageId: "console.wul.test.app.one",
-                packageVersion: "1.0.5",
-                nugetconfig: nugetConfigPath);
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    GetUniqueTempProjectPathEachTest,
+                    new Lazy<string>(() => "netcoreapp2.0"));
+            var toolConfigurationAndExecutableDirectory =
+                packageObtainer.ObtainAndReturnExecutablePath(
+                    packageId: "console.wul.test.app.one",
+                    packageVersion: "1.0.5",
+                    nugetconfig: nugetConfigPath);
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -167,11 +185,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             File.Exists(executable.Value)
                 .Should()
                 .BeTrue(executable + " should have the executable");
-        }
-
-        [Fact(Skip = "Pending")]
-        public void GivenNugetConfigAndPackageNameAndVersionWithoutTargetFrameworkWhenCallItCanDownloadThePacakge()
-        {
         }
 
         private static readonly Func<FilePath> GetUniqueTempProjectPathEachTest = () =>
