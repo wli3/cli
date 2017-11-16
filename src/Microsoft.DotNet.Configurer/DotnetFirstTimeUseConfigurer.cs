@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -15,6 +17,7 @@ namespace Microsoft.DotNet.Configurer
         private INuGetCacheSentinel _nugetCacheSentinel;
         private IFirstTimeUseNoticeSentinel _firstTimeUseNoticeSentinel;
         private string _cliFallbackFolderPath;
+        private readonly IEnvironmentPath _pathAdder;
 
         public DotnetFirstTimeUseConfigurer(
             INuGetCachePrimer nugetCachePrimer,
@@ -22,7 +25,8 @@ namespace Microsoft.DotNet.Configurer
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
             IEnvironmentProvider environmentProvider,
             IReporter reporter,
-            string cliFallbackFolderPath)
+            string cliFallbackFolderPath,
+            IEnvironmentPath pathAdder)
         {
             _nugetCachePrimer = nugetCachePrimer;
             _nugetCacheSentinel = nugetCacheSentinel;
@@ -30,10 +34,23 @@ namespace Microsoft.DotNet.Configurer
             _environmentProvider = environmentProvider;
             _reporter = reporter;
             _cliFallbackFolderPath = cliFallbackFolderPath;
+            _pathAdder = pathAdder ?? throw new ArgumentNullException(nameof(pathAdder));
         }
 
         public void Configure()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (!_firstTimeUseNoticeSentinel.Exists())
+                {
+                    _pathAdder.AddPackageExecutablePathToUserPath();
+                }
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                _pathAdder.AddPackageExecutablePathToUserPath();
+            }
+
             if (ShouldPrintFirstTimeUseNotice())
             {
                 PrintFirstTimeUseNotice();
