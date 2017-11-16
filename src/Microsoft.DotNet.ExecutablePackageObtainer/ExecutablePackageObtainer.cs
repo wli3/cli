@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     {
         private readonly Func<FilePath> _getTempProjectPath;
         private readonly Lazy<string> _bundledTargetFrameworkMoniker;
+        private readonly ICanRestoreProject _projectRestorer;
         private readonly ICanAddPackageToProjectFile _packageToProjectFileAdder;
         private readonly DirectoryPath _toolsPath;
 
@@ -26,11 +27,13 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             DirectoryPath toolsPath,
             Func<FilePath> getTempProjectPath,
             Lazy<string> bundledTargetFrameworkMoniker,
-            ICanAddPackageToProjectFile packageToProjectFileAdder
+            ICanAddPackageToProjectFile packageToProjectFileAdder,
+            ICanRestoreProject projectRestorer
             )
         {
             _getTempProjectPath = getTempProjectPath;
             _bundledTargetFrameworkMoniker = bundledTargetFrameworkMoniker;
+            _projectRestorer = projectRestorer ?? throw new ArgumentNullException(nameof(projectRestorer));
             _packageToProjectFileAdder = packageToProjectFileAdder ?? throw new ArgumentNullException(nameof(packageToProjectFileAdder));
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
@@ -113,39 +116,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             FilePath tempProjectPath,
             DirectoryPath individualToolVersion)
         {
-            var argsToPassToRestore = new List<string>();
-            argsToPassToRestore.Add("restore");
-
-            argsToPassToRestore.Add(tempProjectPath.ToEscapedString());
-            if (nugetconfig != null)
-            {
-                argsToPassToRestore.Add("--configfile");
-                argsToPassToRestore.Add(nugetconfig.ToEscapedString());
-            }
-
-            argsToPassToRestore.AddRange(new List<string>
-            {
-                "--runtime",
-                RuntimeEnvironment.GetRuntimeIdentifier(),
-                $"/p:BaseIntermediateOutputPath={individualToolVersion.ToEscapedString()}"
-            });
-
-            var command = new CommandFactory()
-                .Create(
-                    "dotnet",
-                    argsToPassToRestore)
-                .CaptureStdOut()
-                .CaptureStdErr();
-
-            var result = command.Execute();
-            if (result.ExitCode != 0)
-            {
-                throw new PackageObtainException("Failed to restore package. " +
-                                                 "WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + "Arguments: " +
-                                                 result.StartInfo.Arguments + "Output: " +
-                                                 result.StdErr + result.StdOut);
-            }
+            _projectRestorer.Restore(tempProjectPath, individualToolVersion, nugetconfig);
         }
 
         private FilePath CreateTempProject(

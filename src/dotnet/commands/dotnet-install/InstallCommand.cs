@@ -45,7 +45,8 @@ namespace Microsoft.DotNet.Cli
                         .WithCombineFollowing(Path.GetRandomFileName())
                         .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"),
                     new Lazy<string>(() => BundledTargetFramework.TargetFrameworkMoniker),
-                    new PackageToProjectFileAdder());
+                    new PackageToProjectFileAdder(),
+                    new ProjectRestorer());
 
             var toolConfigurationAndExecutableDirectory =
                 executablePackageObtainer.ObtainAndReturnExecutablePath(

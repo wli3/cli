@@ -52,7 +52,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 new DirectoryPath(toolsPath),
                 GetUniqueTempProjectPathEachTest,
                 new Lazy<string>(),
-                new PackageToProjectFileAdder());
+                new PackageToProjectFileAdder(),
+                new ProjectRestorer());
         }
 
         [Fact]
@@ -100,7 +101,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                     new DirectoryPath(toolsPath),
                     () => uniqueTempProjectPath,
                     new Lazy<string>(),
-                    new PackageToProjectFileAdder());
+                    new PackageToProjectFileAdder(),
+                    new ProjectRestorer());
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
                 packageId: "console.wul.test.app.one",
                 packageVersion: "1.0.5",
@@ -170,7 +172,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                     new DirectoryPath(toolsPath),
                     GetUniqueTempProjectPathEachTest,
                     new Lazy<string>(() => "netcoreapp2.0"),
-                    new PackageToProjectFileAdder());
+                    new PackageToProjectFileAdder(),
+                    new ProjectRestorer());
             var toolConfigurationAndExecutableDirectory =
                 packageObtainer.ObtainAndReturnExecutablePath(
                     packageId: "console.wul.test.app.one",
