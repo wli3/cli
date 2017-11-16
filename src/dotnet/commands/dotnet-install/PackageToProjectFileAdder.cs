@@ -8,43 +8,39 @@ using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ExecutablePackageObtainer;
+using Microsoft.DotNet.Tools.Add;
+using Microsoft.DotNet.Tools.NuGet;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
 {
-
     internal class PackageToProjectFileAdder : ICanAddPackageToProjectFile
     {
         public void Add(FilePath projectPath, string packageId)
         {
-            var argsToPassToRestore = new List<string>
+            var result = NuGetCommand.Run(new[]
             {
-                "add",
-                projectPath.Value,
                 "package",
+                "add",
+                "--package",
                 packageId,
+                "--project",
+                projectPath.Value,
                 "--no-restore"
-            };
-
-            var command = new CommandFactory()
-                .Create(
-                    "dotnet",
-                    argsToPassToRestore)
-                .CaptureStdOut()
-                .CaptureStdErr();
-
-            var result = command.Execute();
-            if (result.ExitCode != 0)
+            });
+            try
             {
-                throw new PackageObtainException("Failed to add package. " +
-                                                 $"{Environment.NewLine}WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + 
-                                                 $"{Environment.NewLine}Arguments: " +
-                                                 result.StartInfo.Arguments + 
-                                                 $"{Environment.NewLine}Output: " +
-                                                 result.StdErr + result.StdOut);
+                
+            }
+            catch (GracefulException e)
+            {
+                throw new PackageObtainException("Failed to add package. ", innerException:e);
+            }
+
+            if (result != 0)
+            {
+                throw new PackageObtainException($"Failed to add package. Exit code {result}");
             }
         }
-
     }
 }

@@ -3,15 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
@@ -243,12 +239,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             public bool IsPlaceHolder { get; }
             public string Value { get; }
             public bool IsConcreteValue => !IsPlaceHolder;
-
-            public PackageVersion(string value, bool isPlaceHolder)
-            {
-                IsPlaceHolder = isPlaceHolder;
-                Value = value;
-            }
 
             public PackageVersion(string packageVersion)
             {

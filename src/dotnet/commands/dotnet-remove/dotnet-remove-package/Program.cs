@@ -52,7 +52,8 @@ namespace Microsoft.DotNet.Tools.Remove.PackageReference
             }
 
             var packageToRemove = _appliedCommand.Arguments.Single();
-            var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath));
+            var transformArgs = TransformArgs(packageToRemove, projectFilePath);
+            var result = NuGetCommand.Run(transformArgs);
 
             return result;
         }

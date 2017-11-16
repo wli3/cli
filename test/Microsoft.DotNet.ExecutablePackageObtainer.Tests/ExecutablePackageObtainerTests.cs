@@ -2,19 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.DotNet.Cli;
-using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
-using NuGet.Protocol.Core.Types;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Tools
         private static string GetNuGetExePath()
         {
             return Path.Combine(
-                AppContext.BaseDirectory,
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                 s_nugetExeName);
         }
     }

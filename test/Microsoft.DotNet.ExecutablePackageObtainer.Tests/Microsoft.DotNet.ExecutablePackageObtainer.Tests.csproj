@@ -22,6 +22,10 @@
     <PackageReference Include="Moq" Version="4.7.25" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <PackageReference Include="NuGet.CommandLine.XPlat" Version="$(CLI_NuGet_Version)" />
+    <PackageReference Include="Microsoft.Build" Version="$(CLI_MSBuild_Version)" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(CLI_MSBuild_Version)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(CLI_MSBuild_Version)" />
   </ItemGroup>
   <ItemGroup>
     <None Update="DotnetToolsConfigMissing.xml">

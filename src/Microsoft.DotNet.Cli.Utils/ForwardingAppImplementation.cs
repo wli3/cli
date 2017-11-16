@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
@@ -68,7 +69,14 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public int Execute()
         {
-            return GetProcessStartInfo().Execute();
+            var result = GetProcessStartInfo().ExecuteAndCaptureOutput(out string stdOut, out string stdErr);
+#if(DEBUG)
+            if (result != 0)
+            {
+                throw new InvalidOperationException(stdOut + stdErr);
+            }
+#endif
+            return result;
         }
 
         public ProcessStartInfo GetProcessStartInfo()
