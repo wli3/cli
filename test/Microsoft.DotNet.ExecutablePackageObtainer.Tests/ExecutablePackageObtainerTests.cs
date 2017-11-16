@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
-    public class ExecutablePackageObtainerTests
+    public class ExecutablePackageObtainerTests : TestBase
     {
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCanDownloadThePacakge()
@@ -190,6 +190,15 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             File.Exists(executable.Value)
                 .Should()
                 .BeTrue(executable + " should have the executable");
+        }
+        
+        [Fact]
+        public void CreateGlobalToolSample()
+        {
+            var testInstance = TestAssets.Get("SampleGlobalTool")
+                .CreateInstance()
+                .WithBuildFiles();
+            testInstance.TestAssetInfo.Root.Should().BeEmpty();
         }
 
         private static readonly Func<FilePath> GetUniqueTempProjectPathEachTest = () =>
