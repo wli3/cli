@@ -2,19 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.DotNet.Cli;
-using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
-using NuGet.Protocol.Core.Types;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
 {
@@ -29,10 +22,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var packageObtainer =
                 ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
-                packageId: "console.wul.test.app.one",
-                packageVersion: "1.0.5",
+                packageId: TestPackageId,
+                packageVersion: TestPackageVersion,
                 nugetconfig: nugetConfigPath,
-                targetframework: "netcoreapp2.0");
+                targetframework: _testTargetframework);
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -46,16 +39,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 .BeTrue(executable + " should have the executable");
         }
 
-        private static ExecutablePackageObtainer ConstructDefaultPackageObtainer(string toolsPath)
-        {
-            return new ExecutablePackageObtainer(
-                new DirectoryPath(toolsPath),
-                GetUniqueTempProjectPathEachTest,
-                new Lazy<string>(),
-                new PackageToProjectFileAdder(),
-                new ProjectRestorer());
-        }
-
         [Fact]
         public void GivenNugetConfigAndPackageNameAndVersionAndTargetFrameworkWhenCallItCreateAssetFile()
         {
@@ -66,10 +49,10 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                 ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory =
                 packageObtainer.ObtainAndReturnExecutablePath(
-                    packageId: "console.wul.test.app.one",
-                    packageVersion: "1.0.5",
+                    packageId: TestPackageId,
+                    packageVersion: TestPackageVersion,
                     nugetconfig: nugetConfigPath,
-                    targetframework: "netcoreapp2.0");
+                    targetframework: _testTargetframework);
 
             var assetJsonPath = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -104,9 +87,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
                     new PackageToProjectFileAdder(),
                     new ProjectRestorer());
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
-                packageId: "console.wul.test.app.one",
-                packageVersion: "1.0.5",
-                targetframework: "netcoreapp2.0");
+                packageId: TestPackageId,
+                packageVersion: TestPackageVersion,
+                targetframework: _testTargetframework);
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -129,9 +112,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             var packageObtainer =
                 ConstructDefaultPackageObtainer(toolsPath);
             var toolConfigurationAndExecutableDirectory = packageObtainer.ObtainAndReturnExecutablePath(
-                packageId: "console.wul.test.app.one",
+                packageId: TestPackageId,
                 nugetconfig: nugetConfigPath,
-                targetframework: "netcoreapp2.0");
+                targetframework: _testTargetframework);
 
             var executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
@@ -143,6 +126,56 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             File.Exists(executable.Value)
                 .Should()
                 .BeTrue(executable + " should have the executable");
+        }
+
+        [Fact]
+        public void GivenAllButNoTargetFrameworkItCanDownloadThePacakge()
+        {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
+
+            var packageObtainer =
+                new ExecutablePackageObtainer(
+                    new DirectoryPath(toolsPath),
+                    GetUniqueTempProjectPathEachTest,
+                    new Lazy<string>(() => BundledTargetFramework.TargetFrameworkMoniker),
+                    new PackageToProjectFileAdder(),
+                    new ProjectRestorer());
+            var toolConfigurationAndExecutableDirectory =
+                packageObtainer.ObtainAndReturnExecutablePath(
+                    packageId: TestPackageId,
+                    packageVersion: TestPackageVersion,
+                    nugetconfig: nugetConfigPath);
+
+            var executable = toolConfigurationAndExecutableDirectory
+                .ExecutableDirectory
+                .CreateFilePathWithCombineFollowing(
+                    toolConfigurationAndExecutableDirectory
+                        .Configuration
+                        .ToolAssemblyEntryPoint);
+
+            File.Exists(executable.Value)
+                .Should()
+                .BeTrue(executable + " should have the executable");
+        }
+
+        private static readonly Func<FilePath> GetUniqueTempProjectPathEachTest = () =>
+        {
+            var tempProjectDirectory =
+                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
+            var tempProjectPath =
+                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
+            return tempProjectPath;
+        };
+
+        private static ExecutablePackageObtainer ConstructDefaultPackageObtainer(string toolsPath)
+        {
+            return new ExecutablePackageObtainer(
+                new DirectoryPath(toolsPath),
+                GetUniqueTempProjectPathEachTest,
+                new Lazy<string>(),
+                new PackageToProjectFileAdder(),
+                new ProjectRestorer());
         }
 
         private static FilePath WriteNugetConfigFileToPointToTheFeed()
@@ -161,53 +194,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer.Tests
             return new FilePath(Path.GetFullPath(nugetConfigName));
         }
 
-        [Fact]
-        public void GivenAllButNoTargetFrameworkItCanDownloadThePacakge()
-        {
-            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
-            var toolsPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
-
-            var packageObtainer =
-                new ExecutablePackageObtainer(
-                    new DirectoryPath(toolsPath),
-                    GetUniqueTempProjectPathEachTest,
-                    new Lazy<string>(() => "netcoreapp2.0"),
-                    new PackageToProjectFileAdder(),
-                    new ProjectRestorer());
-            var toolConfigurationAndExecutableDirectory =
-                packageObtainer.ObtainAndReturnExecutablePath(
-                    packageId: "console.wul.test.app.one",
-                    packageVersion: "1.0.5",
-                    nugetconfig: nugetConfigPath);
-
-            var executable = toolConfigurationAndExecutableDirectory
-                .ExecutableDirectory
-                .CreateFilePathWithCombineFollowing(
-                    toolConfigurationAndExecutableDirectory
-                        .Configuration
-                        .ToolAssemblyEntryPoint);
-
-            File.Exists(executable.Value)
-                .Should()
-                .BeTrue(executable + " should have the executable");
-        }
-        
-        [Fact]
-        public void CreateGlobalToolSample()
-        {
-            var testInstance = TestAssets.Get("SampleGlobalTool")
-                .CreateInstance()
-                .WithBuildFiles();
-            testInstance.TestAssetInfo.Root.Should().BeEmpty();
-        }
-
-        private static readonly Func<FilePath> GetUniqueTempProjectPathEachTest = () =>
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithCombineFollowing(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        };
+        private readonly string _testTargetframework = BundledTargetFramework.TargetFrameworkMoniker;
+        private const string TestPackageVersion = "1.0.4";
+        private const string TestPackageId = "global.tool.console.demo";
     }
 }

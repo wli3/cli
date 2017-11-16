@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ExecutablePackageObtainer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -47,6 +43,5 @@ namespace Microsoft.DotNet.Cli
                                                  result.StdErr + result.StdOut);
             }
         }
-
     }
 }

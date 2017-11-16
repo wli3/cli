@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ExecutablePackageObtainer;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -36,7 +32,7 @@ namespace Microsoft.DotNet.Cli
                 $"/p:BaseIntermediateOutputPath={assetJsonOutput.ToEscapedString()}"
             });
 
-            var command = new DotNetCommandFactory(true)
+            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
                 .Create(
                     "restore",
                     argsToPassToRestore)
@@ -48,13 +44,12 @@ namespace Microsoft.DotNet.Cli
             {
                 throw new PackageObtainException("Failed to restore package. " +
                                                  $"{Environment.NewLine}WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + 
-                                                $"{Environment.NewLine}Arguments: " +
-                                                 result.StartInfo.Arguments + 
-                                                $"{Environment.NewLine}Output: " +
+                                                 result.StartInfo.WorkingDirectory +
+                                                 $"{Environment.NewLine}Arguments: " +
+                                                 result.StartInfo.Arguments +
+                                                 $"{Environment.NewLine}Output: " +
                                                  result.StdErr + result.StdOut);
             }
         }
-
-   }
+    }
 }
