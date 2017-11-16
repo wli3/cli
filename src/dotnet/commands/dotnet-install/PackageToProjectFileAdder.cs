@@ -19,16 +19,15 @@ namespace Microsoft.DotNet.Cli
         {
             var argsToPassToRestore = new List<string>
             {
-                "add",
                 projectPath.Value,
                 "package",
                 packageId,
                 "--no-restore"
             };
 
-            var command = new CommandFactory()
+            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
                 .Create(
-                    "dotnet",
+                    "add",
                     argsToPassToRestore)
                 .CaptureStdOut()
                 .CaptureStdErr();
