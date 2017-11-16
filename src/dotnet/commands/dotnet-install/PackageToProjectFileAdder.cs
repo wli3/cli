@@ -8,7 +8,6 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
 {
-
     internal class PackageToProjectFileAdder : IPackageToProjectFileAdder
     {
         public void Add(FilePath projectPath, string packageId)
@@ -38,9 +37,9 @@ namespace Microsoft.DotNet.Cli
             {
                 throw new PackageObtainException("Failed to add package. " +
                                                  $"{Environment.NewLine}WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + 
+                                                 result.StartInfo.WorkingDirectory +
                                                  $"{Environment.NewLine}Arguments: " +
-                                                 result.StartInfo.Arguments + 
+                                                 result.StartInfo.Arguments +
                                                  $"{Environment.NewLine}Output: " +
                                                  result.StdErr + result.StdOut);
             }
