@@ -13,17 +13,14 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
 {
-
-
     internal class ProjectRestorer : ICanRestoreProject
     {
         public void Restore(
             FilePath tempProjectPath,
-            DirectoryPath assetJsonOutput, 
+            DirectoryPath assetJsonOutput,
             FilePath nugetconfig)
         {
             var argsToPassToRestore = new List<string>();
-            argsToPassToRestore.Add("restore");
 
             argsToPassToRestore.Add(tempProjectPath.ToEscapedString());
             if (nugetconfig != null)
@@ -39,9 +36,9 @@ namespace Microsoft.DotNet.Cli
                 $"/p:BaseIntermediateOutputPath={assetJsonOutput.ToEscapedString()}"
             });
 
-            var command = new CommandFactory()
+            var command = new DotNetCommandFactory(true)
                 .Create(
-                    "dotnet",
+                    "restore",
                     argsToPassToRestore)
                 .CaptureStdOut()
                 .CaptureStdErr();
@@ -50,12 +47,14 @@ namespace Microsoft.DotNet.Cli
             if (result.ExitCode != 0)
             {
                 throw new PackageObtainException("Failed to restore package. " +
-                                                 "WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + "Arguments: " +
-                                                 result.StartInfo.Arguments + "Output: " +
+                                                 $"{Environment.NewLine}WorkingDirectory: " +
+                                                 result.StartInfo.WorkingDirectory + 
+                                                $"{Environment.NewLine}Arguments: " +
+                                                 result.StartInfo.Arguments + 
+                                                $"{Environment.NewLine}Output: " +
                                                  result.StdErr + result.StdOut);
             }
         }
 
-    }
+   }
 }
