@@ -4,15 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.ShellShimMaker;
 using Microsoft.DotNet.Tools.Help;
 using NuGet.Frameworks;
 using Command = Microsoft.DotNet.Cli.Utils.Command;
+using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -80,8 +83,9 @@ namespace Microsoft.DotNet.Cli
             var success = true;
             var command = string.Empty;
             var lastArg = 0;
-            var cliFallbackFolderPathCalculator = new CliFallbackFolderPathCalculator();
+            var cliFallbackFolderPathCalculator = new CliFolderPathCalculator();
             TopLevelCommandParserResult topLevelCommandParserResult = TopLevelCommandParserResult.Empty;
+
             using (INuGetCacheSentinel nugetCacheSentinel = new NuGetCacheSentinel(cliFallbackFolderPathCalculator))
             using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
                 new FirstTimeUseNoticeSentinel(cliFallbackFolderPathCalculator))
@@ -120,22 +124,24 @@ namespace Microsoft.DotNet.Cli
                     {
                         // It's the command, and we're done!
                         command = args[lastArg];
-
                         if (string.IsNullOrEmpty(command))
                         {
                             command = "help";
                         }
 
-                        topLevelCommandParserResult = new TopLevelCommandParserResult(args[lastArg]);
+                        topLevelCommandParserResult = new TopLevelCommandParserResult(command);
+                        var hasSuperUserAccess = false;
                         if (IsDotnetBeingInvokedFromNativeInstaller(topLevelCommandParserResult))
                         {
                             firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
+                            hasSuperUserAccess = true;
                         }
 
                         ConfigureDotNetForFirstTimeUse(
                             nugetCacheSentinel,
                             firstTimeUseNoticeSentinel,
-                            cliFallbackFolderPathCalculator);
+                            cliFallbackFolderPathCalculator,
+                            hasSuperUserAccess);
 
                         break;
                     }
@@ -197,24 +203,41 @@ namespace Microsoft.DotNet.Cli
         private static void ConfigureDotNetForFirstTimeUse(
             INuGetCacheSentinel nugetCacheSentinel,
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
-            CliFallbackFolderPathCalculator cliFallbackFolderPathCalculator)
+            CliFolderPathCalculator cliFolderPathCalculator,
+            bool hasSuperUserAccess)
         {
             using (PerfTrace.Current.CaptureTiming())
             {
+                IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    environmentPath = new WindowsEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
+                {
+                    environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
+                {
+                    environmentPath = new OsxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                }
+
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
                 var environmentProvider = new EnvironmentProvider();
                 var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
                 var nugetCachePrimer = new NuGetCachePrimer(
                     nugetPackagesArchiver,
                     nugetCacheSentinel,
-                    cliFallbackFolderPathCalculator);
+                    cliFolderPathCalculator);
                 var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
                     nugetCachePrimer,
                     nugetCacheSentinel,
                     firstTimeUseNoticeSentinel,
                     environmentProvider,
                     Reporter.Output,
-                    cliFallbackFolderPathCalculator.CliFallbackFolderPath);
+                    cliFolderPathCalculator.CliFallbackFolderPath,
+                    environmentPath
+                    );
 
                 dotnetConfigurer.Configure();
             }

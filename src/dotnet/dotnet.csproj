@@ -45,6 +45,8 @@
     <ProjectReference Include="../Microsoft.DotNet.InternalAbstractions/Microsoft.DotNet.InternalAbstractions.csproj" />
     <ProjectReference Include="../Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="../Microsoft.DotNet.Cli.Sln.Internal/Microsoft.DotNet.Cli.Sln.Internal.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ExecutablePackageObtainer\Microsoft.DotNet.ExecutablePackageObtainer.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ShellShimMaker\Microsoft.DotNet.ShellShimMaker.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />

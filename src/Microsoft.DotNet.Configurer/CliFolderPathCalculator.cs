@@ -10,11 +10,11 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Configurer
 {
-    public class CliFallbackFolderPathCalculator
+    public class CliFolderPathCalculator
     {
-        public string CliFallbackFolderPath =>
-            Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
-            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
+        public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
+        
+        public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, "tools") ;
 
         public string DotnetUserProfileFolderPath
         {
@@ -29,5 +29,11 @@ namespace Microsoft.DotNet.Configurer
 
         public string NuGetUserSettingsDirectory =>
             NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+        private static string GetExecutableBaseDirectory(string nugetfallbackfolder)
+        {
+            return Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
+                   Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, nugetfallbackfolder);
+        }
     }
 }
