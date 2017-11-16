@@ -1,26 +1,21 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿#region
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Frameworks;
+
+#endregion
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
     public class ExecutablePackageObtainer
     {
-        private readonly Func<FilePath> _getTempProjectPath;
+
         private readonly Lazy<string> _bundledTargetFrameworkMoniker;
-        private readonly ICanRestoreProject _projectRestorer;
+        private readonly Func<FilePath> _getTempProjectPath;
         private readonly ICanAddPackageToProjectFile _packageToProjectFileAdder;
+        private readonly ICanRestoreProject _projectRestorer;
         private readonly DirectoryPath _toolsPath;
 
         public ExecutablePackageObtainer(
@@ -29,12 +24,13 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             Lazy<string> bundledTargetFrameworkMoniker,
             ICanAddPackageToProjectFile packageToProjectFileAdder,
             ICanRestoreProject projectRestorer
-            )
+        )
         {
             _getTempProjectPath = getTempProjectPath;
             _bundledTargetFrameworkMoniker = bundledTargetFrameworkMoniker;
             _projectRestorer = projectRestorer ?? throw new ArgumentNullException(nameof(projectRestorer));
-            _packageToProjectFileAdder = packageToProjectFileAdder ?? throw new ArgumentNullException(nameof(packageToProjectFileAdder));
+            _packageToProjectFileAdder = packageToProjectFileAdder ??
+                                         throw new ArgumentNullException(nameof(packageToProjectFileAdder));
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
@@ -50,7 +46,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 targetframework = _bundledTargetFrameworkMoniker.Value;
             }
 
-            PackageVersion packageVersionOrPlaceHolder = new PackageVersion(packageVersion);
+            var packageVersionOrPlaceHolder = new PackageVersion(packageVersion);
 
             var individualToolVersion =
                 CreateIndividualToolVersionDirectory(packageId, packageVersionOrPlaceHolder);
@@ -88,8 +84,8 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             var toolConfiguration = GetConfiguration(packageId, packageVersion, individualToolVersion);
 
             return new ToolConfigurationAndExecutableDirectory(
-                toolConfiguration: toolConfiguration,
-                executableDirectory: individualToolVersion.WithCombineFollowing(
+                toolConfiguration,
+                individualToolVersion.WithCombineFollowing(
                     packageId,
                     packageVersion,
                     "tools",
@@ -168,7 +164,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                         .Value);
             }
 
-           _packageToProjectFileAdder.Add(tempProjectPath, packageId);
+            _packageToProjectFileAdder.Add(tempProjectPath, packageId);
         }
 
         private DirectoryPath CreateIndividualToolVersionDirectory(
@@ -188,7 +184,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 Directory.CreateDirectory(path.Value);
             }
         }
-
+        
         private const string TemporaryProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{0}</TargetFramework>
@@ -208,32 +204,5 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 </Project>";
-
-        private class PackageVersion
-        {
-            public bool IsPlaceHolder { get; }
-            public string Value { get; }
-            public bool IsConcreteValue => !IsPlaceHolder;
-
-            public PackageVersion(string value, bool isPlaceHolder)
-            {
-                IsPlaceHolder = isPlaceHolder;
-                Value = value;
-            }
-
-            public PackageVersion(string packageVersion)
-            {
-                if (packageVersion == null)
-                {
-                    Value = Path.GetRandomFileName();
-                    IsPlaceHolder = true;
-                }
-                else
-                {
-                    Value = packageVersion;
-                    IsPlaceHolder = false;
-                }
-            }
-        }
     }
 }

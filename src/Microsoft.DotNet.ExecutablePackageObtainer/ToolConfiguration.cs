@@ -11,27 +11,34 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             string commandName,
             string toolAssemblyEntryPoint)
         {
-
             if (string.IsNullOrWhiteSpace(commandName))
             {
-                throw new ArgumentNullException(paramName: nameof(commandName), message: "Cannot be null or whitespace");
+                throw new ArgumentNullException(nameof(commandName), "Cannot be null or whitespace");
             }
 
-            // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
-            char[] invalidCharactors = new char[] { '/', '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
-            if (commandName.IndexOfAny(invalidCharactors) != -1)
-            {
-                throw new ArgumentException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot contain following character " + new string(invalidCharactors));
-            }
+            EnsureNoInvalidCharacters(commandName, nameof(toolAssemblyEntryPoint));
 
             if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
             {
-                throw new ArgumentNullException(paramName: nameof(toolAssemblyEntryPoint), message: "Cannot be null or whitespace");
+                throw new ArgumentNullException(nameof(toolAssemblyEntryPoint), "Cannot be null or whitespace");
             }
 
             CommandName = commandName;
             ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
         }
+
+        private void EnsureNoInvalidCharacters(string commandName, string nameOfParam)
+        {
+            // https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+            char[] invalidCharactors = {'/', '<', '>', ':', '"', '/', '\\', '|', '?', '*'};
+            if (commandName.IndexOfAny(invalidCharactors) != -1)
+            {
+                throw new ArgumentException(
+                    paramName: nameof(nameOfParam),
+                    message: "Cannot contain following character " + new string(invalidCharactors));
+            }
+        }
+
 
         public string CommandName { get; }
         public string ToolAssemblyEntryPoint { get; }

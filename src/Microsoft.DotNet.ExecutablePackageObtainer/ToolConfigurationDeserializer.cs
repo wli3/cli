@@ -2,16 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Serialization;
-using Microsoft.DotNet.Cli.Utils;
-using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ExecutablePackageObtainer
 {
@@ -33,7 +26,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 }
                 catch (InvalidOperationException e) when (e.InnerException is XmlException)
                 {
-                    throw new ToolConfigurationException("Failed to retrive tool configuration exception, configuration is malformed xml. " + e.InnerException.Message);
+                    throw new ToolConfigurationException(
+                        "Failed to retrive tool configuration exception, configuration is malformed xml. " +
+                        e.InnerException.Message);
                 }
             }
 
@@ -48,7 +43,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             {
                 throw new ToolConfigurationException("Configuration content error. " + e.Message);
             }
-
         }
     }
 }
