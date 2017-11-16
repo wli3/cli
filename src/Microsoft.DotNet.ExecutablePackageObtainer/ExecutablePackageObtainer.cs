@@ -19,15 +19,19 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
     {
         private readonly Func<FilePath> _getTempProjectPath;
         private readonly Lazy<string> _bundledTargetFrameworkMoniker;
+        private readonly ICanAddPackageToProjectFile _packageToProjectFileAdder;
         private readonly DirectoryPath _toolsPath;
 
         public ExecutablePackageObtainer(
             DirectoryPath toolsPath,
             Func<FilePath> getTempProjectPath,
-            Lazy<string> bundledTargetFrameworkMoniker)
+            Lazy<string> bundledTargetFrameworkMoniker,
+            ICanAddPackageToProjectFile packageToProjectFileAdder
+            )
         {
             _getTempProjectPath = getTempProjectPath;
             _bundledTargetFrameworkMoniker = bundledTargetFrameworkMoniker;
+            _packageToProjectFileAdder = packageToProjectFileAdder ?? throw new ArgumentNullException(nameof(packageToProjectFileAdder));
             _toolsPath = toolsPath ?? throw new ArgumentNullException(nameof(toolsPath));
         }
 
@@ -59,7 +63,6 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                 InvokeAddPackageRestore(
                     nugetconfig,
                     tempProjectPath,
-                    individualToolVersion,
                     packageId);
             }
 
@@ -179,10 +182,9 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
             return tempProjectPath;
         }
 
-        private static void InvokeAddPackageRestore(
+        private void InvokeAddPackageRestore(
             FilePath nugetconfig,
             FilePath tempProjectPath,
-            DirectoryPath individualToolVersion,
             string packageId)
         {
             if (nugetconfig != null)
@@ -195,31 +197,7 @@ namespace Microsoft.DotNet.ExecutablePackageObtainer
                         .Value);
             }
 
-            var argsToPassToRestore = new List<string>
-            {
-                "add",
-                tempProjectPath.Value,
-                "package",
-                packageId,
-                "--no-restore"
-            };
-
-            var command = new CommandFactory()
-                .Create(
-                    "dotnet",
-                    argsToPassToRestore)
-                .CaptureStdOut()
-                .CaptureStdErr();
-
-            var result = command.Execute();
-            if (result.ExitCode != 0)
-            {
-                throw new PackageObtainException("Failed to add package. " +
-                                                 "WorkingDirectory: " +
-                                                 result.StartInfo.WorkingDirectory + "Arguments: " +
-                                                 result.StartInfo.Arguments + "Output: " +
-                                                 result.StdErr + result.StdOut);
-            }
+           _packageToProjectFileAdder.Add(tempProjectPath, packageId);
         }
 
         private DirectoryPath CreateIndividualToolVersionDirectory(
