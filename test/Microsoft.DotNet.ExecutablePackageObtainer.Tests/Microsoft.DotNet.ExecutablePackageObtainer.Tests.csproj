@@ -44,17 +44,18 @@
   </ItemGroup>
   
   <Target Name="CreateNupkgFromSource" BeforeTargets="Build">
+    <Copy SourceFiles="SampleGlobalTool/DotnetToolsConfig.xml" DestinationFolder="$(BaseOutputPath)/TestAsset/SampleGlobalTool" />
     <MSBuild
       BuildInParallel="False"
       Projects="SampleGlobalTool/consoledemo.csproj"
       Targets="Restore;Build;Publish"
-      Properties="Configuration=Release;BaseOutputPath=$(BaseOutputPath)/SampleGlobalTool/bin/Release/">
+      Properties="Configuration=Release;BaseOutputPath=$(BaseOutputPath)/TestAsset/SampleGlobalTool/bin">
     </MSBuild>
     <MSBuild
       BuildInParallel="False"
       Projects="SampleGlobalTool/consoledemo.csproj"
       Targets="pack"
-      Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(BaseOutputPath)/SampleGlobalTool/">
+      Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(BaseOutputPath)/TestAsset/SampleGlobalTool;PackageOutputPath=$(OutputPath)/TestAssetLocalNugetFeed">
     </MSBuild>
   </Target>
 </Project>
