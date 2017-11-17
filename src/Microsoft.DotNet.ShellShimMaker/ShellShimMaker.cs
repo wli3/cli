@@ -12,12 +12,12 @@ namespace Microsoft.DotNet.ShellShimMaker
 {
     public class ShellShimMaker
     {
-        private readonly string _systemPathToPlaceShim;
+        private readonly string _pathToPlaceShim;
 
-        public ShellShimMaker(string systemPathToPlaceShim)
+        public ShellShimMaker(string pathToPlaceShim)
         {
-            _systemPathToPlaceShim =
-                systemPathToPlaceShim ?? throw new ArgumentNullException(nameof(systemPathToPlaceShim));
+            _pathToPlaceShim =
+                pathToPlaceShim ?? throw new ArgumentNullException(nameof(pathToPlaceShim));
         }
 
         public void CreateShim(string packageExecutablePath, string shellCommandName)
@@ -51,6 +51,14 @@ namespace Microsoft.DotNet.ShellShimMaker
             SetUserExecutionPermissionToShimFile(scriptPath);
         }
 
+        public void EnsureCommandNameUniqueness(string shellCommandName)
+        {
+            if (File.Exists(Path.Combine(_pathToPlaceShim, shellCommandName)))
+            {
+                throw new GracefulException($"Failed to create tool {shellCommandName}, a command with the same name existed");
+            }
+        }
+
         public void Remove(string shellCommandName)
         {
             File.Delete(GetScriptPath(shellCommandName).Value);
@@ -58,7 +66,7 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         private FilePath GetScriptPath(string shellCommandName)
         {
-            var scriptPath = Path.Combine(_systemPathToPlaceShim, shellCommandName);
+            var scriptPath = Path.Combine(_pathToPlaceShim, shellCommandName);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 scriptPath += ".cmd";
