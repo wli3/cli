@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             string stdOut;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ExecuteAndCaptureOutput(new ProcessStartInfo
+                ExecuteAndCaptureOutputWithAssert(new ProcessStartInfo
                 {
                     FileName = "CMD.exe",
                     Arguments = $"/C {shellCommandName}",
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             }
             else
             {
-                ExecuteAndCaptureOutput(new ProcessStartInfo
+                ExecuteAndCaptureOutputWithAssert(new ProcessStartInfo
                 {
                     FileName = "sh",
                     Arguments = $"-c {shellCommandName}",
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             return outputDll;
         }
 
-        private static void ExecuteAndCaptureOutput(ProcessStartInfo startInfo, out string stdOut)
+        private static void ExecuteAndCaptureOutputWithAssert(ProcessStartInfo startInfo, out string stdOut)
         {
             var outStream = new StreamForwarder().Capture();
             var errStream = new StreamForwarder().Capture();

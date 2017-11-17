@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Configurer
 
         public UserLevelCacheWriter(CliFolderPathCalculator cliFolderPathCalculator) :
             this(
-                cliFolderPathCalculator.DotnetUserProfileFolderPath,
+                CliFolderPathCalculator.DotnetUserProfileFolderPath,
                 FileSystemWrapper.Default.File,
                 FileSystemWrapper.Default.Directory)
         {

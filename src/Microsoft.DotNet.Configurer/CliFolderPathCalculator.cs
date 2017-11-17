@@ -12,18 +12,22 @@ namespace Microsoft.DotNet.Configurer
 {
     public class CliFolderPathCalculator
     {
+        private const string ToolsFolderName = "tools";
+        private const string DotnetProfileDirectoryName = ".dotnet";
+
         public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
         
-        public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, "tools") ;
+        public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, ToolsFolderName) ;
+        public readonly string ExecutablePackagesPathOnMacEnvPath = $"$HOME/{DotnetProfileDirectoryName}/{ToolsFolderName}";
 
-        public string DotnetUserProfileFolderPath
+        public static string DotnetUserProfileFolderPath
         {
             get
             {
                 string profileDir = Environment.GetEnvironmentVariable(
                     RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
 
-                return Path.Combine(profileDir, ".dotnet");
+                return Path.Combine(profileDir, DotnetProfileDirectoryName);
             }
         }
 

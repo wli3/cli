@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Configurer
 
         public FirstTimeUseNoticeSentinel(CliFolderPathCalculator cliFolderPathCalculator) :
             this(
-                cliFolderPathCalculator.DotnetUserProfileFolderPath,
+                CliFolderPathCalculator.DotnetUserProfileFolderPath,
                 FileSystemWrapper.Default.File,
                 FileSystemWrapper.Default.Directory)
         {
