@@ -13,13 +13,15 @@ namespace Microsoft.DotNet.ShellShimMaker
 {
     public class LinuxEnvironmentPath : IEnvironmentPath
     {
+        private readonly IReporter _reporter;
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
         private const string ProfiledDotnetCliToolsPath = @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
 
-        public LinuxEnvironmentPath(string packageExecutablePath)
+        public LinuxEnvironmentPath(string packageExecutablePath, IReporter reporter)
         {
-            _packageExecutablePath = packageExecutablePath;
+            _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
+            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
         }
 
         public void AddPackageExecutablePathToUserPath()
@@ -34,5 +36,8 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath);
         }
+
+        public string PrintAddPathInstructionIfPathDoesNotExist()
+        { }
     }
 }
