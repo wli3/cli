@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.ShellShimMaker
             catch (UnauthorizedAccessException e)
             {
                 throw new GracefulException(
-                    string.Format(LocalizableStrings.InstallCommandUnauthorizedAccessMessage,
+                    string.Format("Install failed, try run the install command as an administrator, if you have the access. {0}",
                         e.Message));
             }
 
