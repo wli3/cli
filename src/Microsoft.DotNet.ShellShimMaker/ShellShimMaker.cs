@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
@@ -21,20 +22,24 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public void CreateShim(string packageExecutablePath, string shellCommandName)
         {
+            var packageExecutable = new FilePath(packageExecutablePath);
+
             var script = new StringBuilder();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 script.AppendLine("@echo off");
-                script.AppendLine($"dotnet exec \"{packageExecutablePath}\" %*");
+                script.AppendLine($"dotnet {packageExecutable.ToEscapedString()} %*");
             }
             else
             {
-                throw new NotImplementedException("unix work in progress");
+                script.AppendLine("#!/bin/sh");
+                script.AppendLine($"dotnet {packageExecutable.ToEscapedString()} \"$@\"");
             }
 
+            var scriptPath = GetScriptPath(shellCommandName);
             try
             {
-                File.WriteAllText(GetScriptPath(shellCommandName), script.ToString());
+                File.WriteAllText(scriptPath.Value, script.ToString());
             }
             catch (UnauthorizedAccessException e)
             {
@@ -42,22 +47,40 @@ namespace Microsoft.DotNet.ShellShimMaker
                     string.Format(LocalizableStrings.InstallCommandUnauthorizedAccessMessage,
                         e.Message));
             }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+            
+            var result = new CommandFactory()
+                .Create("chmod", new[] {"u+x", scriptPath.Value})
+                .CaptureStdOut()
+                .CaptureStdErr()
+                .Execute();
+
+
+            if (result.ExitCode != 0)
+            {
+                throw new GracefulException(
+                    "Failed to change permission" +
+                    $"{Environment.NewLine}error: " + result.StdErr +
+                    $"{Environment.NewLine}output: " +
+                    result.StdOut);
+            }
         }
 
         public void Remove(string shellCommandName)
         {
-            File.Delete(GetScriptPath(shellCommandName));
+            File.Delete(GetScriptPath(shellCommandName).Value);
         }
 
-        private string GetScriptPath(string shellCommandName)
+        private FilePath GetScriptPath(string shellCommandName)
         {
             var scriptPath = Path.Combine(_systemPathToPlaceShim, shellCommandName);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
                 scriptPath += ".cmd";
-            else
-                throw new NotImplementedException("unix work in progress");
+            }
 
-            return scriptPath;
+            return new FilePath(scriptPath);
         }
     }
 }
