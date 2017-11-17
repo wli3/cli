@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -13,7 +14,7 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
 {
     public class ShellShimMakerTests : TestBase
     {
-        [WindowsOnlyFact]
+        [Fact]
         public void GivenAnExecutablePathItCanGenerateShimFile()
         {
             var outputDll = MakeHelloWorldExecutableDll();
@@ -35,12 +36,26 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
 
         private static string ExecuteInShell(string shellCommandName)
         {
-            ExecuteAndCaptureOutput(new ProcessStartInfo
+            string stdOut;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                FileName = "CMD.exe",
-                Arguments = $"/C {shellCommandName}",
-                UseShellExecute = false
-            }, out var stdOut);
+                ExecuteAndCaptureOutput(new ProcessStartInfo
+                {
+                    FileName = "CMD.exe",
+                    Arguments = $"/C {shellCommandName}",
+                    UseShellExecute = false
+                }, out stdOut);
+            }
+            else
+            {
+                ExecuteAndCaptureOutput(new ProcessStartInfo
+                {
+                    FileName = "sh",
+                    Arguments = $"-c {shellCommandName}",
+                    UseShellExecute = false
+                }, out stdOut);
+            }
+
             return stdOut ?? "";
         }
 
@@ -63,22 +78,33 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
         private static void ExecuteAndCaptureOutput(ProcessStartInfo startInfo, out string stdOut)
         {
             var outStream = new StreamForwarder().Capture();
+            var errStream = new StreamForwarder().Capture();
 
             startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
 
             var process = new Process
             {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true
+                StartInfo = startInfo
             };
+
+            process.EnableRaisingEvents = true;
 
             process.Start();
 
             var taskOut = outStream.BeginRead(process.StandardOutput);
+            var taskErr = errStream.BeginRead(process.StandardError);
+
             process.WaitForExit();
 
             taskOut.Wait();
+            taskErr.Wait();
+
             stdOut = outStream.CapturedOutput;
+            var stdErr = errStream.CapturedOutput;
+
+            stdErr.Should().BeEmpty();
+            process.ExitCode.Should().Be(0);
         }
     }
 }
