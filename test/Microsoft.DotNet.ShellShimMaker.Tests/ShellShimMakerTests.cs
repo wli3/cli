@@ -34,6 +34,49 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             shellShimMaker.Remove(shellCommandName);
         }
 
+        [Fact]
+        public void GivenAnExecutablePathWithExistingSameNameShimItThrows()
+        {
+            var muxer = new Muxer();
+            var pathToPlaceShim = Path.GetDirectoryName(muxer.MuxerPath);
+            var shellCommandName = nameof(ShellShimMakerTests) + Path.GetRandomFileName();
+
+            MakeNameConflictingCommand(pathToPlaceShim, shellCommandName);
+
+            var shellShimMaker = new ShellShimMaker(pathToPlaceShim);
+
+            Action a = () => shellShimMaker.EnsureCommandNameUniqueness(shellCommandName);
+            a.ShouldThrow<GracefulException>()
+                .And.Message
+                .Should().Contain($"Failed to create tool {shellCommandName}, a command with the same name existed");
+
+            // Tear down
+            shellShimMaker.Remove(shellCommandName);
+        }
+
+
+        [Fact]
+        public void GivenAnExecutablePathWithoutExistingSameNameShimItShouldNotThrow()
+        {
+            var muxer = new Muxer();
+            var pathToPlaceShim = Path.GetDirectoryName(muxer.MuxerPath);
+            var shellCommandName = nameof(ShellShimMakerTests) + Path.GetRandomFileName();
+
+            var shellShimMaker = new ShellShimMaker(pathToPlaceShim);
+
+            Action a = () => shellShimMaker.EnsureCommandNameUniqueness(shellCommandName);
+            a.ShouldNotThrow();
+
+            // Tear down
+            shellShimMaker.Remove(shellCommandName);
+        }
+
+        private static void MakeNameConflictingCommand(string pathToPlaceShim, string shellCommandName)
+        {
+            File.WriteAllText(Path.Combine(pathToPlaceShim, shellCommandName), string.Empty);
+        }
+
+
         private static string ExecuteInShell(string shellCommandName)
         {
             string stdOut;
