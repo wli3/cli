@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Configurer
         public string CliFallbackFolderPath => GetExecutableBaseDirectory("NuGetFallbackFolder");
         
         public string ExecutablePackagesPath => Path.Combine(DotnetUserProfileFolderPath, ToolsFolderName) ;
-        public readonly string ExecutablePackagesPathOnMacEnvPath = $"$HOME/{DotnetProfileDirectoryName}/{ToolsFolderName}";
+        public readonly string ExecutablePackagesPathOnMacEnvPath = $"~/{DotnetProfileDirectoryName}/{ToolsFolderName}";
 
         public static string DotnetUserProfileFolderPath
         {
