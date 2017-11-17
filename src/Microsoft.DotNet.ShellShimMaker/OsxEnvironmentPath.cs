@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public OsxEnvironmentPath(string packageExecutablePath)
         {
-            _packageExecutablePath = packageExecutablePath;
+            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
         }
 
         public void AddPackageExecutablePathToUserPath()

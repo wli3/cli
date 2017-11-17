@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         public WindowsEnvironmentPath(string packageExecutablePath)
         {
-            _packageExecutablePath = packageExecutablePath;
+            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
         }
 
         public void AddPackageExecutablePathToUserPath()
