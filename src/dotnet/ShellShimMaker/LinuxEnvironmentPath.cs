@@ -6,21 +6,30 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
-    public class LinuxEnvironmentPath : IEnvironmentPath
+    internal class LinuxEnvironmentPath : IEnvironmentPath
     {
+        private readonly IEnvironmentProvider _environmentProvider;
         private readonly IReporter _reporter;
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
         private const string ProfiledDotnetCliToolsPath = @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
 
-        public LinuxEnvironmentPath(string packageExecutablePath, IReporter reporter)
+        public LinuxEnvironmentPath(
+            string packageExecutablePath,
+            IReporter reporter,
+            IEnvironmentProvider environmentProvider)
         {
-            _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
-            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+            _environmentProvider
+                = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+            _reporter
+                = reporter ?? throw new ArgumentNullException(nameof(reporter));
+            _packageExecutablePath
+                = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
         }
 
         public void AddPackageExecutablePathToUserPath()
@@ -33,16 +42,24 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         private bool PackageExecutablePathExists()
         {
-            return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath);
+            return _environmentProvider
+                .GetEnvironmentVariable(PathName)
+                .Split(':').Contains(_packageExecutablePath);
         }
 
-        public string PrintAddPathInstructionIfPathDoesNotExist()
+        public void PrintAddPathInstructionIfPathDoesNotExist()
         {
             if (!PackageExecutablePathExists())
             {
-                throw new NotImplementedException();
+                // similar to https://code.visualstudio.com/docs/setup/mac
+                _reporter.WriteLine(
+                    $"Cannot find tools executable path in environement PATH. Please ensure {_packageExecutablePath} is added to your PATH.{Environment.NewLine}" +
+                    $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
+                    $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
+                    $"# Add dotnet-sdk tools{Environment.NewLine}" +
+                    $"export PATH=\"$PATH:{_packageExecutablePath}\"{Environment.NewLine}" +
+                    $"EOF");
             }
-            throw new NotImplementedException();
         }
     }
 }
