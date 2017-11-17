@@ -206,6 +206,8 @@ namespace Microsoft.DotNet.Cli
             CliFolderPathCalculator cliFolderPathCalculator,
             bool hasSuperUserAccess)
         {
+            var environmentProvider = new EnvironmentProvider();
+
             using (PerfTrace.Current.CaptureTiming())
             {
                 IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
@@ -215,7 +217,10 @@ namespace Microsoft.DotNet.Cli
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
                 {
-                    environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath, reporter: Reporter.Output);
+                    environmentPath = new LinuxEnvironmentPath(
+                        cliFolderPathCalculator.ExecutablePackagesPath, 
+                        Reporter.Output,
+                        environmentProvider);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
                 {
@@ -223,7 +228,7 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
-                var environmentProvider = new EnvironmentProvider();
+                
                 var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
                 var nugetCachePrimer = new NuGetCachePrimer(
                     nugetPackagesArchiver,
