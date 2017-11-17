@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
                 {
-                    environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath);
+                    environmentPath = new LinuxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPath, reporter: Reporter.Output);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
                 {

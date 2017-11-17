@@ -6,8 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
-using Mono.Unix;
-using Mono.Unix.Native;
+
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
@@ -38,6 +37,12 @@ namespace Microsoft.DotNet.ShellShimMaker
         }
 
         public string PrintAddPathInstructionIfPathDoesNotExist()
-        { }
+        {
+            if (!PackageExecutablePathExists())
+            {
+                throw new NotImplementedException();
+            }
+            throw new NotImplementedException();
+        }
     }
 }

@@ -12,7 +12,8 @@
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.DotNet.ShellShimMaker\Microsoft.DotNet.ShellShimMaker.csproj" />
+    <ProjectReference Include="..\..\src\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
