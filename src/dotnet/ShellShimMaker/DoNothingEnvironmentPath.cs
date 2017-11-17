@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
-using Mono.Unix;
-using Mono.Unix.Native;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
