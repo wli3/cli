@@ -48,23 +48,7 @@ namespace Microsoft.DotNet.ShellShimMaker
                         e.Message));
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
-            
-            var result = new CommandFactory()
-                .Create("chmod", new[] {"u+x", scriptPath.Value})
-                .CaptureStdOut()
-                .CaptureStdErr()
-                .Execute();
-
-
-            if (result.ExitCode != 0)
-            {
-                throw new GracefulException(
-                    "Failed to change permission" +
-                    $"{Environment.NewLine}error: " + result.StdErr +
-                    $"{Environment.NewLine}output: " +
-                    result.StdOut);
-            }
+            SetUserExecutionPermissionToShimFile(scriptPath);
         }
 
         public void Remove(string shellCommandName)
@@ -81,6 +65,26 @@ namespace Microsoft.DotNet.ShellShimMaker
             }
 
             return new FilePath(scriptPath);
+        }
+
+        private static void SetUserExecutionPermissionToShimFile(FilePath scriptPath)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+
+            var result = new CommandFactory()
+                .Create("chmod", new[] {"u+x", scriptPath.Value})
+                .CaptureStdOut()
+                .CaptureStdErr()
+                .Execute();
+
+
+            if (result.ExitCode != 0)
+            {
+                throw new GracefulException(
+                    "Failed to change permission" +
+                    $"{Environment.NewLine}error: " + result.StdErr +
+                    $"{Environment.NewLine}output: " + result.StdOut);
+            }
         }
     }
 }
