@@ -4,13 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 
 namespace Microsoft.DotNet.ShellShimMaker.Tests
@@ -83,110 +80,6 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
 
             // asset
             fakeReporter.Message.Should().Be("You need logout to be able to run new installed command from shell");
-        }
-
-        private class FakeReporter : IReporter
-        {
-            public string Message { get; private set; } = "";
-
-            public void WriteLine(string message)
-            {
-                Message = message;
-            }
-
-            public void WriteLine()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Write(string message)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class FakeEnvironmentProvider : IEnvironmentProvider
-        {
-            private readonly Dictionary<string, string> _environmentVariables;
-
-            public FakeEnvironmentProvider(Dictionary<string, string> environmentVariables)
-            {
-                _environmentVariables =
-                    environmentVariables ?? throw new ArgumentNullException(nameof(environmentVariables));
-            }
-
-            public IEnumerable<string> ExecutableExtensions { get; }
-
-            public string GetCommandPath(string commandName, params string[] extensions)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetCommandPathFromRootPath(string rootPath, string commandName,
-                IEnumerable<string> extensions)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool GetEnvironmentVariableAsBool(string name, bool defaultValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetEnvironmentVariable(string name)
-            {
-                return _environmentVariables.ContainsKey(name) ? _environmentVariables[name] : "";
-            }
-        }
-
-        private class FakeFile : IFile
-        {
-            private Dictionary<string, string> _files;
-
-            public FakeFile(Dictionary<string, string> files)
-            {
-                _files = files;
-            }
-
-            public bool Exists(string path)
-            {
-                return _files.ContainsKey(path);
-            }
-
-            public string ReadAllText(string path)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Stream OpenRead(string path)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare,
-                int bufferSize,
-                FileOptions fileOptions)
-            {
-                throw new NotImplementedException();
-            }
-
-
-            public void CreateEmptyFile(string path)
-            {
-                _files.Add(path, string.Empty);
-            }
-
-            public void WriteAllText(string path, string content)
-            {
-                _files[path] = content;
-            }
-
-            public static FakeFile Empty => new FakeFile(new Dictionary<string, string>());
         }
     }
 }
