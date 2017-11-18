@@ -211,33 +211,9 @@ namespace Microsoft.DotNet.Cli
 
             using (PerfTrace.Current.CaptureTiming())
             {
-                IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    environmentPath = new WindowsEnvironmentPath(
-                        cliFolderPathCalculator.ExecutablePackagesPath,
-                        Reporter.Output,
-                        environmentProvider);
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
-                {
-                    environmentPath = new LinuxEnvironmentPath(
-                        cliFolderPathCalculator.ExecutablePackagesPath, 
-                        Reporter.Output,
-                        environmentProvider, new FileWrapper());
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
-                {
-                    environmentPath = new OsxEnvironmentPath(
-                        packageExecutablePathWIthTilde: cliFolderPathCalculator.ExecutablePackagesPathOnMacEnvPath,
-                        fullPackageExecutablePath: cliFolderPathCalculator.ExecutablePackagesPath,
-                        reporter: Reporter.Output,
-                        environmentProvider: environmentProvider, 
-                        fileSystem: new FileWrapper());
-                }
-
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
-                
+                var environmentPath =
+                    EnvironmentPathFactory.CreateEnvironmentPath(cliFolderPathCalculator, hasSuperUserAccess, environmentProvider);
                 var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
                 var nugetCachePrimer = new NuGetCachePrimer(
                     nugetPackagesArchiver,
