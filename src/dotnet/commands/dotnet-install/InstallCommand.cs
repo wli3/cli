@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ShellShimMaker;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
@@ -59,9 +60,17 @@ namespace Microsoft.DotNet.Cli
 
 
             var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagePath.Value);
+
+            shellShimMaker.EnsureCommandNameUniqueness(
+                toolConfigurationAndExecutableDirectory.Configuration.CommandName);
+
             shellShimMaker.CreateShim(
                 executable.Value,
                 toolConfigurationAndExecutableDirectory.Configuration.CommandName);
+
+            EnvironmentPathFactory
+                .CreateEnvironmentPathInstruction()
+                .PrintAddPathInstructionIfPathDoesNotExist();
 
             return 0;
         }
