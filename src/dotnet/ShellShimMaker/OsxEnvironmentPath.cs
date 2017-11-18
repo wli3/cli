@@ -5,19 +5,34 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
-    public class OsxEnvironmentPath : IEnvironmentPath
+    internal class OsxEnvironmentPath : IEnvironmentPath
     {
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
+        private readonly string _fullPackageExecutablePath;
         private const string PathDDotnetCliToolsPath = @"/etc/paths.d/dotnet-cli-tools";
-        
+        private readonly IFile _fileSystem;
+        private readonly IEnvironmentProvider _environmentProvider;
+        private readonly IReporter _reporter;
 
-        public OsxEnvironmentPath(string packageExecutablePath)
+        public OsxEnvironmentPath(
+            string packageExecutablePathWIthTilde, 
+            string fullPackageExecutablePath, 
+            IFile fileSystem, 
+            IEnvironmentProvider environmentProvider, 
+            IReporter reporter)
         {
-            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+            _fullPackageExecutablePath = fullPackageExecutablePath ?? throw new ArgumentNullException(nameof(fullPackageExecutablePath));
+            _packageExecutablePath = packageExecutablePathWIthTilde ?? throw new ArgumentNullException(nameof(packageExecutablePathWIthTilde));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _environmentProvider
+                = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+            _reporter
+                = reporter ?? throw new ArgumentNullException(nameof(reporter));
         }
 
         public void AddPackageExecutablePathToUserPath()
@@ -30,7 +45,8 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         private bool PackageExecutablePathExists()
         {
-            return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath);
+            return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath) || 
+                   Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_fullPackageExecutablePath);
         }
     }
 }
