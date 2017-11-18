@@ -13,7 +13,10 @@ namespace Microsoft.DotNet.ShellShimMaker
     {
         public void AddPackageExecutablePathToUserPath()
         {
+        }
 
+        public void PrintAddPathInstructionIfPathDoesNotExist()
+        {
         }
     }
 }

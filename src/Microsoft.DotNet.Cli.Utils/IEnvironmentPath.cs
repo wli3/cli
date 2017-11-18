@@ -6,5 +6,6 @@ namespace Microsoft.DotNet.Cli.Utils
     public interface IEnvironmentPath
     {
         void AddPackageExecutablePathToUserPath();
+        void PrintAddPathInstructionIfPathDoesNotExist();
     }
 }
