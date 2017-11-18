@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.DotNet.ShellShimMaker.Tests
 {
-    public class EnvironmentPathTests
+    public class LinuxEnvironmentPathTests
     {
         [Fact]
         public void GivenEnvironementAndReporterItCanPrintOutInstructionToAddPath()
