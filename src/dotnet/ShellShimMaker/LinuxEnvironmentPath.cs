@@ -13,17 +13,20 @@ namespace Microsoft.DotNet.ShellShimMaker
 {
     internal class LinuxEnvironmentPath : IEnvironmentPath
     {
+        private readonly IFile _fileSystem;
         private readonly IEnvironmentProvider _environmentProvider;
         private readonly IReporter _reporter;
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
         private const string ProfiledDotnetCliToolsPath = @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
 
-        public LinuxEnvironmentPath(
+        internal LinuxEnvironmentPath(
             string packageExecutablePath,
             IReporter reporter,
-            IEnvironmentProvider environmentProvider)
+            IEnvironmentProvider environmentProvider,
+            IFile fileSystem)
         {
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _environmentProvider
                 = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
             _reporter
@@ -37,7 +40,7 @@ namespace Microsoft.DotNet.ShellShimMaker
             if (PackageExecutablePathExists()) return;
 
             var script = $"export PATH=\"$PATH:{_packageExecutablePath}\"";
-            File.WriteAllText(ProfiledDotnetCliToolsPath, script);
+            _fileSystem.WriteAllText(ProfiledDotnetCliToolsPath, script);
         }
 
         private bool PackageExecutablePathExists()
@@ -51,14 +54,21 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             if (!PackageExecutablePathExists())
             {
-                // similar to https://code.visualstudio.com/docs/setup/mac
-                _reporter.WriteLine(
-                    $"Cannot find tools executable path in environement PATH. Please ensure {_packageExecutablePath} is added to your PATH.{Environment.NewLine}" +
-                    $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
-                    $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
-                    $"# Add dotnet-sdk tools{Environment.NewLine}" +
-                    $"export PATH=\"$PATH:{_packageExecutablePath}\"{Environment.NewLine}" +
-                    $"EOF");
+                if (_fileSystem.Exists(ProfiledDotnetCliToolsPath))
+                {
+                    _reporter.WriteLine("You need logout to be able to run new installed command from shell");
+                }
+                else
+                {
+                    // similar to https://code.visualstudio.com/docs/setup/mac
+                    _reporter.WriteLine(
+                        $"Cannot find tools executable path in environement PATH. Please ensure {_packageExecutablePath} is added to your PATH.{Environment.NewLine}" +
+                        $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
+                        $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
+                        $"# Add dotnet-sdk tools{Environment.NewLine}" +
+                        $"export PATH=\"$PATH:{_packageExecutablePath}\"{Environment.NewLine}" +
+                        $"EOF");
+                }
             }
         }
     }
