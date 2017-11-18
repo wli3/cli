@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.ShellShimMaker
     internal class OsxEnvironmentPath : IEnvironmentPath
     {
         private const string PathName = "PATH";
-        private readonly string _packageExecutablePath;
+        private readonly string _packageExecutablePathWIthTilde;
         private readonly string _fullPackageExecutablePath;
         private const string PathDDotnetCliToolsPath = @"/etc/paths.d/dotnet-cli-tools";
         private readonly IFile _fileSystem;
@@ -20,15 +20,17 @@ namespace Microsoft.DotNet.ShellShimMaker
         private readonly IReporter _reporter;
 
         public OsxEnvironmentPath(
-            string packageExecutablePathWIthTilde, 
-            string fullPackageExecutablePath, 
+            string packageExecutablePathWIthTilde,
+            string fullPackageExecutablePath,
             IReporter reporter,
-            IEnvironmentProvider environmentProvider, 
+            IEnvironmentProvider environmentProvider,
             IFile fileSystem
-            )
+        )
         {
-            _fullPackageExecutablePath = fullPackageExecutablePath ?? throw new ArgumentNullException(nameof(fullPackageExecutablePath));
-            _packageExecutablePath = packageExecutablePathWIthTilde ?? throw new ArgumentNullException(nameof(packageExecutablePathWIthTilde));
+            _fullPackageExecutablePath = fullPackageExecutablePath ??
+                                         throw new ArgumentNullException(nameof(fullPackageExecutablePath));
+            _packageExecutablePathWIthTilde = packageExecutablePathWIthTilde ??
+                                              throw new ArgumentNullException(nameof(packageExecutablePathWIthTilde));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _environmentProvider
                 = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
@@ -40,19 +42,40 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             if (PackageExecutablePathExists()) return;
 
-            var script = $"{_packageExecutablePath}";
-            File.WriteAllText(PathDDotnetCliToolsPath, script);
+            var script = $"{_packageExecutablePathWIthTilde}";
+            _fileSystem.WriteAllText(PathDDotnetCliToolsPath, script);
         }
 
         private bool PackageExecutablePathExists()
         {
-            return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath) || 
-                   Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_fullPackageExecutablePath);
+            return _environmentProvider.GetEnvironmentVariable(PathName).Split(':')
+                       .Contains(_packageExecutablePathWIthTilde) ||
+                   _environmentProvider.GetEnvironmentVariable(PathName).Split(':')
+                       .Contains(_fullPackageExecutablePath);
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
         {
-            throw new NotImplementedException();
+            if (!PackageExecutablePathExists())
+            {
+                if (_fileSystem.Exists(PathDDotnetCliToolsPath))
+                {
+                    _reporter.WriteLine(
+                        $"You need reopen to be able to run new installed command from shell{Environment.NewLine}" +
+                        $"If you are using different a shell that is not sh or bash, you need to ensure {_fullPackageExecutablePath} is in your path");
+                }
+                else
+                {
+                    // similar to https://code.visualstudio.com/docs/setup/mac
+                    _reporter.WriteLine(
+                        $"Cannot find tools executable path in environement PATH. Please ensure {_fullPackageExecutablePath} is added to your PATH.{Environment.NewLine}" +
+                        $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
+                        $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
+                        $"# Add dotnet-sdk tools{Environment.NewLine}" +
+                        $"export PATH=\"$PATH:{_fullPackageExecutablePath}\"{Environment.NewLine}" +
+                        $"EOF");
+                }
+            }
         }
     }
 }
