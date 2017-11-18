@@ -11,7 +11,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.Extensions.DependencyModel.Tests
 {
-    class FileSystemMockBuilder
+    public class FileSystemMockBuilder
     {
         private Dictionary<string, string> _files = new Dictionary<string, string>();
 

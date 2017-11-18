@@ -13,6 +13,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.ShellShimMaker;
 using Microsoft.DotNet.Tools.Help;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using Command = Microsoft.DotNet.Cli.Utils.Command;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
@@ -220,7 +221,7 @@ namespace Microsoft.DotNet.Cli
                     environmentPath = new LinuxEnvironmentPath(
                         cliFolderPathCalculator.ExecutablePackagesPath, 
                         Reporter.Output,
-                        environmentProvider);
+                        environmentProvider, new FileWrapper());
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
                 {

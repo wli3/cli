@@ -9,6 +9,8 @@ using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.Extensions.DependencyModel.Tests;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 
 namespace Microsoft.DotNet.ShellShimMaker.Tests
@@ -26,19 +28,21 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
                     new Dictionary<string, string>
                     {
                         {"PATH", ""}
-                    }));
+                    }),
+                FakeFile.Empty);
 
             linuxEnvironementPath.PrintAddPathInstructionIfPathDoesNotExist();
 
             // similar to https://code.visualstudio.com/docs/setup/mac
-            fakeReporter.Message.Should().Be($"Cannot find tools executable path in environement PATH. Please ensure executable\\path is added to your PATH.{Environment.NewLine}" +
-                                             $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
-                                             $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
-                                             $"# Add dotnet-sdk tools{Environment.NewLine}" +
-                                             $"export PATH=\"$PATH:executable\\path\"{Environment.NewLine}" +
-                                             $"EOF");
+            fakeReporter.Message.Should().Be(
+                $"Cannot find tools executable path in environement PATH. Please ensure executable\\path is added to your PATH.{Environment.NewLine}" +
+                $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
+                $"cat << EOF >> ~/.bash_profile{Environment.NewLine}" +
+                $"# Add dotnet-sdk tools{Environment.NewLine}" +
+                $"export PATH=\"$PATH:executable\\path\"{Environment.NewLine}" +
+                $"EOF");
         }
-        
+
         [Fact]
         public void GivenEnvironementAndReporterItPrintsNothingWhenEnvironementExists()
         {
@@ -50,11 +54,35 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
                     new Dictionary<string, string>
                     {
                         {"PATH", @"executable\path"}
-                    }));
+                    }),
+                FakeFile.Empty);
 
             linuxEnvironementPath.PrintAddPathInstructionIfPathDoesNotExist();
 
             fakeReporter.Message.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GivenAddPackageExecutablePathToUserPathJustRunItPrintsInstructionToLogout()
+        {
+            // arrange
+            var fakeReporter = new FakeReporter();
+            var linuxEnvironementPath = new LinuxEnvironmentPath(
+                @"executable\path",
+                fakeReporter,
+                new FakeEnvironmentProvider(
+                    new Dictionary<string, string>
+                    {
+                        {"PATH", @""}
+                    }),
+                FakeFile.Empty);
+            linuxEnvironementPath.AddPackageExecutablePathToUserPath();
+
+            // act
+            linuxEnvironementPath.PrintAddPathInstructionIfPathDoesNotExist();
+
+            // asset
+            fakeReporter.Message.Should().Be("You need logout to be able to run new installed command from shell");
         }
 
         private class FakeReporter : IReporter
@@ -114,6 +142,51 @@ namespace Microsoft.DotNet.ShellShimMaker.Tests
             {
                 return _environmentVariables.ContainsKey(name) ? _environmentVariables[name] : "";
             }
+        }
+
+        private class FakeFile : IFile
+        {
+            private Dictionary<string, string> _files;
+
+            public FakeFile(Dictionary<string, string> files)
+            {
+                _files = files;
+            }
+
+            public bool Exists(string path)
+            {
+                return _files.ContainsKey(path);
+            }
+
+            public string ReadAllText(string path)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Stream OpenRead(string path)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare,
+                int bufferSize,
+                FileOptions fileOptions)
+            {
+                throw new NotImplementedException();
+            }
+
+
+            public void CreateEmptyFile(string path)
+            {
+                _files.Add(path, string.Empty);
+            }
+
+            public void WriteAllText(string path, string content)
+            {
+                _files[path] = content;
+            }
+
+            public static FakeFile Empty => new FakeFile(new Dictionary<string, string>());
         }
     }
 }
