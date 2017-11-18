@@ -4,17 +4,30 @@
 using System;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShimMaker
 {
-    public class WindowsEnvironmentPath : IEnvironmentPath
+    internal class WindowsEnvironmentPath : IEnvironmentPath
     {
+        private readonly IReporter _reporter;
+        private readonly IFile _fileSystem;
+        private readonly IEnvironmentProvider _environmentProvider;
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
 
-        public WindowsEnvironmentPath(string packageExecutablePath)
+        public WindowsEnvironmentPath(
+            string packageExecutablePath, IReporter reporter,
+            IEnvironmentProvider environmentProvider,
+            IFile fileSystem)
         {
-            _packageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+            _packageExecutablePath 
+                = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _environmentProvider
+                = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+            _reporter
+                = reporter ?? throw new ArgumentNullException(nameof(reporter));
         }
 
         public void AddPackageExecutablePathToUserPath()
@@ -31,7 +44,26 @@ namespace Microsoft.DotNet.ShellShimMaker
 
         private bool PackageExecutablePathExists()
         {
-            return Environment.GetEnvironmentVariable(PathName).Split(';').Contains(_packageExecutablePath);
+            return _environmentProvider.GetEnvironmentVariable(PathName).Split(';').Contains(_packageExecutablePath);
+        }
+
+        public void PrintAddPathInstructionIfPathDoesNotExist()
+        {
+            if (!PackageExecutablePathExists())
+            {
+                if (Environment.GetEnvironmentVariable(PathName, EnvironmentVariableTarget.User).Split(';').Contains(_packageExecutablePath))
+                {
+                    _reporter.WriteLine(
+                        $"You need reopen shell to be able to run new installed command.");
+                }
+                else
+                {
+                    _reporter.WriteLine(
+                        $"Cannot find tools executable path in environement PATH. Please ensure {_packageExecutablePath} is added to your PATH.{Environment.NewLine}" +
+                        $"If you are using bash, you can add it by running following command:{Environment.NewLine}{Environment.NewLine}" +
+                        $"setx PATH \\\"%PATH%;{_packageExecutablePath}\"{Environment.NewLine}");
+                }
+            }
         }
     }
 }
