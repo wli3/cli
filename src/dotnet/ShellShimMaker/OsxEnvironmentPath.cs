@@ -22,9 +22,10 @@ namespace Microsoft.DotNet.ShellShimMaker
         public OsxEnvironmentPath(
             string packageExecutablePathWIthTilde, 
             string fullPackageExecutablePath, 
-            IFile fileSystem, 
+            IReporter reporter,
             IEnvironmentProvider environmentProvider, 
-            IReporter reporter)
+            IFile fileSystem
+            )
         {
             _fullPackageExecutablePath = fullPackageExecutablePath ?? throw new ArgumentNullException(nameof(fullPackageExecutablePath));
             _packageExecutablePath = packageExecutablePathWIthTilde ?? throw new ArgumentNullException(nameof(packageExecutablePathWIthTilde));
@@ -47,6 +48,11 @@ namespace Microsoft.DotNet.ShellShimMaker
         {
             return Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_packageExecutablePath) || 
                    Environment.GetEnvironmentVariable(PathName).Split(':').Contains(_fullPackageExecutablePath);
+        }
+
+        public void PrintAddPathInstructionIfPathDoesNotExist()
+        {
+            throw new NotImplementedException();
         }
     }
 }

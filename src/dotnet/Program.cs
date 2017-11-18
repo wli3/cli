@@ -225,7 +225,12 @@ namespace Microsoft.DotNet.Cli
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
                 {
-                    environmentPath = new OsxEnvironmentPath(cliFolderPathCalculator.ExecutablePackagesPathOnMacEnvPath);
+                    environmentPath = new OsxEnvironmentPath(
+                        packageExecutablePathWIthTilde: cliFolderPathCalculator.ExecutablePackagesPathOnMacEnvPath,
+                        fullPackageExecutablePath: cliFolderPathCalculator.ExecutablePackagesPath,
+                        reporter: Reporter.Output,
+                        environmentProvider: environmentProvider, 
+                        fileSystem: new FileWrapper());
                 }
 
                 var nugetPackagesArchiver = new NuGetPackagesArchiver();
