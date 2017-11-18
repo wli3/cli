@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Cli
                     environmentPath = new WindowsEnvironmentPath(
                         cliFolderPathCalculator.ExecutablePackagesPath,
                         Reporter.Output,
-                        environmentProvider, new FileWrapper());
+                        environmentProvider);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && hasSuperUserAccess)
                 {

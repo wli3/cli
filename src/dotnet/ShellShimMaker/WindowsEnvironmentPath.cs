@@ -11,19 +11,16 @@ namespace Microsoft.DotNet.ShellShimMaker
     internal class WindowsEnvironmentPath : IEnvironmentPath
     {
         private readonly IReporter _reporter;
-        private readonly IFile _fileSystem;
         private readonly IEnvironmentProvider _environmentProvider;
         private const string PathName = "PATH";
         private readonly string _packageExecutablePath;
 
         public WindowsEnvironmentPath(
             string packageExecutablePath, IReporter reporter,
-            IEnvironmentProvider environmentProvider,
-            IFile fileSystem)
+            IEnvironmentProvider environmentProvider)
         {
             _packageExecutablePath 
                 = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
-            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _environmentProvider
                 = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
             _reporter
