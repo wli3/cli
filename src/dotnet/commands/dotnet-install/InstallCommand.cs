@@ -31,11 +31,6 @@ namespace Microsoft.DotNet.Cli
 
             var framework = parseResult.ValueOrDefault<string>("framework");
 
-            if (string.IsNullOrWhiteSpace(framework))
-            {
-                throw new NotImplementedException("Auto look up framework in progress");
-            }
-
             var executablePackagePath = new DirectoryPath(new CliFolderPathCalculator().ExecutablePackagesPath);
             var executablePackageObtainer =
                 new ExecutablePackageObtainer.ExecutablePackageObtainer(
@@ -64,7 +59,8 @@ namespace Microsoft.DotNet.Cli
 
 
             var shellShimMaker = new ShellShimMaker.ShellShimMaker(executablePackagePath.Value);
-            shellShimMaker.CreateShim(executable.Value,
+            shellShimMaker.CreateShim(
+                executable.Value,
                 toolConfigurationAndExecutableDirectory.Configuration.CommandName);
 
             return 0;
