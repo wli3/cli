@@ -28,12 +28,12 @@ namespace Microsoft.DotNet.ShellShimMaker
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 script.AppendLine("@echo off");
-                script.AppendLine($"dotnet {packageExecutable.ToEscapedString()} %*");
+                script.AppendLine($"dotnet {packageExecutable.ToQuotedString()} %*");
             }
             else
             {
                 script.AppendLine("#!/bin/sh");
-                script.AppendLine($"dotnet {packageExecutable.ToEscapedString()} \"$@\"");
+                script.AppendLine($"dotnet {packageExecutable.ToQuotedString()} \"$@\"");
             }
 
             var scriptPath = GetScriptPath(shellCommandName);

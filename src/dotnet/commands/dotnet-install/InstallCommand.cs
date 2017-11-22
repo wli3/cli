@@ -4,8 +4,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShimMaker;
+using Microsoft.DotNet.ToolPackageObtainer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli
@@ -14,15 +16,15 @@ namespace Microsoft.DotNet.Cli
     {
         public static int Run(string[] args)
         {
-            var parser = Parser.Instance;
-            var result = parser.ParseFrom("dotnet install", args);
+            CommandLine.Parser parser = Parser.Instance;
+            ParseResult result = parser.ParseFrom("dotnet install", args);
 
-            var parseResult = result["dotnet"]["install"]["globaltool"];
+            AppliedOption parseResult = result["dotnet"]["install"]["globaltool"];
 
             var packageId = parseResult.Arguments.Single();
             var packageVersion = parseResult.ValueOrDefault<string>("version");
 
-            FilePath configFile = null;
+            FilePath? configFile = null;
 
             var configFilePath = parseResult.ValueOrDefault<string>("configfile");
             if (configFilePath != null)
@@ -33,27 +35,27 @@ namespace Microsoft.DotNet.Cli
             var framework = parseResult.ValueOrDefault<string>("framework");
 
             var executablePackagePath = new DirectoryPath(new CliFolderPathCalculator().ExecutablePackagesPath);
-            var executablePackageObtainer =
-                new ExecutablePackageObtainer.ExecutablePackageObtainer(
+            var toolPackageObtainer =
+                new ToolPackageObtainer.ToolPackageObtainer(
                     executablePackagePath,
                     () => new DirectoryPath(Path.GetTempPath())
-                        .WithCombineFollowing(Path.GetRandomFileName())
-                        .CreateFilePathWithCombineFollowing(Path.GetRandomFileName() + ".csproj"),
-                    new Lazy<string>(() => BundledTargetFramework.TargetFrameworkMoniker),
+                        .WithSubDirectories(Path.GetRandomFileName())
+                        .WithFile(Path.GetRandomFileName() + ".csproj"),
+                    new Lazy<string>(BundledTargetFramework.GetTargetFrameworkMoniker),
                     new PackageToProjectFileAdder(),
                     new ProjectRestorer());
 
-            var toolConfigurationAndExecutableDirectory =
-                executablePackageObtainer.ObtainAndReturnExecutablePath(
+            ToolConfigurationAndExecutableDirectory toolConfigurationAndExecutableDirectory =
+                toolPackageObtainer.ObtainAndReturnExecutablePath(
                     packageId: packageId,
                     packageVersion: packageVersion,
                     nugetconfig: configFile,
                     targetframework: framework);
 
 
-            var executable = toolConfigurationAndExecutableDirectory
+            DirectoryPath executable = toolConfigurationAndExecutableDirectory
                 .ExecutableDirectory
-                .CreateFilePathWithCombineFollowing(
+                .WithSubDirectories(
                     toolConfigurationAndExecutableDirectory
                         .Configuration
                         .ToolAssemblyEntryPoint);
