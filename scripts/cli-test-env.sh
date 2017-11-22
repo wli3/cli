@@ -13,10 +13,9 @@ done
 
 REPO_ROOT="$( cd -P "$( dirname "$SOURCE" )/../" && pwd )"
 
-uname=$(uname)
-if [ "$(uname)" == "Darwin" ]
+if [ "$uname" = "Darwin" ]
 then
-  RID=osx.10.13-x64
+  RID=osx-x64
 else
   RID=linux-x64
 fi
