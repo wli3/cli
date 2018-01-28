@@ -18,9 +18,9 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 {
     internal class InstallToolCommand : CommandBase
     {
-        private readonly IToolPackageObtainer _toolPackageObtainer;
+        private readonly IToolPackageInstaller _toolPackageInstaller;
+        private readonly IShellShimManager _shellShimManager;
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
-        private readonly IShellShimMaker _shellShimMaker;
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
 
@@ -35,8 +35,8 @@ namespace Microsoft.DotNet.Tools.Install.Tool
         public InstallToolCommand(
             AppliedOption appliedCommand,
             ParseResult parseResult,
-            IToolPackageObtainer toolPackageObtainer = null,
-            IShellShimMaker shellShimMaker = null,
+            IToolPackageInstaller toolPackageInstaller = null,
+            IShellShimManager shellShimManager = null,
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null)
             : base(parseResult)
@@ -55,21 +55,28 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
 
             var cliFolderPathCalculator = new CliFolderPathCalculator();
-            var offlineFeedPath = new DirectoryPath(cliFolderPathCalculator.CliFallbackFolderPath);
-            _toolPackageObtainer = toolPackageObtainer ?? new ToolPackageObtainer(
-                                       new DirectoryPath(cliFolderPathCalculator.ToolsPackagePath),
-                                       offlineFeedPath,
-                                       () => new DirectoryPath(Path.GetTempPath())
-                                           .WithSubDirectories(Path.GetRandomFileName())
-                                           .WithFile(Path.GetRandomFileName() + ".csproj"),
-                                       new Lazy<string>(BundledTargetFramework.GetTargetFrameworkMoniker),
-                                       new ProjectRestorer(reporter));
+
+            FilePath? configFile = null;
+            if (_configFilePath != null)
+            {
+                configFile = new FilePath(_configFilePath);
+            }
+
+            _toolPackageInstaller = toolPackageInstaller
+                ?? new ToolPackageInstaller(
+                    new ToolPackageRepository(
+                        new DirectoryPath(cliFolderPathCalculator.ToolsPackagePath)),
+                    new ProjectRestorer(
+                        configFile,
+                        _source,
+                        _verbosity,
+                        _reporter));
 
             _environmentPathInstruction = environmentPathInstruction
-                                          ?? EnvironmentPathFactory
-                                              .CreateEnvironmentPathInstruction();
+                ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
 
-            _shellShimMaker = shellShimMaker ?? new ShellShimMaker(cliFolderPathCalculator.ToolsShimPath);
+            _shellShimManager = shellShimManager ?? new ShellShimManager(
+                new DirectoryPath(cliFolderPathCalculator.ToolsShimPath));
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -82,46 +89,67 @@ namespace Microsoft.DotNet.Tools.Install.Tool
                 throw new GracefulException(LocalizableStrings.InstallToolCommandOnlySupportGlobal);
             }
 
+            if (_configFilePath != null && !File.Exists(_configFilePath))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        LocalizableStrings.NuGetConfigurationFileDoesNotExist,
+                        Path.GetFullPath(_configFilePath)));
+            }
+
+            // Prevent installation if any version of the package is installed
+            if (_toolPackageInstaller.Repository.GetInstalledPackages(_packageId).FirstOrDefault() != null)
+            {
+                _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId).Red());
+                return 1;
+            }
+
             try
             {
-                FilePath? configFile = null;
-                if (_configFilePath != null)
+                IToolPackage package = null;
+                using (var scope = new TransactionScope())
                 {
-                    configFile = new FilePath(_configFilePath);
-                }
-
-                using (var transactionScope = new TransactionScope())
-                {
-                    var toolConfigurationAndExecutablePath = _toolPackageObtainer.ObtainAndReturnExecutablePath(
+                    package = _toolPackageInstaller.InstallPackage(
                         packageId: _packageId,
                         packageVersion: _packageVersion,
-                        nugetconfig: configFile,
-                        targetframework: _framework,
-                        source: _source,
-                        verbosity: _verbosity);
+                        targetFramework: _framework);
 
-                    var commandName = toolConfigurationAndExecutablePath.Configuration.CommandName;
+                    foreach (var command in package.Commands)
+                    {
+                        _shellShimManager.CreateShim(command.Executable, command.Name);
+                    }
 
-                    _shellShimMaker.CreateShim(
-                        toolConfigurationAndExecutablePath.Executable,
-                        commandName);
-
-                    _environmentPathInstruction
-                        .PrintAddPathInstructionIfPathDoesNotExist();
-
-                    _reporter.WriteLine(
-                        string.Format(LocalizableStrings.InstallationSucceeded, commandName));
-                    transactionScope.Complete();
+                    scope.Complete();
                 }
+
+                _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
+
+                _reporter.WriteLine(
+                    string.Format(
+                        LocalizableStrings.InstallationSucceeded,
+                        string.Join(", ", package.Commands.Select(c => c.Name)),
+                        package.PackageId,
+                        package.PackageVersion).Green());
+                return 0;
             }
-            catch (PackageObtainException ex)
+            catch (ToolPackageException ex)
             {
+                if (Reporter.IsVerbose)
+                {
+                    Reporter.Verbose.WriteLine(ex.ToString().Red());
+                }
+
                 _errorReporter.WriteLine(ex.Message.Red());
                 _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailed, _packageId).Red());
                 return 1;
             }
             catch (ToolConfigurationException ex)
             {
+                if (Reporter.IsVerbose)
+                {
+                    Reporter.Verbose.WriteLine(ex.ToString().Red());
+                }
+
                 _errorReporter.WriteLine(
                     string.Format(
                         LocalizableStrings.InvalidToolConfiguration,
@@ -129,8 +157,21 @@ namespace Microsoft.DotNet.Tools.Install.Tool
                 _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, _packageId).Red());
                 return 1;
             }
+            catch (ShellShimException ex)
+            {
+                if (Reporter.IsVerbose)
+                {
+                    Reporter.Verbose.WriteLine(ex.ToString().Red());
+                }
 
-            return 0;
+                _errorReporter.WriteLine(
+                    string.Format(
+                        LocalizableStrings.FailedToCreateToolShim,
+                        _packageId,
+                        ex.Message).Red());
+                _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailed, _packageId).Red());
+                return 1;
+            }
         }
     }
 }

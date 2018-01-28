@@ -14,33 +14,38 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 {
     internal class ProjectRestorer : IProjectRestorer
     {
-        private IReporter _reporter;
+        private readonly FilePath? _nugetConfig;
+        private readonly string _source;
+        private readonly string _verbosity;
+        private readonly IReporter _reporter;
 
-        public ProjectRestorer(IReporter reporter)
+        public ProjectRestorer(
+            FilePath? nugetConfig = null,
+            string source = null,
+            string verbosity = null,
+            IReporter reporter = null)
         {
+            _nugetConfig = nugetConfig;
+            _source = source;
+            _verbosity = verbosity;
             _reporter = reporter;
         }
 
-        public void Restore(
-            FilePath projectPath,
-            DirectoryPath assetJsonOutput,
-            FilePath? nugetconfig,
-            string source = null,
-            string verbosity = null)
+        public void Restore(FilePath project, DirectoryPath assetJsonOutput)
         {
             var argsToPassToRestore = new List<string>();
 
-            argsToPassToRestore.Add(projectPath.Value);
-            if (nugetconfig != null)
+            argsToPassToRestore.Add(project.Value);
+            if (_nugetConfig != null)
             {
                 argsToPassToRestore.Add("--configfile");
-                argsToPassToRestore.Add(nugetconfig.Value.Value);
+                argsToPassToRestore.Add(_nugetConfig.Value.Value);
             }
 
-            if (source != null)
+            if (_source != null)
             {
                 argsToPassToRestore.Add("--source");
-                argsToPassToRestore.Add(source);
+                argsToPassToRestore.Add(_source);
             }
 
             argsToPassToRestore.AddRange(new List<string>
@@ -50,7 +55,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
                 $"/p:BaseIntermediateOutputPath={assetJsonOutput.ToQuotedString()}"
             });
 
-            argsToPassToRestore.Add($"/verbosity:{verbosity ?? "quiet"}");
+            argsToPassToRestore.Add($"/verbosity:{_verbosity ?? "quiet"}");
 
             var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
                 .Create("restore", argsToPassToRestore);
@@ -65,7 +70,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             var result = command.Execute();
             if (result.ExitCode != 0)
             {
-                throw new PackageObtainException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
             }
         }
 
