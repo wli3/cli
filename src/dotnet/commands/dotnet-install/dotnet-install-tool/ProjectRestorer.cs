@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             argsToPassToRestore.AddRange(new List<string>
             {
                 "--runtime",
-                AnyRid,
+                RuntimeEnvironment.GetRuntimeIdentifier(),
                 $"/p:BaseIntermediateOutputPath={assetJsonOutput.ToQuotedString()}"
             });
 

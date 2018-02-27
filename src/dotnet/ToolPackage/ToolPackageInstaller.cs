@@ -161,6 +161,11 @@ namespace Microsoft.DotNet.ToolPackage
                         new XElement("PackageReference",
                             new XAttribute("Include", packageId),
                             new XAttribute("Version", packageVersion ?? "*") // nuget will restore * for latest
+                            ),
+                        new XElement("PackageReference",
+                            new XAttribute("Include", "Microsoft.NETCore.Platforms"),
+                            new XAttribute("Version", "  2.1.0-*"),
+                            new XElement("IsImplicitlyDefined", "true")
                             ))
                         ));
 
