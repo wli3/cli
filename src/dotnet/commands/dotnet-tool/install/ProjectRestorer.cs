@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             argsToPassToRestore.AddRange(new List<string>
             {
                 "--runtime",
-                AnyRid
+                RuntimeEnvironment.GetRuntimeIdentifier(),
             });
 
             argsToPassToRestore.Add($"-verbosity:{verbosity ?? "quiet"}");

@@ -81,4 +81,12 @@
     <MSBuild BuildInParallel="False" Projects="SampleGlobalToolWithShim/consoledemo.csproj" Targets="pack" Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)/TestAssetLocalNugetFeed">
     </MSBuild>
   </Target>
+
+	<Target Name="DownloadTestAssetPackages" BeforeTargets="Build">
+		<PropertyGroup>
+			<PlatformsNupkgFileName>Microsoft.NETCore.Platforms.2.1.0.nupkg</PlatformsNupkgFileName>
+			<PlatformsNupkgUri>https://dotnet.myget.org/F/dotnet-core/api/v2/package/Microsoft.NETCore.Platforms/2.1.0</PlatformsNupkgUri>
+		</PropertyGroup>
+		<DownloadFile Uri="$(PlatformsNupkgUri)" DestinationPath="$(OutputPath)/TestAssetLocalNugetFeed/$(PlatformsNupkgFileName)" />
+	</Target>
 </Project>

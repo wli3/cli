@@ -150,11 +150,15 @@ namespace Microsoft.DotNet.ToolPackage
                         new XElement("RestoreAdditionalProjectFallbackFolders", string.Empty), // block other
                         new XElement("RestoreAdditionalProjectFallbackFoldersExcludes", string.Empty),  // block other
                         new XElement("DisableImplicitNuGetFallbackFolder", "true")),  // disable SDK side implicit NuGetFallbackFolder
-                     new XElement("ItemGroup",
+                    new XElement("ItemGroup",
                         new XElement("PackageReference",
                             new XAttribute("Include", packageId.ToString()),
                             new XAttribute("Version",
-                                versionRange?.ToString("S", new VersionRangeFormatter()) ?? "*"))), // nuget will restore latest stable for *
+                                versionRange?.ToString("S", new VersionRangeFormatter()) ?? "*")),  // nuget will restore latest stable for *
+                        new XElement("PackageReference",
+                            new XAttribute("Include", "Microsoft.NETCore.Platforms"),
+                            new XAttribute("Version", "  2.1.0-*"),
+                            new XElement("IsImplicitlyDefined", "true"))),
                     new XElement(("Import"),
                         new XAttribute("Project", "Sdk.targets"),
                         new XAttribute("Sdk", "Microsoft.NET.Sdk"))));
