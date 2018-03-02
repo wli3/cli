@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli
                     Accept.NoArguments()),
                 Create.Option(
                     "--tool-path",
-                    "Location of shim to access tool",
+                    "Location of shim to access tool", // TODO wul nocheckin loc
                     Accept.ExactlyOneArgument()),
                 Create.Option(
                     "--version",
