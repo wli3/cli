@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.DotNet.Tools.Test.Utilities.Mock;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using System.IO.Abstractions.TestingHelpers;
 
 namespace Microsoft.Extensions.DependencyModel.Tests
 {
@@ -48,8 +49,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         {
             public FileSystemMock(Dictionary<string, string> files, string temporaryFolder)
             {
-                File = new FileMock(files);
-                Directory = new DirectoryMock(files, temporaryFolder);
+                MockFileSystem mockFileSystem = new MockFileSystem();
+
+                File = new FileMock(mockFileSystem);
+                Directory = new DirectoryMock(mockFileSystem, temporaryFolder);
             }
 
             public IFile File { get; }
@@ -59,31 +62,36 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileMock : IFile
         {
-            private Dictionary<string, string> _files;
-            
+
+            public FileMock(MockFileSystem mockFileSystem)
+            {
+                _mockFileSystem = mockFileSystem;
+            }
+
+            private MockFileSystem _mockFileSystem;
+
             public FileMock(Dictionary<string, string> files)
             {
-                _files = files;
+                foreach (var kv in files)
+                {
+                    WriteAllText(kv.Key, kv.Value);
+                }
+
             }
 
             public bool Exists(string path)
             {
-                return _files.ContainsKey(path);
+                return _mockFileSystem.File.Exists(path);
             }
 
             public string ReadAllText(string path)
             {
-                string text;
-                if (!_files.TryGetValue(path, out text))
-                {
-                    throw new FileNotFoundException(path);
-                }
-                return text;
+                return _mockFileSystem.File.ReadAllText(path);
             }
 
             public Stream OpenRead(string path)
             {
-                return new MemoryStream(Encoding.UTF8.GetBytes(ReadAllText(path)));
+                return _mockFileSystem.File.OpenRead(path);
             }
 
             public Stream OpenFile(
@@ -99,49 +107,33 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
-                _files.Add(path, string.Empty);
+                WriteAllText(path, string.Empty);
             }
 
             public void WriteAllText(string path, string content)
             {
-                _files[path] = content;
+                _mockFileSystem.File.WriteAllText(path, content);
             }
 
             public void Move(string source, string destination)
             {
-                if (!Exists(source))
-                {
-                    throw new FileNotFoundException("source does not exist.");
-                }
-                if (Exists(destination))
-                {
-                    throw new IOException("destination exists.");
-                }
-
-                var content = _files[source];
-                _files.Remove(source);
-                _files[destination] = content;
+                _mockFileSystem.File.Move(source, destination);
             }
 
             public void Delete(string path)
             {
-                if (!Exists(path))
-                {
-                    return;
-                }
-
-                _files.Remove(path);
+                _mockFileSystem.File.Delete(path);
             }
         }
 
         private class DirectoryMock : IDirectory
         {
-            private Dictionary<string, string> _files;
+            private readonly MockFileSystem _mockFileSystem;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
 
-            public DirectoryMock(Dictionary<string, string> files, string temporaryDirectory)
+            public DirectoryMock(MockFileSystem mockFileSystem, string temporaryDirectory)
             {
-                _files = files;
+                _mockFileSystem = mockFileSystem;
                 _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
             }
 
@@ -152,19 +144,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
-                foreach (var entry in _files.Keys.Where(k => Path.GetDirectoryName(k) == path))
-                {
-                    yield return entry;
-                }
+                return _mockFileSystem.Directory.EnumerateFileSystemEntries(path);
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
             {
-                if (searchPattern != "*")
-                {
-                    throw new NotImplementedException();
-                }
-                return EnumerateFileSystemEntries(path);
+                return _mockFileSystem.Directory.EnumerateFileSystemEntries(path, searchPattern);
             }
 
             public string GetDirectoryFullName(string path)
@@ -174,56 +159,22 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                return _files.Keys.Any(k => k.StartsWith(path));
+                return _mockFileSystem.Directory.Exists(path);
             }
 
             public void CreateDirectory(string path)
             {
-                var current = path;
-                while (!string.IsNullOrEmpty(current))
-                {
-                    _files[current] = current;
-                    current = Path.GetDirectoryName(current);
-                }
+                _mockFileSystem.Directory.CreateDirectory(path);
             }
 
             public void Delete(string path, bool recursive)
             {
-                if (!recursive && Exists(path) == true)
-                {
-                    if (_files.Keys.Where(k => k.StartsWith(path)).Count() > 1)
-                    {
-                        throw new IOException("The directory is not empty");
-                    }
-                }
-
-                foreach (var k in _files.Keys.Where(k => k.StartsWith(path)).ToList())
-                {
-                    _files.Remove(k);
-                }
+                _mockFileSystem.Directory.Delete(path, recursive);
             }
 
             public void Move(string source, string destination)
             {
-                if (!Exists(source))
-                {
-                    throw new IOException("The source directory does not exist.");
-                }
-                if (Exists(destination))
-                {
-                    throw new IOException("The destination already exists.");
-                }
-
-                foreach (var kvp in _files.Where(kvp => kvp.Key.StartsWith(source)).ToList())
-                {
-                    var newKey = destination + kvp.Key.Substring(source.Length);
-                    var newValue = kvp.Value.StartsWith(source) ?
-                        destination + kvp.Value.Substring(source.Length) :
-                        kvp.Value;
-
-                    _files.Add(newKey, newValue);
-                    _files.Remove(kvp.Key);
-                }
+                _mockFileSystem.Directory.Move(source, destination);
             }
         }
 
