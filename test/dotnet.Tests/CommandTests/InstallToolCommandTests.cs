@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             installToolCommand.Execute().Should().Be(0);
 
-            _reporter.Lines.First().Should().Be(EnvironmentPathInstructionMock.MockIstructionText);
+            _reporter.Lines.First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
         [Fact]
@@ -290,7 +290,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             installToolCommand.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockIstructionText));
+            _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockInstructionText));
         }
 
         private IToolPackageInstaller CreateToolPackageInstaller(
