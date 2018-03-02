@@ -14,15 +14,15 @@ namespace Microsoft.DotNet.Configurer
     {
         // ToolsShimFolderName ToolPackageFolderName cannot be the same
         // or if the PackageId is the same as CommandName, they will conflict on unix.
-        private const string ToolsShimFolderName = "tools";
-        private const string ToolPackageFolderName = "toolspkgs";
         private const string DotnetProfileDirectoryName = ".dotnet";
+        private const string ToolsShimFolderName = "tools";
+        private const string NestedToolPackageFolderName = ".store";
 
         public string CliFallbackFolderPath => Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
                                                Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
-        
+
         public string ToolsShimPath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName);
-        public string ToolsPackagePath => Path.Combine(DotnetUserProfileFolderPath, ToolPackageFolderName);
+        public string ToolsPackagePath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName, NestedToolPackageFolderName);
         public BashPathUnderHomeDirectory ToolsShimPathInUnix
         {
             get
