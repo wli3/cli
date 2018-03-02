@@ -41,6 +41,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         ExecutablePath = targetExecutablePath.Value
                     };
 
+                    if (!_fileSystem.Directory.Exists(_pathToPlaceShim.Value))
+                    {
+                        _fileSystem.Directory.CreateDirectory(_pathToPlaceShim.Value);
+                    }
+
                     _fileSystem.File.WriteAllText(
                         GetShimPath(commandName).Value,
                         JsonConvert.SerializeObject(shim));

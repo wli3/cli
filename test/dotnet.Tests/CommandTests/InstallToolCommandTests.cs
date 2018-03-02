@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private PassThroughToolPackageFactory _toolPackageFactory;
-        private const string PathToPlaceShim = "pathToPlace";
+        private const string PathToPlaceShim = "/pathToPlace";
         private const string PathToPlacePackages = PathToPlaceShim + "pkg";
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
