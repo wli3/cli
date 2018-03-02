@@ -72,7 +72,12 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 
         public override int Execute()
         {
-            if (_toolPath != null && _global)
+            if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
+            {
+                throw new GracefulException("Need either global or tool-path provided."); // TODO wul no checkin loc
+            }
+
+            if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
             {
                 throw new GracefulException("Cannot have global and tool-path as opinion at the same time."); // TODO wul no checkin loc
             }

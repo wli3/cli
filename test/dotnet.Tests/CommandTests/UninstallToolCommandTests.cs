@@ -62,22 +62,6 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAMissingGlobalOptionItErrors()
-        {
-            var command = CreateUninstallCommand("does.not.exist");
-
-            Action a = () => {
-                command.Execute();
-            };
-
-            a.ShouldThrow<GracefulException>()
-             .And
-             .Message
-             .Should()
-             .Be(LocalizableStrings.UninstallToolCommandOnlySupportsGlobal);
-        }
-
-        [Fact]
         public void GivenAPackageItUninstalls()
         {
             CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
@@ -162,6 +146,28 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _fileSystem.Directory.Exists(packageDirectory.Value).Should().BeTrue();
             _fileSystem.File.Exists(shimPath).Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
+        {
+            var uninstallCommand = CreateUninstallCommand($"-g --tool-path /tmp/folder {PackageId}");
+
+            Action a = () => uninstallCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain("Cannot have global and tool-path as opinion at the same time."); // TODO wul no checkin loc
+        }
+
+        [Fact]
+        public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
+        {
+            var uninstallCommand = CreateUninstallCommand(PackageId);
+
+            Action a = () => uninstallCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain("Need either global or tool-path provided."); // TODO wul no checkin loc
         }
 
         private InstallToolCommand CreateInstallCommand(string options)

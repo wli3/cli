@@ -44,9 +44,17 @@ namespace Microsoft.DotNet.Tools.Uninstall.Tool
 
         public override int Execute()
         {
-            if (!_options.ValueOrDefault<bool>("global"))
+            var global = _options.ValueOrDefault<bool>("global");
+            var toolPath = _options.SingleArgumentOrDefault("tool-path");
+
+            if (string.IsNullOrWhiteSpace(toolPath) && !global)
             {
-                throw new GracefulException(LocalizableStrings.UninstallToolCommandOnlySupportsGlobal);
+                throw new GracefulException("Need either global or tool-path provided."); // TODO wul no checkin loc
+            }
+
+            if (!string.IsNullOrWhiteSpace(toolPath) && global)
+            {
+                throw new GracefulException("Cannot have global and tool-path as opinion at the same time."); // TODO wul no checkin loc
             }
 
             var packageId = _options.Arguments.Single();

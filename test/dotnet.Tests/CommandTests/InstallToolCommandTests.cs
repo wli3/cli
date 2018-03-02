@@ -275,6 +275,28 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
+        {
+            var result = Parser.Instance.Parse($"dotnet install tool {PackageId}");
+            var appliedCommand = result["dotnet"]["install"]["tool"];
+            var parser = Parser.Instance;
+            var parseResult = parser.ParseFrom("dotnet install", new[] { "tool", PackageId });
+
+            var installToolCommand = new InstallToolCommand(
+                appliedCommand,
+                parseResult,
+                _createToolPackageStoreAndInstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, PathToPlaceShim, true),
+                _reporter);
+
+            Action a = () => installToolCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain("Need either global or tool-path provided.");
+        }
+
+        [Fact]
         public void WhenRunWithPackageIdAndBinPathItShouldNoteHaveEnvironmentPathInstruction()
         {
             var result = Parser.Instance.Parse($"dotnet install tool --tool-path /tmp/folder {PackageId}");
