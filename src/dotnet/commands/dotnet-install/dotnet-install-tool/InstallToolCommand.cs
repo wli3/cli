@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
     internal class InstallToolCommand : CommandBase
     {
         private readonly IToolPackageFactory _toolPackageFactory;
-        private readonly IShellShimRepository _shellShimRepository;
+        private readonly IShellShimRepositoryFactory _shellShimRepositoryFactory;
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             AppliedOption appliedCommand,
             ParseResult parseResult,
             IToolPackageFactory toolPackageFactory = null,
-            IShellShimRepository shellShimRepository = null,
+            IShellShimRepositoryFactory shellShimRepositoryFactory = null,
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null)
             : base(parseResult)
@@ -61,9 +61,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 
             _environmentPathInstruction = environmentPathInstruction
                 ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
-
-            _shellShimRepository = shellShimRepository
-                ?? new ShellShimRepository(new DirectoryPath(cliFolderPathCalculator.ToolsShimPath));
+            _shellShimRepositoryFactory = shellShimRepositoryFactory ?? new ShellShimRepositoryFactory();
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -92,6 +90,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 
             (IToolPackageStore toolPackageStore, IToolPackageInstaller toolPackageInstaller) =
                 _toolPackageFactory.CreateToolPackageStoreAndInstaller(toolPath);
+            IShellShimRepository shellShimRepository = _shellShimRepositoryFactory.CreateShellShimRepository(toolPath);
 
             // Prevent installation if any version of the package is installed
             if (toolPackageStore.GetInstalledPackages(_packageId).FirstOrDefault() != null)
@@ -123,7 +122,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 
                     foreach (var command in package.Commands)
                     {
-                        _shellShimRepository.CreateShim(command.Executable, command.Name);
+                        shellShimRepository.CreateShim(command.Executable, command.Name);
                     }
 
                     scope.Complete();

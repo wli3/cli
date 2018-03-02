@@ -11,14 +11,14 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageInstaller _toolPackageInstaller;
 
-        public PassThroughToolPackageFactory(IToolPackageStore toolPackageStore, 
+        public PassThroughToolPackageFactory(IToolPackageStore toolPackageStore,
             IToolPackageInstaller toolPackageInstaller)
         {
             _toolPackageStore = toolPackageStore;
             _toolPackageInstaller = toolPackageInstaller;
         }
 
-        public (IToolPackageStore, IToolPackageInstaller) 
+        public (IToolPackageStore, IToolPackageInstaller)
             CreateToolPackageStoreAndInstaller(DirectoryPath? nonGlobalLocation = null)
         {
             return (_toolPackageStore, _toolPackageInstaller);

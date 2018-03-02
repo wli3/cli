@@ -22,6 +22,7 @@ using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using LocalizableStrings = Microsoft.DotNet.Tools.Uninstall.Tool.LocalizableStrings;
 using InstallLocalizableStrings = Microsoft.DotNet.Tools.Install.Tool.LocalizableStrings;
+using Microsoft.DotNet.ShellShim;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Tests.Commands
     {
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
-        private readonly ShellShimRepositoryMock _shellShimRepositoryMock;
+        private readonly IShellShimRepositoryFactory _testShellShimRepositoryFactory;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
 
         private const string PackageId = "global.tool.console.demo";
@@ -41,7 +42,9 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
-            _shellShimRepositoryMock = new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem);
+
+            _testShellShimRepositoryFactory = new PassThroughShellShimRepositoryFactory(
+                                    new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem));
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, ShimsDirectory);
         }
 
@@ -182,7 +185,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 result["dotnet"]["install"]["tool"],
                 result,
                 testToolPackageFactory,
-                _shellShimRepositoryMock,
+                _testShellShimRepositoryFactory,
                 _environmentPathInstructionMock,
                 _reporter);
         }
@@ -198,7 +201,7 @@ namespace Microsoft.DotNet.Tests.Commands
                     new DirectoryPath(ToolsDirectory),
                     _fileSystem,
                     uninstallCallback),
-                _shellShimRepositoryMock,
+                new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _reporter);
         }
     }
