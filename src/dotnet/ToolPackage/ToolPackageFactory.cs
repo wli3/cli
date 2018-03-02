@@ -10,18 +10,26 @@ namespace Microsoft.DotNet.ToolPackage
 {
     internal static class ToolPackageFactory
     {
-        private const string NameOfNestedPackageDirectory = ".pkg";
+        private const string NameOfNestedPackageDirectory = ".store";
 
         public static (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(
             DirectoryPath? nonGlobalLocation = null)
         {
-            var toolPackageStore =
-                new ToolPackageStore(GetPackageLocation(nonGlobalLocation));
+            IToolPackageStore toolPackageStore = CreateToolPackageStore(nonGlobalLocation);
             var toolPackageInstaller = new ToolPackageInstaller(
                 toolPackageStore,
                 new ProjectRestorer(Reporter.Output));
 
             return (toolPackageStore, toolPackageInstaller);
+        }
+
+        public static IToolPackageStore CreateToolPackageStore(
+            DirectoryPath? nonGlobalLocation = null)
+        {
+            var toolPackageStore =
+                new ToolPackageStore(GetPackageLocation(nonGlobalLocation));
+
+            return toolPackageStore;
         }
 
         private static DirectoryPath GetPackageLocation(DirectoryPath? nonGlobalLocation)

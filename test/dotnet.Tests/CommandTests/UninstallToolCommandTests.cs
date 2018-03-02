@@ -22,7 +22,6 @@ using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using LocalizableStrings = Microsoft.DotNet.Tools.Uninstall.Tool.LocalizableStrings;
 using InstallLocalizableStrings = Microsoft.DotNet.Tools.Install.Tool.LocalizableStrings;
-using Microsoft.DotNet.ShellShim;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -198,11 +197,11 @@ namespace Microsoft.DotNet.Tests.Commands
             return new UninstallToolCommand(
                 result["dotnet"]["uninstall"]["tool"],
                 result,
-                new ToolPackageStoreMock(
+                (_) => new ToolPackageStoreMock(
                     new DirectoryPath(ToolsDirectory),
                     _fileSystem,
                     uninstallCallback),
-                new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _reporter);
         }
     }
