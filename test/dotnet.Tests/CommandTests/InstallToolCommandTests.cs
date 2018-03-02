@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
-        private readonly IShellShimRepositoryFactory _testShellShimRepositoryFactory;
+        private readonly InstallToolCommand.CreateShellShimRepository _testShellShimRepositoryFactory;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly AppliedOption _appliedCommand;
         private readonly ParseResult _parseResult;
@@ -45,8 +45,8 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
             _toolPackageStore = new ToolPackageStoreMock(new DirectoryPath(PathToPlacePackages), _fileSystem);
-            _testShellShimRepositoryFactory = new PassThroughShellShimRepositoryFactory(
-                                                new ShellShimRepositoryMock(new DirectoryPath(PathToPlaceShim), _fileSystem));
+            _testShellShimRepositoryFactory =
+                (nonGlobalLocation) => new ShellShimRepositoryMock(new DirectoryPath(PathToPlaceShim), _fileSystem);
             _environmentPathInstructionMock =
                 new EnvironmentPathInstructionMock(_reporter, PathToPlaceShim);
 

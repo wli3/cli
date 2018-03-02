@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 result["dotnet"]["install"]["tool"],
                 result,
                 testToolPackageFactory,
-                _testShellShimRepositoryFactory,
+                (nonGlobalLocation) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _environmentPathInstructionMock,
                 _reporter);
         }
