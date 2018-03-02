@@ -30,7 +30,6 @@ namespace Microsoft.DotNet.Tests.Commands
     {
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
-        private readonly IShellShimRepositoryFactory _testShellShimRepositoryFactory;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
 
         private const string PackageId = "global.tool.console.demo";
@@ -42,9 +41,6 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
-
-            _testShellShimRepositoryFactory = new PassThroughShellShimRepositoryFactory(
-                                    new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem));
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, ShimsDirectory);
         }
 
@@ -173,19 +169,18 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
-
-            var testToolPackageFactory = new PassThroughToolPackageFactory(store, new ToolPackageInstallerMock(
+            var packageInstallerMock = new ToolPackageInstallerMock(
                 _fileSystem,
                 store,
                 new ProjectRestorerMock(
                     _fileSystem,
-                    _reporter)));
+                    _reporter));
 
             return new InstallToolCommand(
                 result["dotnet"]["install"]["tool"],
                 result,
-                testToolPackageFactory,
-                (nonGlobalLocation) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                (_) => (store, packageInstallerMock),
+                (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _environmentPathInstructionMock,
                 _reporter);
         }

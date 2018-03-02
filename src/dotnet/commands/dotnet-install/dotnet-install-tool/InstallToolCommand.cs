@@ -19,12 +19,13 @@ namespace Microsoft.DotNet.Tools.Install.Tool
     internal class InstallToolCommand : CommandBase
     {
         public delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
+        public delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(DirectoryPath? nonGlobalLocation = null);
 
-        private readonly IToolPackageFactory _toolPackageFactory;
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
         private CreateShellShimRepository _createShellShimRepository;
+        private CreateToolPackageStoreAndInstaller _createToolPackageStoreAndInstaller;
 
         private readonly string _packageId;
         private readonly string _packageVersion;
@@ -38,7 +39,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
         public InstallToolCommand(
             AppliedOption appliedCommand,
             ParseResult parseResult,
-            IToolPackageFactory toolPackageFactory = null,
+            CreateToolPackageStoreAndInstaller createToolPackageStoreAndInstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null)
@@ -59,11 +60,11 @@ namespace Microsoft.DotNet.Tools.Install.Tool
 
             var cliFolderPathCalculator = new CliFolderPathCalculator();
 
-            _toolPackageFactory = toolPackageFactory ?? new ToolPackageFactory();
+            _createToolPackageStoreAndInstaller = createToolPackageStoreAndInstaller ?? ToolPackageFactory.CreateToolPackageStoreAndInstaller;
 
             _environmentPathInstruction = environmentPathInstruction
                 ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
-            _createShellShimRepository = createShellShimRepository ?? new ShellShimRepositoryFactory().CreateShellShimRepository;
+            _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -91,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             }
 
             (IToolPackageStore toolPackageStore, IToolPackageInstaller toolPackageInstaller) =
-                _toolPackageFactory.CreateToolPackageStoreAndInstaller(toolPath);
+                _createToolPackageStoreAndInstaller(toolPath);
             IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
 
             // Prevent installation if any version of the package is installed

@@ -8,11 +8,11 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ToolPackage
 {
-    internal class ToolPackageFactory : IToolPackageFactory
+    internal static class ToolPackageFactory
     {
         private const string NameOfNestedPackageDirectory = ".pkg";
 
-        public (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(
+        public static (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(
             DirectoryPath? nonGlobalLocation = null)
         {
             var toolPackageStore =

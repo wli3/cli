@@ -6,9 +6,9 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
-    internal class ShellShimRepositoryFactory : IShellShimRepositoryFactory
+    internal static class ShellShimRepositoryFactory
     {
-        public IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null)
+        public static IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null)
         {
             return new ShellShimRepository(GetShimLocation(nonGlobalLocation));
         }
