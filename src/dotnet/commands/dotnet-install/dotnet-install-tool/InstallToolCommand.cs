@@ -163,15 +163,41 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             }
             catch (ToolPackageException ex)
             {
-                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailed, _packageId));
+                throw new GracefulException(
+                    messages: new[]
+                    {
+                        ex.Message,
+                        string.Format(LocalizableStrings.ToolInstallationFailed, _packageId),
+                    },
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
             }
             catch (ToolConfigurationException ex)
             {
-                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, _packageId));
+                throw new GracefulException(
+                    messages: new[]
+                    {
+                        string.Format(
+                            LocalizableStrings.InvalidToolConfiguration,
+                            ex.Message),
+                        string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, _packageId)
+                    },
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
             }
             catch (ShellShimException ex)
             {
-                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailed, _packageId));
+                throw new GracefulException(
+                    messages: new[]
+                    {
+                        string.Format(
+                            LocalizableStrings.FailedToCreateToolShim,
+                            _packageId,
+                            ex.Message),
+                        string.Format(LocalizableStrings.ToolInstallationFailed, _packageId)
+                    },
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
             }
         }
 
