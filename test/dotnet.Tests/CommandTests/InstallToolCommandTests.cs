@@ -325,8 +325,8 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => installToolCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain($"Error: failed to restore package {PackageId}." + // From mock implementation, not localized
-                    Environment.NewLine + LocalizableStrings.ToolInstallationRestoreFailed,
+                .Should().Contain(
+                    LocalizableStrings.ToolInstallationRestoreFailed +
                     Environment.NewLine + string.Format(LocalizableStrings.ToolInstallationFailed, PackageId));
 
             _fileSystem.Directory.Exists(Path.Combine(PathToPlacePackages, PackageId)).Should().BeFalse();

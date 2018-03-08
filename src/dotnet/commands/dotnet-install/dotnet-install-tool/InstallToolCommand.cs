@@ -200,17 +200,5 @@ namespace Microsoft.DotNet.Tools.Install.Tool
                     isUserError: false);
             }
         }
-
-        private static GracefulException CreateGracefulException(Exception ex, string message)
-        {
-            return new GracefulException(
-                messages: new[]
-                {
-                    ex.Message,
-                    message
-                },
-                verboseMessages: new[] {ex.ToString()},
-                isUserError: false);
-        }
     }
 }
