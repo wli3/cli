@@ -163,44 +163,28 @@ namespace Microsoft.DotNet.Tools.Install.Tool
             }
             catch (ToolPackageException ex)
             {
-                if (Reporter.IsVerbose)
-                {
-                    Reporter.Verbose.WriteLine(ex.ToString().Red());
-                }
-
-                _errorReporter.WriteLine(ex.Message.Red());
-                _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailed, _packageId).Red());
-                return 1;
+                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailed, _packageId));
             }
             catch (ToolConfigurationException ex)
             {
-                if (Reporter.IsVerbose)
-                {
-                    Reporter.Verbose.WriteLine(ex.ToString().Red());
-                }
-
-                _errorReporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.InvalidToolConfiguration,
-                        ex.Message).Red());
-                _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, _packageId).Red());
-                return 1;
+                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, _packageId));
             }
             catch (ShellShimException ex)
             {
-                if (Reporter.IsVerbose)
-                {
-                    Reporter.Verbose.WriteLine(ex.ToString().Red());
-                }
-
-                _errorReporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.FailedToCreateToolShim,
-                        _packageId,
-                        ex.Message).Red());
-                _errorReporter.WriteLine(string.Format(LocalizableStrings.ToolInstallationFailed, _packageId).Red());
-                return 1;
+                throw CreateGracefulException(ex, string.Format(LocalizableStrings.ToolInstallationFailed, _packageId));
             }
+        }
+
+        private static GracefulException CreateGracefulException(Exception ex, string message)
+        {
+            return new GracefulException(
+                messages: new[]
+                {
+                    ex.Message,
+                    message
+                },
+                verboseMessages: new[] {ex.ToString()},
+                isUserError: false);
         }
     }
 }
