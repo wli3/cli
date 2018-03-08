@@ -23,7 +23,11 @@ namespace Microsoft.DotNet.Cli.Utils
             : base(string.Join(Environment.NewLine, messages))
         {
             IsUserError = isUserError;
-            VerboseMessage = string.Join(Environment.NewLine, verboseMessages);
+            if (verboseMessages != null)
+            {
+                VerboseMessage = string.Join(Environment.NewLine, VerboseMessage);
+            }
+
             Data.Add(ExceptionExtensions.CLI_User_Displayed_Exception, true);
         }
 
