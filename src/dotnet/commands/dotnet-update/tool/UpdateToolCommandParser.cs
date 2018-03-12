@@ -14,12 +14,30 @@ namespace Microsoft.DotNet.Cli
                 "LocalizableStrings.CommandDescription", //todo wul
                 Accept.ExactlyOneArgument(errorMessage: o => "LocalizableStrings.SpecifyExactlyOnePackageId") //todo wul
                     .With(name: "LocalizableStrings.PackageIdArgumentName", //todo wul
-                          description: "LocalizableStrings.PackageIdArgumentDescription"), //todo wul
+                        description: "LocalizableStrings.PackageIdArgumentDescription"), //todo wul
                 Create.Option(
                     "-g|--global",
                     "LocalizableStrings.GlobalOptionDescription", //todo wul
                     Accept.NoArguments()),
-                CommonOptions.HelpOption());
+                Create.Option(
+                    "--tool-path",
+                    "LocalizableStrings.ToolPathDescription",
+                    Accept.ExactlyOneArgument()),
+                Create.Option(
+                    "--configfile",
+                    "LocalizableStrings.ConfigFileOptionDescription",
+                    Accept.ExactlyOneArgument()),
+                Create.Option(
+                    "--source",
+                    "LocalizableStrings.SourceOptionDescription",
+                    Accept.ExactlyOneArgument()
+                        .With(name: "LocalizableStrings.SourceOptionName")),
+                Create.Option(
+                    "-f|--framework",
+                    "LocalizableStrings.FrameworkOptionDescription",
+                    Accept.ExactlyOneArgument()),
+                CommonOptions.HelpOption(),
+                CommonOptions.VerbosityOption());
         }
     }
 }

@@ -41,5 +41,43 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["update"]["tool"];
             appliedOptions.ValueOrDefault<bool>("global").Should().Be(true);
         }
+
+        [Fact]
+        public void UpdateToolParserCanGetFollowingArguments()
+        {
+            var command = Parser.Instance;
+            var result =
+                command.Parse(
+                    @"dotnet update tool -g console.test.app --version 1.0.1 --framework netcoreapp2.0 --configfile C:\TestAssetLocalNugetFeed");
+
+            var parseResult = result["dotnet"]["update"]["tool"];
+
+            parseResult.ValueOrDefault<string>("configfile").Should().Be(@"C:\TestAssetLocalNugetFeed");
+            parseResult.ValueOrDefault<string>("framework").Should().Be("netcoreapp2.0");
+        }
+
+        [Fact]
+        public void UpdateToolParserCanParseSourceOption()
+        {
+            const string expectedSourceValue = "TestSourceValue";
+
+            var result =
+                Parser.Instance.Parse($"dotnet update tool -g --source {expectedSourceValue} console.test.app");
+
+            var appliedOptions = result["dotnet"]["update"]["tool"];
+            appliedOptions.ValueOrDefault<string>("source").Should().Be(expectedSourceValue);
+        }
+
+        [Fact]
+        public void UpdateToolParserCanParseVerbosityOption()
+        {
+            const string expectedVerbosityLevel = "diag";
+
+            var result =
+                Parser.Instance.Parse($"dotnet update tool -g --verbosity:{expectedVerbosityLevel} console.test.app");
+
+            var appliedOptions = result["dotnet"]["update"]["tool"];
+            appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
+        }
     }
 }
