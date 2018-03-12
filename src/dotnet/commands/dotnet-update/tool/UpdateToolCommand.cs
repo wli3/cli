@@ -17,40 +17,63 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 namespace Microsoft.DotNet.Tools.Update.Tool
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
-    internal delegate IToolPackageStore CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
+    internal delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(DirectoryPath? nonGlobalLocation = null);
+
     internal class UpdateToolCommand : CommandBase
     {
-        private readonly AppliedOption _options;
+        private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
         private CreateShellShimRepository _createShellShimRepository;
-        private CreateToolPackageStore _createToolPackageStoreAndInstaller;
+        private CreateToolPackageStoreAndInstaller _createToolPackageStoreAndInstaller;
+
+        private readonly PackageId _packageId;
+        private readonly string _packageVersion;
+        private readonly string _configFilePath;
+        private readonly string _framework;
+        private readonly string _source;
+        private readonly bool _global;
+        private readonly string _verbosity;
+        private readonly string _toolPath;
 
         public UpdateToolCommand(
-            AppliedOption options,
-            ParseResult result,
-            CreateToolPackageStore createToolPackageStoreAndInstaller = null,
+            AppliedOption appliedCommand,
+            ParseResult parseResult,
+            CreateToolPackageStoreAndInstaller createToolPackageStoreAndInstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
+            IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null)
-            : base(result)
+            : base(parseResult)
         {
-            var pathCalculator = new CliFolderPathCalculator();
+            if (appliedCommand == null)
+            {
+                throw new ArgumentNullException(nameof(appliedCommand));
+            }
 
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _reporter = reporter ?? Reporter.Output;
-            _errorReporter = reporter ?? Reporter.Error;
+            _packageId = new PackageId(appliedCommand.Arguments.Single());
+            _packageVersion = appliedCommand.ValueOrDefault<string>("version");
+            _configFilePath = appliedCommand.ValueOrDefault<string>("configfile");
+            _framework = appliedCommand.ValueOrDefault<string>("framework");
+            _source = appliedCommand.ValueOrDefault<string>("source");
+            _global = appliedCommand.ValueOrDefault<bool>("global");
+            _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
+            _toolPath = appliedCommand.SingleArgumentOrDefault("tool-path");
 
-            _createShellShimRepository
-                = createShellShimRepository
-                  ?? ShellShimRepositoryFactory.CreateShellShimRepository;
-            _createToolPackageStoreAndInstaller
-                = createToolPackageStoreAndInstaller
-                  ?? ToolPackageFactory.CreateToolPackageStore;
+            var cliFolderPathCalculator = new CliFolderPathCalculator();
+
+            _createToolPackageStoreAndInstaller = createToolPackageStoreAndInstaller ?? ToolPackageFactory.CreateToolPackageStoreAndInstaller;
+
+            _environmentPathInstruction = environmentPathInstruction
+                ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
+            _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
+
+            _reporter = (reporter ?? Reporter.Output);
+            _errorReporter = (reporter ?? Reporter.Error);
         }
 
         public override int Execute()
         {
-            var global = _options.ValueOrDefault<bool>("global");
+           
             return 0;
         }
     }

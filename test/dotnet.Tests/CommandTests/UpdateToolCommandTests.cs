@@ -1,0 +1,106 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Install.Tool;
+using Microsoft.DotNet.Tools.Uninstall.Tool;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.DotNet.Tools.Update.Tool;
+using Microsoft.Extensions.DependencyModel.Tests;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Cli;
+using Xunit;
+using Parser = Microsoft.DotNet.Cli.Parser;
+using LocalizableStrings = Microsoft.DotNet.Tools.Uninstall.Tool.LocalizableStrings;
+using InstallLocalizableStrings = Microsoft.DotNet.Tools.Install.Tool.LocalizableStrings;
+
+namespace Microsoft.DotNet.Tests.Commands
+{
+    public class UpdateToolCommandTests
+    {
+        private readonly BufferedReporter _reporter;
+        private readonly IFileSystem _fileSystem;
+        private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
+
+        private const string PackageId = "global.tool.console.demo";
+        private const string PackageVersion = "1.0.4";
+        private const string ShimsDirectory = "shims";
+        private const string ToolsDirectory = "tools";
+
+        public UpdateToolCommandTests()
+        {
+            _reporter = new BufferedReporter();
+            _fileSystem = new FileSystemMockBuilder().Build();
+            _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, ShimsDirectory);
+        }
+
+        [Fact]
+        public void GivenANonExistentPackageItErrors()
+        {
+            var packageId = "does.not.exist";
+            var command = CreateUpdateCommand($"-g {packageId}");
+
+            Action a = () => command.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain(
+                    string.Format(
+                    "Tool '{0}' is not currently installed.", // TODO wul loc
+                    packageId));
+        }
+
+
+        private InstallToolCommand CreateInstallCommand(string options)
+        {
+            ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
+
+            var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
+            var packageInstallerMock = new ToolPackageInstallerMock(
+                _fileSystem,
+                store,
+                new ProjectRestorerMock(
+                    _fileSystem,
+                    _reporter));
+
+            return new InstallToolCommand(
+                result["dotnet"]["install"]["tool"],
+                result,
+                (_) => (store, packageInstallerMock),
+                (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                _environmentPathInstructionMock,
+                _reporter);
+        }
+
+        private UpdateToolCommand CreateUpdateCommand(string options)
+        {
+            ParseResult result = Parser.Instance.Parse("dotnet update tool " + options);
+
+            var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
+            var packageInstallerMock = new ToolPackageInstallerMock(
+                _fileSystem,
+                store,
+                new ProjectRestorerMock(
+                    _fileSystem,
+                    _reporter));
+
+            return new UpdateToolCommand(
+                result["dotnet"]["install"]["tool"],
+                result,
+                (_) => (store, packageInstallerMock),
+                (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                _environmentPathInstructionMock,
+                _reporter);
+        }
+    }
+}

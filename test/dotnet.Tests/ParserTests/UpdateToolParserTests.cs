@@ -79,5 +79,15 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["update"]["tool"];
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
+        
+        [Fact]
+        public void UpdateToolParserCanParseToolPathOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet update tool --tool-path C:\TestAssetLocalNugetFeed console.test.app");
+
+            var appliedOptions = result["dotnet"]["update"]["tool"];
+            appliedOptions.SingleArgumentOrDefault("tool-path").Should().Be(@"C:\TestAssetLocalNugetFeed");
+        }
     }
 }
