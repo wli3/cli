@@ -32,9 +32,11 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
-
+        private readonly ToolPackageStoreMock _store;
+        private readonly ToolPackageInstallerMock _packageInstallerMock;
         private const string PackageId = "global.tool.console.demo";
-        private const string PackageVersion = "1.0.4";
+        private const string LowerPackageVersion = "1.0.4";
+        private const string HigherPackageVersion = "1.0.5";
         private const string ShimsDirectory = "shims";
         private const string ToolsDirectory = "tools";
 
@@ -43,6 +45,34 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, ShimsDirectory);
+            _store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
+            _packageInstallerMock = new ToolPackageInstallerMock(
+                _fileSystem,
+                _store,
+                new ProjectRestorerMock(
+                    _fileSystem,
+                    _reporter,
+                    new List<MockFeed>
+                    {
+                        new MockFeed
+                        {
+                            Type = MockFeedType.FeedFromLookUpNugetConfig,
+                            Packages = new List<MockFeedPackage>
+                                {
+                                    new MockFeedPackage
+                                    {
+                                        PackageId = PackageId,
+                                        Version = LowerPackageVersion
+                                    },
+                                    new MockFeedPackage
+                                    {
+                                        PackageId = PackageId,
+                                        Version = HigherPackageVersion
+                                    }
+                                }
+                        }
+                    }
+                ));
         }
 
         [Fact]
@@ -86,18 +116,10 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
 
-            var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
-            var packageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                store,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter));
-
             return new InstallToolCommand(
                 result["dotnet"]["install"]["tool"],
                 result,
-                (_) => (store, packageInstallerMock),
+                (_) => (_store, _packageInstallerMock),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _environmentPathInstructionMock,
                 _reporter);
@@ -107,18 +129,10 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             ParseResult result = Parser.Instance.Parse("dotnet update tool " + options);
 
-            var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
-            var packageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                store,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter));
-
             return new UpdateToolCommand(
                 result["dotnet"]["update"]["tool"],
                 result,
-                (_) => (store, packageInstallerMock),
+                (_) => (_store, _packageInstallerMock),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _environmentPathInstructionMock,
                 _reporter);

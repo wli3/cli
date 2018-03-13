@@ -128,6 +128,8 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     isUserError: false);
             }
 
+
+
             return 0;
         }
     }
