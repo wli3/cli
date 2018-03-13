@@ -60,6 +60,27 @@ namespace Microsoft.DotNet.Tests.Commands
                     packageId));
         }
 
+        [Fact]
+        public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
+        {
+            var command = CreateUpdateCommand($"-g --tool-path /tmp/folder {PackageId}");
+
+            Action a = () => command.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain("(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options."); // TODO wul loc
+        }
+
+        [Fact]
+        public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
+        {
+            var command = CreateUpdateCommand($"{PackageId}");
+
+            Action a = () => command.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain("Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+        }
 
         private InstallToolCommand CreateInstallCommand(string options)
         {
@@ -95,7 +116,7 @@ namespace Microsoft.DotNet.Tests.Commands
                     _reporter));
 
             return new UpdateToolCommand(
-                result["dotnet"]["install"]["tool"],
+                result["dotnet"]["update"]["tool"],
                 result,
                 (_) => (store, packageInstallerMock),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),

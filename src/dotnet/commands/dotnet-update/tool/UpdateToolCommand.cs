@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Tools.Update.Tool
         private CreateToolPackageStoreAndInstaller _createToolPackageStoreAndInstaller;
 
         private readonly PackageId _packageId;
-        private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string _framework;
         private readonly string _source;
@@ -51,7 +50,6 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             }
 
             _packageId = new PackageId(appliedCommand.Arguments.Single());
-            _packageVersion = appliedCommand.ValueOrDefault<string>("version");
             _configFilePath = appliedCommand.ValueOrDefault<string>("configfile");
             _framework = appliedCommand.ValueOrDefault<string>("framework");
             _source = appliedCommand.ValueOrDefault<string>("source");
@@ -73,7 +71,34 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
         public override int Execute()
         {
-           
+            if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
+            {
+                throw new GracefulException("Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+            }
+
+            if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
+            {
+                throw new GracefulException("(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
+            }
+
+            if (_configFilePath != null && !File.Exists(_configFilePath))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        "NuGet configuration file '{0}' does not exist.",
+                        Path.GetFullPath(_configFilePath)));
+            }
+
+            DirectoryPath? toolPath = null;
+            if (_toolPath != null)
+            {
+                toolPath = new DirectoryPath(_toolPath);
+            }
+
+            (IToolPackageStore toolPackageStore, IToolPackageInstaller toolPackageInstaller) =
+                _createToolPackageStoreAndInstaller(toolPath);
+            IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
+
             return 0;
         }
     }
