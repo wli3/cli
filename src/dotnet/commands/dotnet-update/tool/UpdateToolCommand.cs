@@ -99,6 +99,35 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                 _createToolPackageStoreAndInstaller(toolPath);
             IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
 
+
+            IToolPackage package = null;
+            try
+            {
+                package = toolPackageStore.EnumeratePackageVersions(_packageId).SingleOrDefault();
+                if (package == null)
+                {
+                    throw new GracefulException(
+                        messages: new[]
+                        {
+                            string.Format(
+                                "Tool '{0}' is not currently installed.",
+                                _packageId),
+                        },
+                    isUserError: false);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw new GracefulException(
+                        messages: new[]
+                        {
+                            string.Format(
+                        "Tool '{0}' has multiple versions installed and cannot be uninstalled.",
+                        _packageId),
+                        },
+                    isUserError: false);
+            }
+
             return 0;
         }
     }
