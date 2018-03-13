@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ToolPackageStoreMock _store;
         private readonly ToolPackageInstallerMock _packageInstallerMock;
-        private const string PackageId = "global.tool.console.demo";
+        private readonly PackageId _packageId = new PackageId("global.tool.console.demo");
         private const string LowerPackageVersion = "1.0.4";
         private const string HigherPackageVersion = "1.0.5";
         private const string ShimsDirectory = "shims";
@@ -61,12 +61,12 @@ namespace Microsoft.DotNet.Tests.Commands
                                 {
                                     new MockFeedPackage
                                     {
-                                        PackageId = PackageId,
+                                        PackageId = _packageId.ToString(),
                                         Version = LowerPackageVersion
                                     },
                                     new MockFeedPackage
                                     {
-                                        PackageId = PackageId,
+                                        PackageId = _packageId.ToString(),
                                         Version = HigherPackageVersion
                                     }
                                 }
@@ -91,9 +91,24 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenAExistedLowversionInstallationWhenCallICanUpdateThePackageVersion()
+        {
+
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should().Be(LowerPackageVersion);
+
+            var command = CreateUpdateCommand($"-g {_packageId}");
+
+            command.Execute();
+
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should().Be(HigherPackageVersion);
+        }
+
+        [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
-            var command = CreateUpdateCommand($"-g --tool-path /tmp/folder {PackageId}");
+            var command = CreateUpdateCommand($"-g --tool-path /tmp/folder {_packageId}");
 
             Action a = () => command.Execute();
 
@@ -104,7 +119,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
         {
-            var command = CreateUpdateCommand($"{PackageId}");
+            var command = CreateUpdateCommand($"{_packageId}");
 
             Action a = () => command.Execute();
 
