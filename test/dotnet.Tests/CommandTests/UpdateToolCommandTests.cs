@@ -91,12 +91,9 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAExistedLowversionInstallationWhenCallICanUpdateThePackageVersion()
+        public void GivenAExistedLowversionInstallationWhenCallItCanUpdateThePackageVersion()
         {
-
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
-
-            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should().Be(LowerPackageVersion);
 
             var command = CreateUpdateCommand($"-g {_packageId}");
 
@@ -104,6 +101,19 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should().Be(HigherPackageVersion);
         }
+
+        [Fact]
+        public void GivenAExistedLowversionInstallationWhenCallItCanPrintSucessMessage()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+
+            var command = CreateUpdateCommand($"-g {_packageId}");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Be("Update sucess");
+        }
+
 
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()

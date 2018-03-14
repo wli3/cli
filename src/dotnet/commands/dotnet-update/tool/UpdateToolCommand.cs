@@ -100,11 +100,11 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
 
 
-            IToolPackage package = null;
+            IToolPackage oldPackage = null;
             try
             {
-                package = toolPackageStore.EnumeratePackageVersions(_packageId).SingleOrDefault();
-                if (package == null)
+                oldPackage = toolPackageStore.EnumeratePackageVersions(_packageId).SingleOrDefault();
+                if (oldPackage == null)
                 {
                     throw new GracefulException(
                         messages: new[]
@@ -128,7 +128,45 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     isUserError: false);
             }
 
+            FilePath? configFile = null;
+            if (_configFilePath != null)
+            {
+                configFile = new FilePath(_configFilePath);
+            }
 
+            try
+            {
+                using (var scope = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero))
+                {
+                    foreach (var command in oldPackage.Commands)
+                    {
+                        shellShimRepository.RemoveShim(command.Name);
+                    }
+
+                    oldPackage.Uninstall();
+
+                    var newInstalledPackage = toolPackageInstaller.InstallPackage(
+                        packageId: _packageId,
+                        targetFramework: _framework,
+                        nugetConfig: configFile,
+                        source: _source,
+                        verbosity: _verbosity);
+
+                    foreach (var command in newInstalledPackage.Commands)
+                    {
+                        shellShimRepository.CreateShim(command.Executable, command.Name);
+                    }
+
+                    scope.Complete();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             return 0;
         }
