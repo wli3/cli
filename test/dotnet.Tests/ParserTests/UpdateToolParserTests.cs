@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["update"]["tool"];
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
-        
+
         [Fact]
         public void UpdateToolParserCanParseToolPathOption()
         {

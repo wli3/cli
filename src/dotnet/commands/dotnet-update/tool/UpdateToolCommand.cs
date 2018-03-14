@@ -17,7 +17,9 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 namespace Microsoft.DotNet.Tools.Update.Tool
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
-    internal delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(DirectoryPath? nonGlobalLocation = null);
+
+    internal delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(
+        DirectoryPath? nonGlobalLocation = null);
 
     internal class UpdateToolCommand : CommandBase
     {
@@ -59,11 +61,13 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
             var cliFolderPathCalculator = new CliFolderPathCalculator();
 
-            _createToolPackageStoreAndInstaller = createToolPackageStoreAndInstaller ?? ToolPackageFactory.CreateToolPackageStoreAndInstaller;
+            _createToolPackageStoreAndInstaller = createToolPackageStoreAndInstaller ??
+                                                  ToolPackageFactory.CreateToolPackageStoreAndInstaller;
 
             _environmentPathInstruction = environmentPathInstruction
-                ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
-            _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
+                                          ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
+            _createShellShimRepository =
+                createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -73,12 +77,14 @@ namespace Microsoft.DotNet.Tools.Update.Tool
         {
             if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
             {
-                throw new GracefulException("Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+                throw new GracefulException(
+                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
             }
 
             if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
             {
-                throw new GracefulException("(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
+                throw new GracefulException(
+                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
             }
 
             if (_configFilePath != null && !File.Exists(_configFilePath))
@@ -113,18 +119,18 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                                 "Tool '{0}' is not currently installed.",
                                 _packageId),
                         },
-                    isUserError: false);
+                        isUserError: false);
                 }
             }
             catch (InvalidOperationException)
             {
                 throw new GracefulException(
-                        messages: new[]
-                        {
-                            string.Format(
-                        "Tool '{0}' has multiple versions installed and cannot be uninstalled.",
-                        _packageId),
-                        },
+                    messages: new[]
+                    {
+                        string.Format(
+                            "Tool '{0}' has multiple versions installed and cannot be uninstalled.",
+                            _packageId),
+                    },
                     isUserError: false);
             }
 
@@ -161,7 +167,6 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
                     scope.Complete();
                 }
-
             }
             catch (Exception ex)
             {

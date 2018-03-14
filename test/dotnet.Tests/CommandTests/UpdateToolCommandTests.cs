@@ -58,18 +58,18 @@ namespace Microsoft.DotNet.Tests.Commands
                         {
                             Type = MockFeedType.FeedFromLookUpNugetConfig,
                             Packages = new List<MockFeedPackage>
+                            {
+                                new MockFeedPackage
                                 {
-                                    new MockFeedPackage
-                                    {
-                                        PackageId = _packageId.ToString(),
-                                        Version = LowerPackageVersion
-                                    },
-                                    new MockFeedPackage
-                                    {
-                                        PackageId = _packageId.ToString(),
-                                        Version = HigherPackageVersion
-                                    }
+                                    PackageId = _packageId.ToString(),
+                                    Version = LowerPackageVersion
+                                },
+                                new MockFeedPackage
+                                {
+                                    PackageId = _packageId.ToString(),
+                                    Version = HigherPackageVersion
                                 }
+                            }
                         }
                     }
                 ));
@@ -86,8 +86,8 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(
-                    "Tool '{0}' is not currently installed.", // TODO wul loc
-                    packageId));
+                        "Tool '{0}' is not currently installed.", // TODO wul loc
+                        packageId));
         }
 
         [Fact]
@@ -99,7 +99,8 @@ namespace Microsoft.DotNet.Tests.Commands
 
             command.Execute();
 
-            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should().Be(HigherPackageVersion);
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
+                .Be(HigherPackageVersion);
         }
 
         [Fact]
@@ -123,7 +124,8 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => command.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain("(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options."); // TODO wul loc
+                .Should().Contain(
+                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options."); // TODO wul loc
         }
 
         [Fact]
@@ -134,7 +136,8 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => command.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain("Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+                .Should().Contain(
+                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
         }
 
         private InstallToolCommand CreateInstallCommand(string options)
