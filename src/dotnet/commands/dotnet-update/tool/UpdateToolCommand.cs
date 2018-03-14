@@ -9,7 +9,6 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Install.Tool;
@@ -133,14 +132,14 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
                 RunWithHandlingInstallError(() =>
                 {
-                    var newInstalledPackage = toolPackageInstaller.InstallPackage(
+                    IToolPackage newInstalledPackage = toolPackageInstaller.InstallPackage(
                         packageId: _packageId,
                         targetFramework: _framework,
                         nugetConfig: configFile,
                         source: _source,
                         verbosity: _verbosity);
 
-                    foreach (var command in newInstalledPackage.Commands)
+                    foreach (CommandSettings command in newInstalledPackage.Commands)
                     {
                         shellShimRepository.CreateShim(command.Executable, command.Name);
                     }
