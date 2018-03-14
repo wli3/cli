@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAExistedLowversionInstallationWhenCallItCanUpdateThePackageVersion()
+        public void GivenAnExistedLowerversionInstallationWhenCallItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
 
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAExistedLowversionInstallationWhenCallItCanPrintSucessMessage()
+        public void GivenAnExistedLowerversionInstallationWhenCallItCanPrintSucessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAExistedSameVersionInstallationWhenCallItCanPrintSucessMessage()
+        public void GivenAnExistedSameVersionInstallationWhenCallItCanPrintSucessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
             _reporter.Lines.Clear();
@@ -133,7 +133,20 @@ namespace Microsoft.DotNet.Tests.Commands
                 _packageId));
         }
 
-        // TODO wul error message
+        [Fact]
+        public void GivenAnExistedLowerversionWhenReinstallThrowsIthasTheFirstLineIndicateUpdateFailure()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId}");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                "Tool '{0}' was successfully updated with no version change.", // TODO loc
+                _packageId));
+        }
 
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
