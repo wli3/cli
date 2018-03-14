@@ -158,6 +158,13 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                         shellShimRepository.CreateShim(command.Executable, command.Name);
                     }
 
+                    _reporter.WriteLine(
+                        string.Format(
+                            "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
+                            newInstalledPackage.Id,
+                            oldPackage.Version.ToNormalizedString(),
+                            newInstalledPackage.Version.ToNormalizedString()).Green());
+
                     scope.Complete();
                 }
             }

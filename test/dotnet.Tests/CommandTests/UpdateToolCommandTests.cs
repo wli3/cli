@@ -107,15 +107,20 @@ namespace Microsoft.DotNet.Tests.Commands
         public void GivenAExistedLowversionInstallationWhenCallItCanPrintSucessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            _reporter.Lines.Clear();
 
             var command = CreateUpdateCommand($"-g {_packageId}");
 
             command.Execute();
 
-            _reporter.Lines.First().Should().Be("Update sucess");
+            _reporter.Lines.First().Should().Contain(string.Format(
+                "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
+                _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-
+        
+        // TODO wul error message
+        
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
