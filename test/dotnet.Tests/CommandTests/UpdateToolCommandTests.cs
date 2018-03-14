@@ -157,6 +157,35 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenAnExistedLowerversionWhenReinstallThrowsItRollsBack()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
+            var command = new UpdateToolCommand(
+                result["dotnet"]["update"]["tool"],
+                result,
+                _ => (_store,
+                    new ToolPackageInstallerMock(
+                        _fileSystem,
+                        _store,
+                        new ProjectRestorerMock(
+                            _fileSystem,
+                            _reporter,
+                            _mockFeeds
+                        ),
+                        installCallback: () => throw new ToolConfigurationException("Simulated error"))),
+                _ => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                _reporter);
+
+            Action a = () => command.Execute();
+
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
+                .Be(LowerPackageVersion);
+        }
+
+        [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var command = CreateUpdateCommand($"-g --tool-path /tmp/folder {_packageId}");
