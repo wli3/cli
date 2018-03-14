@@ -158,13 +158,13 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
             {
                 throw new GracefulException(
-                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndToolPath);
+                    LocalizableStrings.UpdateToolCommandNeedGlobalOrToolPath);
             }
 
             if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
             {
                 throw new GracefulException(
-                    LocalizableStrings.UpdateToolCommandNeedGlobalOrToolPath);
+                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndToolPath);
             }
 
             if (_configFilePath != null && !File.Exists(_configFilePath))

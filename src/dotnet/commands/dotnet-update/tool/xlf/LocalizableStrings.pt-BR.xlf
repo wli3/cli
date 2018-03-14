@@ -53,10 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
-        <source>If there were no additional instructions, you can type the following command to invoke the tool: {0}
-Tool '{1}' (version '{2}') was successfully installed.</source>
-        <target state="new">If there were no additional instructions, you can type the following command to invoke the tool: {0}
-Tool '{1}' (version '{2}') was successfully installed.</target>
+        <source>Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.</source>
+        <target state="new">Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalOptionDescription">
@@ -87,6 +85,26 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
       <trans-unit id="ToolPathDescription">
         <source>Location of shim to access tool</source>
         <target state="new">Location of shim to access tool</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolHasMultipleVersionsInstalled">
+        <source>Tool '{0}' has multiple versions installed and cannot be uninstalled.</source>
+        <target state="new">Tool '{0}' has multiple versions installed and cannot be uninstalled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolNotInstalled">
+        <source>Tool '{0}' is not currently installed.</source>
+        <target state="new">Tool '{0}' is not currently installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateSucceededVersionNoChange">
+        <source>Tool '{0}' was successfully updated with no version change.</source>
+        <target state="new">Tool '{0}' was successfully updated with no version change.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolFailed">
+        <source>Tool '{0}' failed to update. Due to the following.</source>
+        <target state="new">Tool '{0}' failed to update. Due to the following.</target>
         <note />
       </trans-unit>
     </body>
