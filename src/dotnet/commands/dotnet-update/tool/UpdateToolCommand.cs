@@ -158,12 +158,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                         shellShimRepository.CreateShim(command.Executable, command.Name);
                     }
 
-                    _reporter.WriteLine(
-                        string.Format(
-                            "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
-                            newInstalledPackage.Id,
-                            oldPackage.Version.ToNormalizedString(),
-                            newInstalledPackage.Version.ToNormalizedString()).Green());
+                    PrintSuccessMessage(oldPackage, newInstalledPackage);
 
                     scope.Complete();
                 }
@@ -174,6 +169,26 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             }
 
             return 0;
+        }
+
+        private void PrintSuccessMessage(IToolPackage oldPackage, IToolPackage newInstalledPackage)
+        {
+            if (oldPackage.Version != newInstalledPackage.Version)
+            {
+                _reporter.WriteLine(
+                    string.Format(
+                        "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
+                        newInstalledPackage.Id,
+                        oldPackage.Version.ToNormalizedString(),
+                        newInstalledPackage.Version.ToNormalizedString()).Green());
+            }
+            else
+            {
+                _reporter.WriteLine(
+                    string.Format(
+                        "Tool '{0}' was successfully updated with no version change.",
+                        newInstalledPackage.Id).Green());
+            }
         }
     }
 }

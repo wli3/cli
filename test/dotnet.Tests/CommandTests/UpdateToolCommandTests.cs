@@ -118,9 +118,23 @@ namespace Microsoft.DotNet.Tests.Commands
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-        
+        [Fact]
+        public void GivenAExistedSameVersionInstallationWhenCallItCanPrintSucessMessage()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId}");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                "Tool '{0}' was successfully updated with no version change.", // TODO loc
+                _packageId));
+        }
+
         // TODO wul error message
-        
+
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
