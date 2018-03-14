@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class UpdateToolCommandParser
     {
-        public static Command Upadte()
+        public static Command Update()
         {
             return Create.Command("tool",
                 "LocalizableStrings.CommandDescription", //todo wul

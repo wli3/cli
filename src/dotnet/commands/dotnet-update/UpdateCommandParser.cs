@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
                 "LocalizableStrings.CommandDescription", // TODO wul
                 Accept.NoArguments(),
                 CommonOptions.HelpOption(),
-                UpdateToolCommandParser.Upadte());
+                UpdateToolCommandParser.Update());
         }
     }
 }
