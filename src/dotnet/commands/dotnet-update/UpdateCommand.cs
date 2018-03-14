@@ -6,21 +6,20 @@ using System.Collections.Generic;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Uninstall.Tool;
 
 namespace Microsoft.DotNet.Tools.Update
 {
     public class UpdateCommand : DotNetTopLevelCommandBase
     {
         protected override string CommandName => "update";
-        protected override string FullCommandNameLocalized => "TODO"; //TODO wul
+        protected override string FullCommandNameLocalized => LocalizableStrings.UpdateFullCommandName; //TODO wul
         protected override string ArgumentName => Constants.ToolPackageArgumentName;
-        protected override string ArgumentDescriptionLocalized => "TODO"; // TODO wul
+        protected override string ArgumentDescriptionLocalized => LocalizableStrings.UpdateArgumentDescription; // TODO wul
 
         internal override Dictionary<string, Func<AppliedOption, CommandBase>> SubCommands =>
             new Dictionary<string, Func<AppliedOption, CommandBase>>
             {
-                ["tool"] = options => new UninstallToolCommand(options["tool"], ParseResult)
+                ["tool"] = options => new Tool.UpdateToolCommand(options["tool"], ParseResult)
             };
 
         public static int Run(string[] args)
