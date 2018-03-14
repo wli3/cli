@@ -12,6 +12,8 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools.Install.Tool;
+using Microsoft.DotNet.Tools.Uninstall.Tool;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Update.Tool
@@ -68,25 +70,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
         public override int Execute()
         {
-            if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
-            {
-                throw new GracefulException(
-                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
-            }
-
-            if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
-            {
-                throw new GracefulException(
-                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
-            }
-
-            if (_configFilePath != null && !File.Exists(_configFilePath))
-            {
-                throw new GracefulException(
-                    string.Format(
-                        "NuGet configuration file '{0}' does not exist.",
-                        Path.GetFullPath(_configFilePath)));
-            }
+            ValidateArgument();
 
             DirectoryPath? toolPath = null;
             if (_toolPath != null)
@@ -133,11 +117,11 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                 configFile = new FilePath(_configFilePath);
             }
 
-            try
+            using (var scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                TimeSpan.Zero))
             {
-                using (var scope = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    TimeSpan.Zero))
+                RunWithHandlingUninstallError(() =>
                 {
                     foreach (var command in oldPackage.Commands)
                     {
@@ -145,7 +129,10 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     }
 
                     oldPackage.Uninstall();
+                });
 
+                RunWithHandlingInstallError(() =>
+                {
                     var newInstalledPackage = toolPackageInstaller.InstallPackage(
                         packageId: _packageId,
                         targetFramework: _framework,
@@ -159,16 +146,82 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     }
 
                     PrintSuccessMessage(oldPackage, newInstalledPackage);
+                });
 
-                    scope.Complete();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                scope.Complete();
             }
 
             return 0;
+        }
+
+        private void ValidateArgument()
+        {
+            if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
+            {
+                throw new GracefulException(
+                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+            }
+
+            if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
+            {
+                throw new GracefulException(
+                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
+            }
+
+            if (_configFilePath != null && !File.Exists(_configFilePath))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        "NuGet configuration file '{0}' does not exist.",
+                        Path.GetFullPath(_configFilePath)));
+            }
+        }
+
+        private void RunWithHandlingInstallError(Action installAction)
+        {
+            try
+            {
+                installAction();
+            }
+            catch (Exception ex)
+                when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
+            {
+                var message = new List<string>
+                {
+                    string.Format("Tool '{0}' failed to update. Due to the following.", _packageId)
+                };
+                message.AddRange(
+                    InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
+
+
+                throw new GracefulException(
+                    messages: message,
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
+            }
+        }
+
+        private void RunWithHandlingUninstallError(Action uninstallAction)
+        {
+            try
+            {
+                uninstallAction();
+            }
+            catch (Exception ex)
+                when (UninstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
+            {
+                var message = new List<string>
+                {
+                    string.Format("Tool '{0}' failed to update. Due to the following.", _packageId)
+                };
+                message.AddRange(
+                    UninstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
+
+                throw new GracefulException(
+                    messages: message,
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
+            }
         }
 
         private void PrintSuccessMessage(IToolPackage oldPackage, IToolPackage newInstalledPackage)

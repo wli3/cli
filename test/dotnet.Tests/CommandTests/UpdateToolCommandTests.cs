@@ -145,13 +145,15 @@ namespace Microsoft.DotNet.Tests.Commands
                             _reporter,
                             _mockFeeds
                         ),
-                        installCallback: () => throw new ToolConfigurationException("Simulated Error"))),
+                        installCallback: () => throw new ToolConfigurationException("Simulated error"))),
                 _ => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _reporter);
 
             Action a = () => command.Execute();
-            a.ShouldThrow<GracefulException>().And.Message.Should().Be("Tool '{0}' failed to update. Due to:"); // TODO wul loc
-
+            a.ShouldThrow<GracefulException>().And.Message.Should().Contain(
+                string.Format("Tool '{0}' failed to update. Due to the following.", _packageId) + Environment.NewLine +
+                string.Format(Tools.Install.Tool.LocalizableStrings.InvalidToolConfiguration, "Simulated error")
+            ); // TODO wul loc
         }
 
         [Fact]
