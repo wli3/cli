@@ -23,11 +23,10 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
     internal class UpdateToolCommand : CommandBase
     {
-        private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
-        private CreateShellShimRepository _createShellShimRepository;
-        private CreateToolPackageStoreAndInstaller _createToolPackageStoreAndInstaller;
+        private readonly CreateShellShimRepository _createShellShimRepository;
+        private readonly CreateToolPackageStoreAndInstaller _createToolPackageStoreAndInstaller;
 
         private readonly PackageId _packageId;
         private readonly string _configFilePath;
@@ -37,12 +36,10 @@ namespace Microsoft.DotNet.Tools.Update.Tool
         private readonly string _verbosity;
         private readonly string _toolPath;
 
-        public UpdateToolCommand(
-            AppliedOption appliedCommand,
+        public UpdateToolCommand(AppliedOption appliedCommand,
             ParseResult parseResult,
             CreateToolPackageStoreAndInstaller createToolPackageStoreAndInstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
-            IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null)
             : base(parseResult)
         {
@@ -59,13 +56,9 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
             _toolPath = appliedCommand.SingleArgumentOrDefault("tool-path");
 
-            var cliFolderPathCalculator = new CliFolderPathCalculator();
-
             _createToolPackageStoreAndInstaller = createToolPackageStoreAndInstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoreAndInstaller;
 
-            _environmentPathInstruction = environmentPathInstruction
-                                          ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
             _createShellShimRepository =
                 createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
@@ -106,7 +99,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
 
 
-            IToolPackage oldPackage = null;
+            IToolPackage oldPackage;
             try
             {
                 oldPackage = toolPackageStore.EnumeratePackageVersions(_packageId).SingleOrDefault();
@@ -116,7 +109,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                         messages: new[]
                         {
                             string.Format(
-                                "Tool '{0}' is not currently installed.",
+                                "Tool '{0}' is not currently installed.", // TODO wul loc
                                 _packageId),
                         },
                         isUserError: false);
@@ -128,7 +121,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     messages: new[]
                     {
                         string.Format(
-                            "Tool '{0}' has multiple versions installed and cannot be uninstalled.",
+                            "Tool '{0}' has multiple versions installed and cannot be uninstalled.", // TODO wul loc
                             _packageId),
                     },
                     isUserError: false);

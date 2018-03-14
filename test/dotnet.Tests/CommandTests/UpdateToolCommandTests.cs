@@ -162,7 +162,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 result,
                 (_) => (_store, _packageInstallerMock),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
-                _environmentPathInstructionMock,
                 _reporter);
         }
     }
