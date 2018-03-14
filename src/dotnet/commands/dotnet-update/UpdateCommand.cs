@@ -12,9 +12,9 @@ namespace Microsoft.DotNet.Tools.Update
     public class UpdateCommand : DotNetTopLevelCommandBase
     {
         protected override string CommandName => "update";
-        protected override string FullCommandNameLocalized => LocalizableStrings.UpdateFullCommandName; //TODO wul
+        protected override string FullCommandNameLocalized => LocalizableStrings.UpdateFullCommandName;
         protected override string ArgumentName => Constants.ToolPackageArgumentName;
-        protected override string ArgumentDescriptionLocalized => LocalizableStrings.UpdateArgumentDescription; // TODO wul
+        protected override string ArgumentDescriptionLocalized => LocalizableStrings.UpdateArgumentDescription;
 
         internal override Dictionary<string, Func<AppliedOption, CommandBase>> SubCommands =>
             new Dictionary<string, Func<AppliedOption, CommandBase>>

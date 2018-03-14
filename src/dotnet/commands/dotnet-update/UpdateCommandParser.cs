@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli
         {
             return Create.Command(
                 "update",
-                "LocalizableStrings.CommandDescription", // TODO wul
+                Tools.Update.LocalizableStrings.CommandDescription,
                 Accept.NoArguments(),
                 CommonOptions.HelpOption(),
                 UpdateToolCommandParser.Update());
