@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
                 throw new GracefulException(
                     messages: message,
-                    verboseMessages: new[] {ex.ToString()},
+                    verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }
         }
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
 
                 throw new GracefulException(
                     messages: message,
-                    verboseMessages: new[] {ex.ToString()},
+                    verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }
         }

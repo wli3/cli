@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using LocalizableStrings = Microsoft.DotNet.Tools.Update.Tool.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -71,7 +72,7 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(
-                        "Tool '{0}' is not currently installed.", // TODO wul loc
+                        LocalizableStrings.ToolNotInstalled,
                         packageId));
         }
 
@@ -99,7 +100,7 @@ namespace Microsoft.DotNet.Tests.Commands
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
+                LocalizableStrings.UpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -114,7 +115,7 @@ namespace Microsoft.DotNet.Tests.Commands
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                "Tool '{0}' was successfully updated with no version change.", // TODO loc
+                LocalizableStrings.UpdateSucceededVersionNoChange,
                 _packageId));
         }
 
@@ -143,9 +144,8 @@ namespace Microsoft.DotNet.Tests.Commands
 
             Action a = () => command.Execute();
             a.ShouldThrow<GracefulException>().And.Message.Should().Contain(
-                string.Format("Tool '{0}' failed to update. Due to the following.", _packageId) + Environment.NewLine +
-                string.Format(Tools.Install.Tool.LocalizableStrings.InvalidToolConfiguration, "Simulated error")
-            ); // TODO wul loc
+                string.Format(LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
+                string.Format(Tools.Install.Tool.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<GracefulException>().And.Message
                 .Should().Contain(
-                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options."); // TODO wul loc
+                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndToolPath);
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<GracefulException>().And.Message
                 .Should().Contain(
-                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+                    LocalizableStrings.UpdateToolCommandNeedGlobalOrToolPath);
         }
 
         private InstallToolCommand CreateInstallCommand(string options)
