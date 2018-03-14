@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                         messages: new[]
                         {
                             string.Format(
-                                "Tool '{0}' is not currently installed.", // TODO wul loc
+                                LocalizableStrings.ToolNotInstalled,
                                 _packageId),
                         },
                         isUserError: false);
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
                     messages: new[]
                     {
                         string.Format(
-                            "Tool '{0}' has multiple versions installed and cannot be uninstalled.", // TODO wul loc
+                            LocalizableStrings.ToolHasMultipleVersionsInstalled,
                             _packageId),
                     },
                     isUserError: false);
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             {
                 RunWithHandlingUninstallError(() =>
                 {
-                    foreach (var command in oldPackage.Commands)
+                    foreach (CommandSettings command in oldPackage.Commands)
                     {
                         shellShimRepository.RemoveShim(command.Name);
                     }
@@ -158,20 +158,20 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
             {
                 throw new GracefulException(
-                    "Please specify either the global option (--global) or the tool path option (--tool-path)."); // TODO wul loc
+                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndToolPath);
             }
 
             if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
             {
                 throw new GracefulException(
-                    "(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.");
+                    LocalizableStrings.UpdateToolCommandNeedGlobalOrToolPath);
             }
 
             if (_configFilePath != null && !File.Exists(_configFilePath))
             {
                 throw new GracefulException(
                     string.Format(
-                        "NuGet configuration file '{0}' does not exist.",
+                        LocalizableStrings.NuGetConfigurationFileDoesNotExist,
                         Path.GetFullPath(_configFilePath)));
             }
         }
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             {
                 var message = new List<string>
                 {
-                    string.Format("Tool '{0}' failed to update. Due to the following.", _packageId)
+                    string.Format(LocalizableStrings.UpdateToolFailed, _packageId)
                 };
                 message.AddRange(
                     InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             {
                 var message = new List<string>
                 {
-                    string.Format("Tool '{0}' failed to update. Due to the following.", _packageId)
+                    string.Format(LocalizableStrings.UpdateToolFailed, _packageId)
                 };
                 message.AddRange(
                     UninstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             {
                 _reporter.WriteLine(
                     string.Format(
-                        "Tool '{0}' (from version '{1}' to version'{2}') was successfully updated.",
+                        LocalizableStrings.UpdateSucceeded,
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -238,7 +238,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
             {
                 _reporter.WriteLine(
                     string.Format(
-                        "Tool '{0}' was successfully updated with no version change.",
+                        LocalizableStrings.UpdateSucceededVersionNoChange,
                         newInstalledPackage.Id).Green());
             }
         }
