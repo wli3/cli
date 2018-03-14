@@ -133,7 +133,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     }
                     return true;
                 })
-                .SelectMany(f => f.Packages);
+                .SelectMany(f => f.Packages)
+                .Where(f => f.PackageId == packageId);
 
             var bestVersion  = versionRange.FindBestMatch(allPackages.Select(p => NuGetVersion.Parse(p.Version)));
 
