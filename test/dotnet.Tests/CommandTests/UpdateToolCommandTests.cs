@@ -33,8 +33,8 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly IFileSystem _fileSystem;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ToolPackageStoreMock _store;
-        private readonly ToolPackageInstallerMock _packageInstallerMock;
         private readonly PackageId _packageId = new PackageId("global.tool.console.demo");
+        private readonly List<MockFeed> _mockFeeds;
         private const string LowerPackageVersion = "1.0.4";
         private const string HigherPackageVersion = "1.0.5";
         private const string ShimsDirectory = "shims";
@@ -46,33 +46,26 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem = new FileSystemMockBuilder().Build();
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, ShimsDirectory);
             _store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
-            _packageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                _store,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
+            _mockFeeds = new List<MockFeed>
+            {
+                new MockFeed
+                {
+                    Type = MockFeedType.FeedFromLookUpNugetConfig,
+                    Packages = new List<MockFeedPackage>
                     {
-                        new MockFeed
+                        new MockFeedPackage
                         {
-                            Type = MockFeedType.FeedFromLookUpNugetConfig,
-                            Packages = new List<MockFeedPackage>
-                            {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageId.ToString(),
-                                    Version = LowerPackageVersion
-                                },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageId.ToString(),
-                                    Version = HigherPackageVersion
-                                }
-                            }
+                            PackageId = _packageId.ToString(),
+                            Version = LowerPackageVersion
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId.ToString(),
+                            Version = HigherPackageVersion
                         }
                     }
-                ));
+                }
+            };
         }
 
         [Fact]
@@ -139,13 +132,26 @@ namespace Microsoft.DotNet.Tests.Commands
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId}");
+            ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
+            var command = new UpdateToolCommand(
+                result["dotnet"]["update"]["tool"],
+                result,
+                _ => (_store,
+                    new ToolPackageInstallerMock(
+                        _fileSystem,
+                        _store,
+                        new ProjectRestorerMock(
+                            _fileSystem,
+                            _reporter,
+                            _mockFeeds
+                        ),
+                        installCallback: () => throw new ToolConfigurationException("Simulated Error"))),
+                _ => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
+                _reporter);
 
-            command.Execute();
+            Action a = () => command.Execute();
+            a.ShouldThrow<GracefulException>().And.Message.Should().Be("Tool '{0}' failed to update. Due to:"); // TODO wul loc
 
-            _reporter.Lines.First().Should().Contain(string.Format(
-                "Tool '{0}' was successfully updated with no version change.", // TODO loc
-                _packageId));
         }
 
         [Fact]
@@ -179,7 +185,14 @@ namespace Microsoft.DotNet.Tests.Commands
             return new InstallToolCommand(
                 result["dotnet"]["install"]["tool"],
                 result,
-                (_) => (_store, _packageInstallerMock),
+                (_) => (_store, new ToolPackageInstallerMock(
+                    _fileSystem,
+                    _store,
+                    new ProjectRestorerMock(
+                        _fileSystem,
+                        _reporter,
+                        _mockFeeds
+                    ))),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _environmentPathInstructionMock,
                 _reporter);
@@ -192,7 +205,14 @@ namespace Microsoft.DotNet.Tests.Commands
             return new UpdateToolCommand(
                 result["dotnet"]["update"]["tool"],
                 result,
-                (_) => (_store, _packageInstallerMock),
+                (_) => (_store, new ToolPackageInstallerMock(
+                    _fileSystem,
+                    _store,
+                    new ProjectRestorerMock(
+                        _fileSystem,
+                        _reporter,
+                        _mockFeeds
+                    ))),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
                 _reporter);
         }
