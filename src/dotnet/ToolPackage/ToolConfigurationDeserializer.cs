@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -43,6 +44,12 @@ namespace Microsoft.DotNet.ToolPackage
                     ex);
             }
 
+            List<string> warnings = new List<string>();
+            if (string.IsNullOrWhiteSpace(dotNetCliTool.Version))
+            {
+                warnings.Add("Format version is missing, this tool may not be supported in this SDK version. Please contact the author."); // TODO wul loc
+            }
+
             if (dotNetCliTool.Commands.Length != 1)
             {
                 throw new ToolConfigurationException(CommonLocalizableStrings.ToolSettingsMoreThanOneCommand);
@@ -59,7 +66,8 @@ namespace Microsoft.DotNet.ToolPackage
 
             return new ToolConfiguration(
                 dotNetCliTool.Commands[0].Name,
-                dotNetCliTool.Commands[0].EntryPoint);
+                dotNetCliTool.Commands[0].EntryPoint,
+                warnings);
         }
     }
 }

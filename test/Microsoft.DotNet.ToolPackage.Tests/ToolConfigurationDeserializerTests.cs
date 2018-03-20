@@ -42,6 +42,14 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
+        public void GivenMissingVersionItHasWarningReflectIt()
+        {
+            ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissingVersion.xml");
+
+            toolConfiguration.Warnings.First().Should().Be("Format version is missing, this tool may not be supported in this SDK version. Please contact the author.");
+        }
+
+        [Fact]
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
