@@ -50,6 +50,22 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
+        public void GivenMajorHigherVersionItHasWarningReflectIt()
+        {
+            ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMajorHigherVersion.xml");
+
+            toolConfiguration.Warnings.First().Should().Be("Format version indicate this tool may not be fully supported in this SDK version. Please update SDK version.");
+        }
+
+        [Fact]
+        public void GivenMinorHigherVersionItHasNoWarning()
+        {
+            ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMinorHigherVersion.xml");
+
+            toolConfiguration.Warnings.Should().BeEmpty();
+        }
+
+        [Fact]
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
