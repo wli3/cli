@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<DotNetCliTool>
+<DotNetCliTool  Version="1.0.0" >
   <Commands>
     <Command Name="demo" EntryPoint="consoledemo.dll" Runner="dotnet" />
   </Commands>

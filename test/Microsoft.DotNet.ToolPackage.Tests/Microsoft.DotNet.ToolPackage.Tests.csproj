@@ -34,6 +34,15 @@
     <None Update="DotnetToolSettingsGolden.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="DotnetToolSettingsMissingVersion.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="DotnetToolSettingsMinorHigherVersion.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="DotnetToolSettingsMajorHigherVersion.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
 
     <Compile Remove="SampleGlobalTool/**" />
     <Content Remove="SampleGlobalTool/**" />

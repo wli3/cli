@@ -138,6 +138,36 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void WhenRunWithPackageIdPackageFormatIsNotFullySupportedItShouldShowPathInstruction()
+        {
+            const string Warning = "WARNING";
+            var injectedWarnings = new Dictionary<PackageId, IEnumerable<string>>()
+            {
+                [new PackageId(PackageId)] = new List<string>() { Warning }
+            };
+
+            var installToolCommand = new InstallToolCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolPackageStore,
+                new ToolPackageInstallerMock(
+                fileSystem: _fileSystem,
+                store: _toolPackageStore,
+                projectRestorer: new ProjectRestorerMock(
+                    fileSystem: _fileSystem,
+                    reporter: _reporter),
+                warningsMap: injectedWarnings),
+                _shellShimRepositoryMock,
+                _environmentPathInstructionMock,
+                _reporter);
+
+            installToolCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().Be(Warning.Yellow());
+            _reporter.Lines.Skip(1).First().Should().Be("INSTRUCTION");
+        }
+
+        [Fact]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
         {
             var toolPackageInstaller =

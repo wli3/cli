@@ -153,6 +153,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
                 }
 
+                foreach (string w in package.Warnings)
+                {
+                    _reporter.WriteLine(w.Yellow());
+                }
+
+                _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
+
                 _reporter.WriteLine(
                     string.Format(
                         LocalizableStrings.InstallationSucceeded,
