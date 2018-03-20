@@ -30,29 +30,29 @@ namespace Microsoft.DotNet.ShellShim.Tests
             _output = output;
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("my_native_app.exe", null)]
-        [InlineData("./my_native_app.js", "nodejs")]
-        [InlineData(@"C:\tools\my_native_app.dll", "dotnet")]
-        public void GivenAnRunnerOrEntryPointItCanCreateConfig(string entryPointPath, string runner)
-        {
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
-            var shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            var tmpFile = new FilePath(Path.Combine(pathToShim, Path.GetRandomFileName()));
+        //[WindowsOnlyTheory]
+        //[InlineData("my_native_app.exe", null)]
+        //[InlineData("./my_native_app.js", "nodejs")]
+        //[InlineData(@"C:\tools\my_native_app.dll", "dotnet")]
+        //public void GivenAnRunnerOrEntryPointItCanCreateConfig(string entryPointPath, string runner)
+        //{
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //    var shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    var tmpFile = new FilePath(Path.Combine(pathToShim, Path.GetRandomFileName()));
 
-            shellShimRepository.CreateConfigFile(tmpFile, new FilePath(entryPointPath), runner);
+        //    shellShimRepository.CreateConfigFile(tmpFile, new FilePath(entryPointPath), runner);
 
-            new FileInfo(tmpFile.Value).Should().Exist();
+        //    new FileInfo(tmpFile.Value).Should().Exist();
 
-            var generated = XDocument.Load(tmpFile.Value);
+        //    var generated = XDocument.Load(tmpFile.Value);
 
-            generated.Descendants("appSettings")
-                .Descendants("add")
-                .Should()
-                .Contain(e => e.Attribute("key").Value == "runner" && e.Attribute("value").Value == (runner ?? string.Empty))
-                .And
-                .Contain(e => e.Attribute("key").Value == "entryPoint" && e.Attribute("value").Value == entryPointPath);
-        }
+        //    generated.Descendants("appSettings")
+        //        .Descendants("add")
+        //        .Should()
+        //        .Contain(e => e.Attribute("key").Value == "runner" && e.Attribute("value").Value == (runner ?? string.Empty))
+        //        .And
+        //        .Contain(e => e.Attribute("key").Value == "entryPoint" && e.Attribute("value").Value == entryPointPath);
+        //}
 
         [Fact]
         public void GivenAnExecutablePathItCanGenerateShimFile()
@@ -69,26 +69,26 @@ namespace Microsoft.DotNet.ShellShim.Tests
             stdOut.Should().Contain("Hello World");
         }
 
-        [Fact]
-        public void GivenAnExecutablePathItCanGenerateShimFileInTransaction()
-        {
-            var outputDll = MakeHelloWorldExecutableDll();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
-            var shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //[Fact]
+        //public void GivenAnExecutablePathItCanGenerateShimFileInTransaction()
+        //{
+        //    var outputDll = MakeHelloWorldExecutableDll();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //    var shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
 
-            using (var transactionScope = new TransactionScope(
-                TransactionScopeOption.Required,
-                TimeSpan.Zero))
-            {
-                shellShimRepository.CreateShim(outputDll, shellCommandName);
-                transactionScope.Complete();
-            }
+        //    using (var transactionScope = new TransactionScope(
+        //        TransactionScopeOption.Required,
+        //        TimeSpan.Zero))
+        //    {
+        //        shellShimRepository.CreateShim(outputDll, shellCommandName);
+        //        transactionScope.Complete();
+        //    }
 
-            var stdOut = ExecuteInShell(shellCommandName, pathToShim);
+        //    var stdOut = ExecuteInShell(shellCommandName, pathToShim);
 
-            stdOut.Should().Contain("Hello World");
-        }
+        //    stdOut.Should().Contain("Hello World");
+        //}
 
         [Fact]
         public void GivenAnExecutablePathDirectoryThatDoesNotExistItCanGenerateShimFile()
@@ -124,213 +124,213 @@ namespace Microsoft.DotNet.ShellShim.Tests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenAShimConflictItWillRollback(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
-            MakeNameConflictingCommand(pathToShim, shellCommandName);
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenAShimConflictItWillRollback(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //    MakeNameConflictingCommand(pathToShim, shellCommandName);
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Action a = () =>
-            {
-                using (var scope = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    TimeSpan.Zero))
-                {
-                    shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
+        //    Action a = () =>
+        //    {
+        //        using (var scope = new TransactionScope(
+        //            TransactionScopeOption.Required,
+        //            TimeSpan.Zero))
+        //        {
+        //            shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
 
-                    scope.Complete();
-                }
-            };
+        //            scope.Complete();
+        //        }
+        //    };
 
-            a.ShouldThrow<ShellShimException>().Where(
-                ex => ex.Message ==
-                    string.Format(
-                        CommonLocalizableStrings.ShellShimConflict,
-                        shellCommandName));
+        //    a.ShouldThrow<ShellShimException>().Where(
+        //        ex => ex.Message ==
+        //            string.Format(
+        //                CommonLocalizableStrings.ShellShimConflict,
+        //                shellCommandName));
 
-            Directory
-                .EnumerateFileSystemEntries(pathToShim)
-                .Should()
-                .HaveCount(1, "should only be the original conflicting command");
-        }
+        //    Directory
+        //        .EnumerateFileSystemEntries(pathToShim)
+        //        .Should()
+        //        .HaveCount(1, "should only be the original conflicting command");
+        //}
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenAnExceptionItWillRollback(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenAnExceptionItWillRollback(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Action intendedError = () => throw new ToolPackageException("simulated error");
+        //    Action intendedError = () => throw new ToolPackageException("simulated error");
 
-            Action a = () =>
-            {
-                using (var scope = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    TimeSpan.Zero))
-                {
-                    shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
+        //    Action a = () =>
+        //    {
+        //        using (var scope = new TransactionScope(
+        //            TransactionScopeOption.Required,
+        //            TimeSpan.Zero))
+        //        {
+        //            shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
 
-                    intendedError();
-                    scope.Complete();
-                }
-            };
-            a.ShouldThrow<ToolPackageException>().WithMessage("simulated error");
+        //            intendedError();
+        //            scope.Complete();
+        //        }
+        //    };
+        //    a.ShouldThrow<ToolPackageException>().WithMessage("simulated error");
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
-        }
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //}
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenANonexistentShimRemoveDoesNotThrow(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenANonexistentShimRemoveDoesNotThrow(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-            shellShimRepository.RemoveShim(shellCommandName);
+        //    shellShimRepository.RemoveShim(shellCommandName);
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
-        }
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //}
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenAnInstalledShimRemoveDeletesTheShimFiles(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenAnInstalledShimRemoveDeletesTheShimFiles(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-            shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
+        //    shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
-            shellShimRepository.RemoveShim(shellCommandName);
+        //    shellShimRepository.RemoveShim(shellCommandName);
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
-        }
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //}
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenAnInstalledShimRemoveRollsbackIfTransactionIsAborted(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenAnInstalledShimRemoveRollsbackIfTransactionIsAborted(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-            shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
+        //    shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
-            using (var scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                TimeSpan.Zero))
-            {
-                shellShimRepository.RemoveShim(shellCommandName);
+        //    using (var scope = new TransactionScope(
+        //        TransactionScopeOption.Required,
+        //        TimeSpan.Zero))
+        //    {
+        //        shellShimRepository.RemoveShim(shellCommandName);
 
-                Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
-            }
+        //        Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
-        }
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
+        //}
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenAnInstalledShimRemoveCommitsIfTransactionIsCompleted(bool testMockBehaviorIsInSync)
-        {
-            var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
-            var pathToShim = GetNewCleanFolderUnderTempRoot();
+        //[Theory]
+        //[InlineData(false)]
+        //[InlineData(true)]
+        //public void GivenAnInstalledShimRemoveCommitsIfTransactionIsCompleted(bool testMockBehaviorIsInSync)
+        //{
+        //    var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+        //    var pathToShim = GetNewCleanFolderUnderTempRoot();
 
-            IShellShimRepository shellShimRepository;
-            if (testMockBehaviorIsInSync)
-            {
-                shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
-            }
-            else
-            {
-                shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
-            }
+        //    IShellShimRepository shellShimRepository;
+        //    if (testMockBehaviorIsInSync)
+        //    {
+        //        shellShimRepository = new ShellShimRepositoryMock(new DirectoryPath(pathToShim));
+        //    }
+        //    else
+        //    {
+        //        shellShimRepository = new ShellShimRepository(new DirectoryPath(pathToShim));
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-            shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
+        //    shellShimRepository.CreateShim(new FilePath("dummy.dll"), shellCommandName);
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
-            using (var scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                TimeSpan.Zero))
-            {
-                shellShimRepository.RemoveShim(shellCommandName);
+        //    using (var scope = new TransactionScope(
+        //        TransactionScopeOption.Required,
+        //        TimeSpan.Zero))
+        //    {
+        //        shellShimRepository.RemoveShim(shellCommandName);
 
-                Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //        Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-                scope.Complete();
-            }
+        //        scope.Complete();
+        //    }
 
-            Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
-        }
+        //    Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
+        //}
 
         private static void MakeNameConflictingCommand(string pathToPlaceShim, string shellCommandName)
         {
@@ -379,23 +379,23 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         private static FilePath MakeHelloWorldExecutableDll()
         {
-            const string testAppName = "TestAppSimple";
-            const string emptySpaceToTestSpaceInPath = " ";
-            const string directoryNamePostFix = "Test";
-            TestAssetInstance testInstance = TestAssets.Get(testAppName)
-                .CreateInstance(testAppName + emptySpaceToTestSpaceInPath + directoryNamePostFix)
-                .UseCurrentRuntimeFrameworkVersion()
-                .WithRestoreFiles()
-                .WithBuildFiles();
+            //const string testAppName = "NewtonSoftDependentProject";
+            //const string emptySpaceToTestSpaceInPath = " ";
+            //const string directoryNamePostFix = "Test";
+            //TestAssetInstance testInstance = TestAssets.Get(testAppName)
+            //    .CreateInstance(testAppName + emptySpaceToTestSpaceInPath + directoryNamePostFix)
+            //    .UseCurrentRuntimeFrameworkVersion()
+            //    .WithRestoreFiles()
+            //    .WithBuildFiles();
 
-            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+            //var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-            FileInfo outputDll = testInstance.Root.GetDirectory("bin", configuration)
-                .EnumerateDirectories()
-                .Single()
-                .GetFile($"{testAppName}.dll");
+            //FileInfo outputDll = testInstance.Root.GetDirectory("bin", configuration)
+            //    .EnumerateDirectories()
+            //    .Single()
+            //    .GetFile($"{testAppName}.dll");
 
-            return new FilePath(outputDll.FullName);
+            return new FilePath(@"C:\Users\wul\.dotnet\tools\.store\t-rex\1.0.0-preview1-003\t-rex\1.0.0-preview1-003\tools\netcoreapp2.0\any\t-rex.dll");
         }
 
         private static string GetNewCleanFolderUnderTempRoot()
