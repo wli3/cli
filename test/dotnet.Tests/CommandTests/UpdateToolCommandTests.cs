@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
 
             return new ToolInstallCommand(
-                result["dotnet"]["install"]["tool"],
+                result["dotnet"]["tool"]["install"],
                 result,
                 (_) => (_store, new ToolPackageInstallerMock(
                     _fileSystem,

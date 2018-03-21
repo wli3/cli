@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Tests.Commands
                     _reporter));
 
             return new ToolInstallCommand(
-                result["dotnet"]["install"]["tool"],
+                result["dotnet"]["tool"]["install"],
                 result,
                 (_) => (store, packageInstallerMock),
                 (_) => new ShellShimRepositoryMock(new DirectoryPath(ShimsDirectory), _fileSystem),
