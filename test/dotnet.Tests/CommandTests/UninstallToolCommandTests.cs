@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private ToolInstallCommand CreateInstallCommand(string options)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
+            ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(ToolsDirectory), _fileSystem);
             var packageInstallerMock = new ToolPackageInstallerMock(

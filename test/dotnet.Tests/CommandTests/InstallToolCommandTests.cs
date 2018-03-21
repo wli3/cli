@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 new EnvironmentPathInstructionMock(_reporter, PathToPlaceShim);
             _createToolPackageStoreAndInstaller = (_) => (_toolPackageStore, CreateToolPackageInstaller());
 
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId}");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
             _appliedCommand = result["dotnet"]["install"]["tool"];
             var parser = Parser.Instance;
             _parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
             const string sourcePath = "http://mysouce.com";
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --source-feed {sourcePath}");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --source-feed {sourcePath}");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
             ParseResult parseResult =
                 Parser.Instance.ParseFrom("dotnet install", new[] { "tool", PackageId, "--source-feed", sourcePath });
@@ -238,7 +238,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenRunWithInvalidVersionItShouldThrow()
         {
             const string invalidVersion = "!NotValidVersion!";
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --version {invalidVersion}");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {invalidVersion}");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
 
             var installCommand = new ToolInstallCommand(
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --version {PackageVersion}");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
 
             var installCommand = new ToolInstallCommand(
@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --version [1.0,2.0]");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [1.0,2.0]");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
 
             var installCommand = new ToolInstallCommand(
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --version [5.0,10.0]");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [5.0,10.0]");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
 
             var installCommand = new ToolInstallCommand(
@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.Tests.Commands
          [Fact]
         public void WhenRunWithValidVersionWildcardItShouldSucceed()
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet install tool -g {PackageId} --version 1.0.*");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version 1.0.*");
             AppliedOption appliedCommand = result["dotnet"]["install"]["tool"];
 
             var installCommand = new ToolInstallCommand(
@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet install tool -g --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Instance.Parse($"dotnet tool install -g --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["install"]["tool"];
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});
@@ -385,7 +385,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet install tool {PackageId}");
+            var result = Parser.Instance.Parse($"dotnet tool install {PackageId}");
             var appliedCommand = result["dotnet"]["install"]["tool"];
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet install", new[] { "tool", PackageId });
@@ -407,7 +407,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithPackageIdAndBinPathItShouldNoteHaveEnvironmentPathInstruction()
         {
-            var result = Parser.Instance.Parse($"dotnet install tool --tool-path /tmp/folder {PackageId}");
+            var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["install"]["tool"];
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});

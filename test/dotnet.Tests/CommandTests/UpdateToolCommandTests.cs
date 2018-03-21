@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private ToolInstallCommand CreateInstallCommand(string options)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
+            ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
 
             return new ToolInstallCommand(
                 result["dotnet"]["install"]["tool"],
