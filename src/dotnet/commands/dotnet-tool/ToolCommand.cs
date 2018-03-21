@@ -8,11 +8,11 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Install.Tool;
 
-namespace Microsoft.DotNet.Tools.Install
+namespace Microsoft.DotNet.Tools.Tool
 {
-    public class InstallCommand : DotNetTopLevelCommandBase
+    public class ToolCommand : DotNetTopLevelCommandBase
     {
-        protected override string CommandName => "install";
+        protected override string CommandName => "tool";
         protected override string FullCommandNameLocalized => LocalizableStrings.InstallFullCommandNameLocalized;
         protected override string ArgumentName => Constants.ProjectArgumentName;
         protected override string ArgumentDescriptionLocalized => CommonLocalizableStrings.ArgumentsProjectDescription;
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tools.Install
 
         public static int Run(string[] args)
         {
-            var command = new InstallCommand();
+            var command = new ToolCommand();
             return command.RunCommand(args);
         }
     }

@@ -121,6 +121,6 @@
     <value>.NET Install Command</value>
   </data>
   <data name="CommandDescription" xml:space="preserve">
-    <value>Installs an item into the development environment.</value>
+    <value>Modify tools.</value>
   </data>
 </root>
