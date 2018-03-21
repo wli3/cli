@@ -16,15 +16,18 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
     {
         private IFileSystem _fileSystem;
         private Action _uninstallCallback;
+        private Dictionary<PackageId, IEnumerable<string>> _warningsMap;
 
         public ToolPackageStoreMock(
             DirectoryPath root,
             IFileSystem fileSystem,
-            Action uninstallCallback = null)
+            Action uninstallCallback = null,
+            Dictionary<PackageId, IEnumerable<string>> Warnings = null)
         {
             Root = root;
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _uninstallCallback = uninstallCallback;
+            _warningsMap = Warnings ?? new Dictionary<PackageId, IEnumerable<string>>();
         }
 
         public DirectoryPath Root { get; private set; }
@@ -112,7 +115,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 return null;
             }
-            return new ToolPackageMock(_fileSystem, packageId, version, directory, _uninstallCallback);
+
+            IEnumerable<string> warnings = null;
+            _warningsMap.TryGetValue(packageId, out warnings);
+
+
+            return new ToolPackageMock(_fileSystem, packageId, version, directory, _uninstallCallback, warnings);
         }
     }
 }
