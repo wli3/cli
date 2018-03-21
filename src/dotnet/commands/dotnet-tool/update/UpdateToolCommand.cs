@@ -11,8 +11,8 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Install.Tool;
-using Microsoft.DotNet.Tools.Uninstall.Tool;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
@@ -207,14 +207,14 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 uninstallAction();
             }
             catch (Exception ex)
-                when (UninstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
+                when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 var message = new List<string>
                 {
                     string.Format(LocalizableStrings.UpdateToolFailed, _packageId)
                 };
                 message.AddRange(
-                    UninstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
+                    ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
 
                 throw new GracefulException(
                     messages: message,

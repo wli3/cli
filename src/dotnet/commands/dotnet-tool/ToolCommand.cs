@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Install.Tool;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.List;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
+using Microsoft.DotNet.Tools.Tool.Update;
 
 namespace Microsoft.DotNet.Tools.Tool
 {
@@ -20,9 +23,21 @@ namespace Microsoft.DotNet.Tools.Tool
         internal override Dictionary<string, Func<AppliedOption, CommandBase>> SubCommands =>
             new Dictionary<string, Func<AppliedOption, CommandBase>>
             {
-                ["tool"] =
-                appliedOption => new InstallToolCommand(
-                    appliedOption["tool"],
+                ["install"] =
+                appliedOption => new ToolInstallCommand(
+                    appliedOption["install"],
+                    ParseResult),
+                ["uninstall"] =
+                appliedOption => new ToolUninstallCommand(
+                    appliedOption["uninstall"],
+                    ParseResult),
+                ["update"] =
+                appliedOption => new ToolUpdateCommand(
+                    appliedOption["update"],
+                    ParseResult),
+                ["list"] =
+                appliedOption => new ToolListCommand(
+                    appliedOption["list"],
                     ParseResult)
             };
 

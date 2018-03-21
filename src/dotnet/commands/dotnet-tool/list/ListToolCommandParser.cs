@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.DotNet.Cli.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.List.Tool.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
