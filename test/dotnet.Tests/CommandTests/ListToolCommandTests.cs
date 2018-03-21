@@ -11,7 +11,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.List.Tool;
+using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -19,7 +19,7 @@ using Moq;
 using NuGet.Versioning;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.List.Tool.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -239,10 +239,10 @@ namespace Microsoft.DotNet.Tests.Commands
             return package.Object;
         }
 
-        private ListToolCommand CreateCommand(IToolPackageStore store, string options = "", string expectedToolPath = null)
+        private ToolListCommand CreateCommand(IToolPackageStore store, string options = "", string expectedToolPath = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet list tool " + options);
-            return new ListToolCommand(
+            return new ToolListCommand(
                 result["dotnet"]["list"]["tool"],
                 result,
                 toolPath => { AssertExpectedToolPath(toolPath, expectedToolPath); return store; },
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             string GetCommandsString(IToolPackage package)
             {
-                return string.Join(ListToolCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
+                return string.Join(ToolListCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
             }
 
             var packages = store.EnumeratePackages().Where(PackageHasCommands).OrderBy(package => package.Id);

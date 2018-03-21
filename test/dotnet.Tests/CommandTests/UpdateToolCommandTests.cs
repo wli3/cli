@@ -8,15 +8,15 @@ using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Install.Tool;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Tools.Update.Tool;
+using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Update.Tool.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
-            var command = new UpdateToolCommand(
+            var command = new ToolUpdateCommand(
                 result["dotnet"]["update"]["tool"],
                 result,
                 _ => (_store,
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => command.Execute();
             a.ShouldThrow<GracefulException>().And.Message.Should().Contain(
                 string.Format(LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
-                string.Format(Tools.Install.Tool.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
+                string.Format(Tools.Tool.Install.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
-            var command = new UpdateToolCommand(
+            var command = new ToolUpdateCommand(
                 result["dotnet"]["update"]["tool"],
                 result,
                 _ => (_store,
@@ -201,11 +201,11 @@ namespace Microsoft.DotNet.Tests.Commands
                     LocalizableStrings.UpdateToolCommandNeedGlobalOrToolPath);
         }
 
-        private InstallToolCommand CreateInstallCommand(string options)
+        private ToolInstallCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
 
-            return new InstallToolCommand(
+            return new ToolInstallCommand(
                 result["dotnet"]["install"]["tool"],
                 result,
                 (_) => (_store, new ToolPackageInstallerMock(
@@ -221,11 +221,11 @@ namespace Microsoft.DotNet.Tests.Commands
                 _reporter);
         }
 
-        private UpdateToolCommand CreateUpdateCommand(string options)
+        private ToolUpdateCommand CreateUpdateCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet update tool " + options);
 
-            return new UpdateToolCommand(
+            return new ToolUpdateCommand(
                 result["dotnet"]["update"]["tool"],
                 result,
                 (_) => (_store, new ToolPackageInstallerMock(

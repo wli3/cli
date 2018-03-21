@@ -12,16 +12,16 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Install.Tool;
-using Microsoft.DotNet.Tools.Uninstall.Tool;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Uninstall.Tool.LocalizableStrings;
-using InstallLocalizableStrings = Microsoft.DotNet.Tools.Install.Tool.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
+using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Should().Contain(LocalizableStrings.UninstallToolCommandNeedGlobalOrToolPath);
         }
 
-        private InstallToolCommand CreateInstallCommand(string options)
+        private ToolInstallCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet install tool " + options);
 
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Tests.Commands
                     _fileSystem,
                     _reporter));
 
-            return new InstallToolCommand(
+            return new ToolInstallCommand(
                 result["dotnet"]["install"]["tool"],
                 result,
                 (_) => (store, packageInstallerMock),
@@ -185,11 +185,11 @@ namespace Microsoft.DotNet.Tests.Commands
                 _reporter);
         }
 
-        private UninstallToolCommand CreateUninstallCommand(string options, Action uninstallCallback = null)
+        private ToolUninstallCommand CreateUninstallCommand(string options, Action uninstallCallback = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet uninstall tool " + options);
 
-            return new UninstallToolCommand(
+            return new ToolUninstallCommand(
                 result["dotnet"]["uninstall"]["tool"],
                 result,
                 (_) => new ToolPackageStoreMock(
