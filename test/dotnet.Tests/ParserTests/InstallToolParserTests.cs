@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["tool"]["install"];
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
-        
+
         [Fact]
         public void InstallToolParserCanParseToolPathOption()
         {

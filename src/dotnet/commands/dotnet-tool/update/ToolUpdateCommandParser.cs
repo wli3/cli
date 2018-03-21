@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUpdateCommandParser
     {
-        public static Command Update()
+        public static Command ToolUpdate()
         {
-            return Create.Command("tool",
+            return Create.Command("update",
                 LocalizableStrings.CommandDescription,
                 Accept.ExactlyOneArgument(errorMessage: o => LocalizableStrings.SpecifyExactlyOnePackageId)
                     .With(name: LocalizableStrings.PackageIdArgumentName,

@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUninstallCommandParser
     {
-        public static Command UninstallTool()
+        public static Command ToolUninstall()
         {
-            return Create.Command("tool",
+            return Create.Command("uninstall",
                 LocalizableStrings.CommandDescription,
                 Accept.ExactlyOneArgument(errorMessage: o => LocalizableStrings.SpecifyExactlyOnePackageId)
                     .With(name: LocalizableStrings.PackageIdArgumentName,

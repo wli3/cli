@@ -6,12 +6,12 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class ListToolCommandParser
+    internal static class ToolListCommandParser
     {
-        public static Command ListTool()
+        public static Command ToolList()
         {
             return Create.Command(
-                "tool",
+                "list",
                 LocalizableStrings.CommandDescription,
                 Create.Option(
                     "-g|--global",

@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool
                     appliedOption["update"],
                     ParseResult),
                 ["list"] =
-                appliedOption => new ToolListCommand(
+                appliedOption => new ListToolCommand(
                     appliedOption["list"],
                     ParseResult)
             };

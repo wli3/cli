@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
             _appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});
+            _parseResult = parser.ParseFrom("dotnet tool -g", new[] {"install", PackageId});
         }
 
         [Fact]

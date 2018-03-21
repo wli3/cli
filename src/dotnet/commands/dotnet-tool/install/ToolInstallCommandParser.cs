@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolInstallCommandParser
     {
-        public static Command InstallTool()
+        public static Command ToolInstall()
         {
-            return Create.Command("tool",
+            return Create.Command("install",
                 LocalizableStrings.CommandDescription,
                 Accept.ExactlyOneArgument(errorMessage: o => LocalizableStrings.SpecifyExactlyOnePackageId)
                     .With(name: LocalizableStrings.PackageIdArgumentName,

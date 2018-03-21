@@ -239,10 +239,10 @@ namespace Microsoft.DotNet.Tests.Commands
             return package.Object;
         }
 
-        private ToolListCommand CreateCommand(IToolPackageStore store, string options = "", string expectedToolPath = null)
+        private ListToolCommand CreateCommand(IToolPackageStore store, string options = "", string expectedToolPath = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool list " + options);
-            return new ToolListCommand(
+            return new ListToolCommand(
                 result["dotnet"]["tool"]["list"],
                 result,
                 toolPath => { AssertExpectedToolPath(toolPath, expectedToolPath); return store; },
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             string GetCommandsString(IToolPackage package)
             {
-                return string.Join(ToolListCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
+                return string.Join(ListToolCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
             }
 
             var packages = store.EnumeratePackages().Where(PackageHasCommands).OrderBy(package => package.Id);
