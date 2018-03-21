@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Cli
                     description: CommonLocalizableStrings.ArgumentsProjectDescription)
                 .DefaultToCurrentDirectory(),
             CommonOptions.HelpOption(),
-            ListProjectToProjectReferencesCommandParser.ListProjectToProjectReferences(),
-            ListToolCommandParser.ListTool());
+            ListProjectToProjectReferencesCommandParser.ListProjectToProjectReferences());
     }
 }
