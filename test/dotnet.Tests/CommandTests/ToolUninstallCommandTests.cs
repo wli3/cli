@@ -25,7 +25,7 @@ using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.Localizabl
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    public class UninstallToolCommandTests
+    public class ToolUninstallCommandTests
     {
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private const string ShimsDirectory = "shims";
         private const string ToolsDirectory = "tools";
 
-        public UninstallToolCommandTests()
+        public ToolUninstallCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();

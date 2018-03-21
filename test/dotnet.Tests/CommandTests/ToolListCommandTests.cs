@@ -23,11 +23,11 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    public class ListToolCommandTests
+    public class ToolListCommandTests
     {
         private readonly BufferedReporter _reporter;
 
-        public ListToolCommandTests()
+        public ToolListCommandTests()
         {
             _reporter = new BufferedReporter();
         }

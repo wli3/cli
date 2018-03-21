@@ -25,7 +25,7 @@ using Microsoft.DotNet.ShellShim;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    public class InstallToolCommandTests
+    public class ToolInstallCommandTests
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
 
-        public InstallToolCommandTests()
+        public ToolInstallCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
             _appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool -g", new[] {"install", PackageId});
+            _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --source-feed {sourcePath}");
             AppliedOption appliedCommand = result["dotnet"]["tool"]["install"];
             ParseResult parseResult =
-                Parser.Instance.ParseFrom("dotnet install", new[] { "tool", PackageId, "--source-feed", sourcePath });
+                Parser.Instance.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId, "--source-feed", sourcePath });
 
 
             var toolToolPackageInstaller = CreateToolPackageInstaller(
@@ -366,7 +366,7 @@ namespace Microsoft.DotNet.Tests.Commands
             var result = Parser.Instance.Parse($"dotnet tool install -g --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});
+            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
 
             var installCommand = new ToolInstallCommand(
                 appliedCommand,
@@ -388,7 +388,7 @@ namespace Microsoft.DotNet.Tests.Commands
             var result = Parser.Instance.Parse($"dotnet tool install {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet install", new[] { "tool", PackageId });
+            var parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
 
             var installCommand = new ToolInstallCommand(
                 appliedCommand,
@@ -410,7 +410,7 @@ namespace Microsoft.DotNet.Tests.Commands
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet install", new[] {"tool", PackageId});
+            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
 
             var installCommand = new ToolInstallCommand(appliedCommand,
                 parseResult,

@@ -20,7 +20,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    public class UpdateToolCommandTests
+    public class ToolUpdateCommandTests
     {
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private const string ShimsDirectory = "shims";
         private const string ToolsDirectory = "tools";
 
-        public UpdateToolCommandTests()
+        public ToolUpdateCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().Build();
