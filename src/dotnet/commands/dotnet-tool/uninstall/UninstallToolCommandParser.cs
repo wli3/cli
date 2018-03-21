@@ -6,7 +6,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Uninstall.Tool.LocalizableStri
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class UninstallToolCommandParser
+    internal static class ToolUninstallCommandParser
     {
         public static Command UninstallTool()
         {

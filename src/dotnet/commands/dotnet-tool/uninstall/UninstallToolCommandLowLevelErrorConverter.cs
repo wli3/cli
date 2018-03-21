@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 
-namespace Microsoft.DotNet.Tools.Uninstall.Tool
+namespace Microsoft.DotNet.Tools.Tool.Uninstall
 {
-    internal static class UninstallToolCommandLowLevelErrorConverter
+    internal static class ToolUninstallCommandLowLevelErrorConverter
     {
         public static IEnumerable<string> GetUserFacingMessages(Exception ex, PackageId packageId)
         {

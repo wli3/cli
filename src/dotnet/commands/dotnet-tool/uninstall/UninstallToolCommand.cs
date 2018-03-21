@@ -14,11 +14,11 @@ using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Uninstall.Tool
+namespace Microsoft.DotNet.Tools.Tool.Uninstall
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
     internal delegate IToolPackageStore CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
-    internal class UninstallToolCommand : CommandBase
+    internal class ToolUninstallCommand : CommandBase
     {
         private readonly AppliedOption _options;
         private readonly IReporter _reporter;
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Uninstall.Tool
         private CreateShellShimRepository _createShellShimRepository;
         private CreateToolPackageStore _createToolPackageStore;
 
-        public UninstallToolCommand(
+        public ToolUninstallCommand(
             AppliedOption options,
             ParseResult result,
             CreateToolPackageStore createToolPackageStore = null,
@@ -120,10 +120,10 @@ namespace Microsoft.DotNet.Tools.Uninstall.Tool
                         package.Version.ToNormalizedString()).Green());
                 return 0;
             }
-            catch (Exception ex) when (UninstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
+            catch (Exception ex) when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 throw new GracefulException(
-                    messages: UninstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
+                    messages: ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
                     verboseMessages: new[] {ex.ToString()},
                     isUserError: false);
             }
