@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
                 LocalizableStrings.CommandDescription,
                 Accept.NoArguments(),
                 CommonOptions.HelpOption(),
-                InstallToolCommandParser.InstallTool()); // TODO fix to more than install tool
+                ToolInstallCommandParser.InstallTool()); // TODO fix to more than install tool
         }
     }
 }

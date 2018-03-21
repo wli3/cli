@@ -15,12 +15,12 @@ using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Tools.Install.Tool
+namespace Microsoft.DotNet.Tools.Tool.Install
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
     internal delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(DirectoryPath? nonGlobalLocation = null);
 
-    internal class InstallToolCommand : CommandBase
+    internal class ToolInstallCommand : CommandBase
     {
         private readonly IEnvironmentPathInstruction _environmentPathInstruction;
         private readonly IReporter _reporter;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Install.Tool
         private readonly string _verbosity;
         private readonly string _toolPath;
 
-        public InstallToolCommand(
+        public ToolInstallCommand(
             AppliedOption appliedCommand,
             ParseResult parseResult,
             CreateToolPackageStoreAndInstaller createToolPackageStoreAndInstaller = null,

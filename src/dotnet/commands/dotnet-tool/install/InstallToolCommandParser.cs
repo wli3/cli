@@ -6,7 +6,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Install.Tool.LocalizableString
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class InstallToolCommandParser
+    internal static class ToolInstallCommandParser
     {
         public static Command InstallTool()
         {

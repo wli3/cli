@@ -10,7 +10,7 @@ using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Install.Tool
+namespace Microsoft.DotNet.Tools.Tool.Install
 {
     internal class ProjectRestorer : IProjectRestorer
     {

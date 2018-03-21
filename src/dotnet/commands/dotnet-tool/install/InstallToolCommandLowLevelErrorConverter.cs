@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 
-namespace Microsoft.DotNet.Tools.Install.Tool
+namespace Microsoft.DotNet.Tools.Tool.Install
 {
     internal static class InstallToolCommandLowLevelErrorConverter
     {
