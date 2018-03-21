@@ -6,7 +6,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Update.Tool.LocalizableStrings
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class UpdateToolCommandParser
+    internal static class ToolUpdateCommandParser
     {
         public static Command Update()
         {

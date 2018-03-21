@@ -15,14 +15,14 @@ using Microsoft.DotNet.Tools.Install.Tool;
 using Microsoft.DotNet.Tools.Uninstall.Tool;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Update.Tool
+namespace Microsoft.DotNet.Tools.Tool.Update
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
 
     internal delegate (IToolPackageStore, IToolPackageInstaller) CreateToolPackageStoreAndInstaller(
         DirectoryPath? nonGlobalLocation = null);
 
-    internal class UpdateToolCommand : CommandBase
+    internal class ToolUpdateCommand : CommandBase
     {
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Update.Tool
         private readonly string _verbosity;
         private readonly string _toolPath;
 
-        public UpdateToolCommand(AppliedOption appliedCommand,
+        public ToolUpdateCommand(AppliedOption appliedCommand,
             ParseResult parseResult,
             CreateToolPackageStoreAndInstaller createToolPackageStoreAndInstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
