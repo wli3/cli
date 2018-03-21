@@ -241,9 +241,9 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private ToolListCommand CreateCommand(IToolPackageStore store, string options = "", string expectedToolPath = null)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet list tool " + options);
+            ParseResult result = Parser.Instance.Parse("dotnet tool list " + options);
             return new ToolListCommand(
-                result["dotnet"]["list"]["tool"],
+                result["dotnet"]["tool"]["list"],
                 result,
                 toolPath => { AssertExpectedToolPath(toolPath, expectedToolPath); return store; },
                 _reporter);
