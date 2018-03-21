@@ -187,10 +187,10 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private ToolUninstallCommand CreateUninstallCommand(string options, Action uninstallCallback = null)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet uninstall tool " + options);
+            ParseResult result = Parser.Instance.Parse("dotnet tool uninstall " + options);
 
             return new ToolUninstallCommand(
-                result["dotnet"]["uninstall"]["tool"],
+                result["dotnet"]["tool"]["uninstall"],
                 result,
                 (_) => new ToolPackageStoreMock(
                     new DirectoryPath(ToolsDirectory),
