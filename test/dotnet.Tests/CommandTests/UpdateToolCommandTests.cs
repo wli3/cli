@@ -125,9 +125,9 @@ namespace Microsoft.DotNet.Tests.Commands
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
+            ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
             var command = new ToolUpdateCommand(
-                result["dotnet"]["update"]["tool"],
+                result["dotnet"]["tool"]["update"],
                 result,
                 _ => (_store,
                     new ToolPackageInstallerMock(
@@ -154,9 +154,9 @@ namespace Microsoft.DotNet.Tests.Commands
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            ParseResult result = Parser.Instance.Parse("dotnet update tool " + $"-g {_packageId}");
+            ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
             var command = new ToolUpdateCommand(
-                result["dotnet"]["update"]["tool"],
+                result["dotnet"]["tool"]["update"],
                 result,
                 _ => (_store,
                     new ToolPackageInstallerMock(
@@ -223,10 +223,10 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private ToolUpdateCommand CreateUpdateCommand(string options)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet update tool " + options);
+            ParseResult result = Parser.Instance.Parse("dotnet tool update " + options);
 
             return new ToolUpdateCommand(
-                result["dotnet"]["update"]["tool"],
+                result["dotnet"]["tool"]["update"],
                 result,
                 (_) => (_store, new ToolPackageInstallerMock(
                     _fileSystem,
