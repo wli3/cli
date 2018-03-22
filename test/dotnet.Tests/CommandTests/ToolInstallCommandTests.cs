@@ -146,25 +146,26 @@ namespace Microsoft.DotNet.Tests.Commands
                 [new PackageId(PackageId)] = new List<string>() { Warning }
             };
 
-            var installToolCommand = new InstallToolCommand(
-                _appliedCommand,
-                _parseResult,
-                _toolPackageStore,
-                new ToolPackageInstallerMock(
+            var toolPackageInstaller = new ToolPackageInstallerMock(
                 fileSystem: _fileSystem,
                 store: _toolPackageStore,
                 projectRestorer: new ProjectRestorerMock(
                     fileSystem: _fileSystem,
                     reporter: _reporter),
-                warningsMap: injectedWarnings),
-                _shellShimRepositoryMock,
+                warningsMap: injectedWarnings);
+
+            var installToolCommand = new ToolInstallCommand(
+                _appliedCommand,
+                _parseResult,
+                (_) => (_toolPackageStore, toolPackageInstaller),
+                _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
 
             installToolCommand.Execute().Should().Be(0);
 
             _reporter.Lines.First().Should().Be(Warning.Yellow());
-            _reporter.Lines.Skip(1).First().Should().Be("INSTRUCTION");
+            _reporter.Lines.Skip(1).First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
         [Fact]
