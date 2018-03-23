@@ -56,6 +56,20 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
         [Fact]
+        public void GivenReservedNameItThrows()
+        {
+            var invalidCommandName = "build";
+            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
+            a.ShouldThrow<ToolConfigurationException>()
+                .And.Message.Should()
+                .Contain(
+                    string.Format(
+                        CommonLocalizableStrings.ToolSettingsInvalidCommandName,
+                        invalidCommandName,
+                        string.Join(", ", Path.GetInvalidFileNameChars().Select(c => $"'{c}'"))));
+        }
+
+        [Fact]
         public void GivenALeadingDotAsFileNameItThrows()
         {
             var invalidCommandName = ".mytool";
