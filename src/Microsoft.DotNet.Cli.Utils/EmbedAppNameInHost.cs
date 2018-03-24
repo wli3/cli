@@ -18,7 +18,6 @@ namespace Microsoft.DotNet.Cli.Utils
     /// </summary>
     public static class EmbedAppNameInHost
     {
-
         private static string placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
         private static byte[] bytesToSearch = Encoding.UTF8.GetBytes(placeHolder);
         public static string EmbedAndReturnModifiedAppHostPath(

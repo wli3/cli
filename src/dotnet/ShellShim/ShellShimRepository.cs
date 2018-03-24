@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
@@ -157,12 +155,12 @@ namespace Microsoft.DotNet.ShellShim
             File.Move(ModifiedAppHostPath, GetShimPath(commandName).Value);
         }
 
-        public class StartupOptions
+        private class StartupOptions
         {
             public string appRoot { get; set; }
         }
 
-        public class RootObject
+        private class RootObject
         {
             public StartupOptions startupOptions { get; set; }
         }
