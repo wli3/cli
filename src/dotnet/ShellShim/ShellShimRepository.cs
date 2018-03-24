@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.ShellShim
 {
@@ -58,15 +59,15 @@ namespace Microsoft.DotNet.ShellShim
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             CreateConfigFile(
-                                outputPath: GetWindowsConfigPath(commandName),
+                                outputPath: GetWindowsShimPath(commandName),
                                 entryPoint: targetExecutablePath,
                                 runner: "dotnet");
 
-                            using (var shim = File.Create(GetWindowsShimPath(commandName).Value))
-                            using (var resource = typeof(ShellShimRepository).Assembly.GetManifestResourceStream(LauncherExeResourceName))
-                            {
-                                resource.CopyTo(shim);
-                            }
+                            //using (var shim = File.Create(GetWindowsShimPath(commandName).Value))
+                            //using (var resource = typeof(ShellShimRepository).Assembly.GetManifestResourceStream(LauncherExeResourceName))
+                            //{
+                            //    resource.CopyTo(shim);
+                            //}
                         }
                         else
                         {
@@ -140,16 +141,39 @@ namespace Microsoft.DotNet.ShellShim
 
         internal void CreateConfigFile(FilePath outputPath, FilePath entryPoint, string runner)
         {
-            XDocument config;
-            using (var resource = typeof(ShellShimRepository).Assembly.GetManifestResourceStream(LauncherConfigResourceName))
-            {
-                config = XDocument.Load(resource);
-            }
 
-            var appSettings = config.Descendants("appSettings").First();
-            appSettings.Add(new XElement("add", new XAttribute("key", "entryPoint"), new XAttribute("value", entryPoint.Value)));
-            appSettings.Add(new XElement("add", new XAttribute("key", "runner"), new XAttribute("value", runner ?? string.Empty)));
-            config.Save(outputPath.Value);
+            //var appSettings = config.Descendants("appSettings").First();
+            //appSettings.Add(new XElement("add", new XAttribute("key", "entryPoint"), new XAttribute("value", entryPoint.Value)));
+            //appSettings.Add(new XElement("add", new XAttribute("key", "runner"), new XAttribute("value", runner ?? string.Empty)));
+
+            var embedAppNameInHost = new EmbedAppNameInHost
+            {
+                AppHostSourcePath = @"C:\work\cli\.nuget\packages\runtime.win-x64.microsoft.netcore.dotnetapphost\2.1.0-preview2-26313-01\runtimes\win-x64\native\apphost.exe",
+                AppHostDestinationDirectoryPath = outputPath.GetDirectoryPath().Value,
+                AppBinaryName = Path.GetFileName(entryPoint.Value)
+            };
+
+            embedAppNameInHost.Run();
+
+            var configjson = new RootObject { startupOptions = new StartupOptions { appRoot = entryPoint.GetDirectoryPath().Value } };
+
+            var config = JsonConvert.SerializeObject(configjson);
+
+            File.WriteAllText(outputPath.GetDirectoryPath().WithFile(Path.GetFileNameWithoutExtension(outputPath.Value) + ".startupconfig.json").Value, config);
+            File.Move(embedAppNameInHost.ModifiedAppHostPath, outputPath.Value);
+            // TODO rename the file
+
+            //  config.Save(outputPath.Value);
+        }
+
+        public class StartupOptions
+        {
+            public string appRoot { get; set; }
+        }
+
+        public class RootObject
+        {
+            public StartupOptions startupOptions { get; set; }
         }
 
         private bool ShimExists(string commandName)
