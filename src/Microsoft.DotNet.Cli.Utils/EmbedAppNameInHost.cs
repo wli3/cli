@@ -21,12 +21,15 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private static string placeHolder = "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"; //hash value embedded in default apphost executable
         private static byte[] bytesToSearch = Encoding.UTF8.GetBytes(placeHolder);
-        public static string EmbedAndReturnModifiedAppHostPath(string AppHostSourcePath, string AppHostDestinationDirectoryPath, string AppBinaryName)
+        public static string EmbedAndReturnModifiedAppHostPath(
+            string appHostSourcePath,
+            string appHostDestinationDirectoryPath,
+            string appBinaryName)
         {
-            var hostExtension = Path.GetExtension(AppHostSourcePath);
-            var appbaseName = Path.GetFileNameWithoutExtension(AppBinaryName);
-            var bytesToWrite = Encoding.UTF8.GetBytes(AppBinaryName);
-            var destinationDirectory = Path.GetFullPath(AppHostDestinationDirectoryPath);
+            var hostExtension = Path.GetExtension(appHostSourcePath);
+            var appbaseName = Path.GetFileNameWithoutExtension(appBinaryName);
+            var bytesToWrite = Encoding.UTF8.GetBytes(appBinaryName);
+            var destinationDirectory = Path.GetFullPath(appHostDestinationDirectoryPath);
             var ModifiedAppHostPath = Path.Combine(destinationDirectory, $"{appbaseName}{hostExtension}");
 
             if (File.Exists(ModifiedAppHostPath))
@@ -37,12 +40,12 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (bytesToWrite.Length > 1024)
             {
-                throw new Exception("Strings.FileNameIsTooLong" + AppBinaryName);
+                throw new Exception("Strings.FileNameIsTooLong" + appBinaryName);
             }
 
-            var array = File.ReadAllBytes(AppHostSourcePath);
+            var array = File.ReadAllBytes(appHostSourcePath);
 
-            SearchAndReplace(array, bytesToSearch, bytesToWrite, AppHostSourcePath);
+            SearchAndReplace(array, bytesToSearch, bytesToWrite, appHostSourcePath);
 
             if (!Directory.Exists(destinationDirectory))
             {
@@ -50,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
 
             // Copy AppHostSourcePath to ModifiedAppHostPath so it inherits the same attributes\permissions.
-            File.Copy(AppHostSourcePath, ModifiedAppHostPath);
+            File.Copy(appHostSourcePath, ModifiedAppHostPath);
 
             // Re-write ModifiedAppHostPath with the proper contents.
             using (FileStream fs = new FileStream(ModifiedAppHostPath, FileMode.Truncate, FileAccess.ReadWrite, FileShare.Read))

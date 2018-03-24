@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Newtonsoft.Json;
@@ -18,14 +19,16 @@ namespace Microsoft.DotNet.ShellShim
 {
     internal class ShellShimRepository : IShellShimRepository
     {
-        private const string LauncherExeResourceName = "Microsoft.DotNet.Tools.Launcher.Executable";
-        private const string LauncherConfigResourceName = "Microsoft.DotNet.Tools.Launcher.Config";
+        private const string ApphostNameWithoutExtension = "apphost";
 
         private readonly DirectoryPath _shimsDirectory;
+        private readonly string _appHostSourceDirectory;
 
-        public ShellShimRepository(DirectoryPath shimsDirectory)
+        public ShellShimRepository(DirectoryPath shimsDirectory, string appHostSourcePath = null)
         {
             _shimsDirectory = shimsDirectory;
+            _appHostSourceDirectory = appHostSourcePath ?? Path.Combine(ApplicationEnvironment.ApplicationBasePath,
+                    "AppHostTemplate");
         }
 
         public void CreateShim(FilePath targetExecutablePath, string commandName)
@@ -58,26 +61,16 @@ namespace Microsoft.DotNet.ShellShim
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            CreateConfigFile(
-                                outputPath: GetWindowsShimPath(commandName),
-                                entryPoint: targetExecutablePath,
-                                runner: "dotnet");
-
-                            //using (var shim = File.Create(GetWindowsShimPath(commandName).Value))
-                            //using (var resource = typeof(ShellShimRepository).Assembly.GetManifestResourceStream(LauncherExeResourceName))
-                            //{
-                            //    resource.CopyTo(shim);
-                            //}
+                            CreateApphostShimAndConfigFile(
+                                      outputPath: GetWindowsShimPath(commandName),
+                                      entryPoint: targetExecutablePath);
                         }
                         else
                         {
-                            var script = new StringBuilder();
-                            script.AppendLine("#!/bin/sh");
-                            script.AppendLine($"dotnet {targetExecutablePath.ToQuotedString()} \"$@\"");
-
                             var shimPath = GetPosixShimPath(commandName);
-                            File.WriteAllText(shimPath.Value, script.ToString());
-
+                            CreateApphostShimAndConfigFile(
+                                    outputPath: shimPath,
+                                    entryPoint: targetExecutablePath);
                             SetUserExecutionPermission(shimPath);
                         }
                     }
@@ -139,31 +132,29 @@ namespace Microsoft.DotNet.ShellShim
                 });
         }
 
-        internal void CreateConfigFile(FilePath outputPath, FilePath entryPoint, string runner)
+        private void CreateApphostShimAndConfigFile(FilePath outputPath, FilePath entryPoint)
         {
-
-            //var appSettings = config.Descendants("appSettings").First();
-            //appSettings.Add(new XElement("add", new XAttribute("key", "entryPoint"), new XAttribute("value", entryPoint.Value)));
-            //appSettings.Add(new XElement("add", new XAttribute("key", "runner"), new XAttribute("value", runner ?? string.Empty)));
-
-            var embedAppNameInHost = new EmbedAppNameInHost
+            string appHostSourcePath;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                AppHostSourcePath = @"C:\work\cli\.nuget\packages\runtime.win-x64.microsoft.netcore.dotnetapphost\2.1.0-preview2-26313-01\runtimes\win-x64\native\apphost.exe",
-                AppHostDestinationDirectoryPath = outputPath.GetDirectoryPath().Value,
-                AppBinaryName = Path.GetFileName(entryPoint.Value)
-            };
+                appHostSourcePath = Path.Combine(_appHostSourceDirectory, ApphostNameWithoutExtension + ".exe");
+            }
+            else
+            {
+                appHostSourcePath = Path.Combine(_appHostSourceDirectory, ApphostNameWithoutExtension);
+            }
 
-            embedAppNameInHost.Run();
+            var ModifiedAppHostPath = EmbedAppNameInHost.EmbedAndReturnModifiedAppHostPath(
+                appHostSourcePath: appHostSourcePath,
+                appHostDestinationDirectoryPath: outputPath.GetDirectoryPath().Value,
+                appBinaryName: Path.GetFileName(entryPoint.Value));
 
             var configjson = new RootObject { startupOptions = new StartupOptions { appRoot = entryPoint.GetDirectoryPath().Value } };
 
             var config = JsonConvert.SerializeObject(configjson);
 
             File.WriteAllText(outputPath.GetDirectoryPath().WithFile(Path.GetFileNameWithoutExtension(outputPath.Value) + ".startupconfig.json").Value, config);
-            File.Move(embedAppNameInHost.ModifiedAppHostPath, outputPath.Value);
-            // TODO rename the file
-
-            //  config.Save(outputPath.Value);
+            File.Move(ModifiedAppHostPath, outputPath.Value);
         }
 
         public class StartupOptions
@@ -191,11 +182,12 @@ namespace Microsoft.DotNet.ShellShim
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 yield return GetWindowsShimPath(commandName);
-                yield return GetWindowsConfigPath(commandName);
+                yield return GetConfigPath(commandName);
             }
             else
             {
                 yield return GetPosixShimPath(commandName);
+                yield return GetConfigPath(commandName);
             }
         }
 
@@ -209,9 +201,9 @@ namespace Microsoft.DotNet.ShellShim
             return new FilePath(_shimsDirectory.WithFile(commandName).Value + ".exe");
         }
 
-        private FilePath GetWindowsConfigPath(string commandName)
+        private FilePath GetConfigPath(string commandName)
         {
-            return new FilePath(GetWindowsShimPath(commandName).Value + ".config");
+            return new FilePath(_shimsDirectory.WithFile(commandName) + ".startupconfig.json");
         }
 
         private static void SetUserExecutionPermission(FilePath path)
