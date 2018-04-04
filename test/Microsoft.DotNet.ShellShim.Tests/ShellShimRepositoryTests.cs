@@ -414,7 +414,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         private static FilePath MakeHelloWorldExecutableDll()
         {
-            const string testAppName = "TestAppSimple";
+            const string testAppName = "TestAppWithSlnAndExistingCsprojReferences";
             const string emptySpaceToTestSpaceInPath = " ";
             const string directoryNamePostFix = "Test";
             TestAssetInstance testInstance = TestAssets.Get(testAppName)
@@ -425,10 +425,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-            FileInfo outputDll = testInstance.Root.GetDirectory("bin", configuration)
+            FileInfo outputDll = testInstance.Root.GetDirectory("App","bin", configuration)
                 .EnumerateDirectories()
                 .Single()
-                .GetFile($"{testAppName}.dll");
+                .GetFile($"App.dll");
 
             return new FilePath(outputDll.FullName);
         }
