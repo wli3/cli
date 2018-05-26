@@ -65,7 +65,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public void Uninstall()
         {
-            var rootDirectory = PackageDirectory.GetParentPath();
+            var rootDirectory = Path.GetDirectoryName(Path.GetFullPath(PackageDirectory.Value));
+            
             string tempPackageDirectory = null;
 
             TransactionalAction.Run(
@@ -79,10 +80,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                             tempPackageDirectory = tempPath;
                         }
 
-                        if (_fileSystem.Directory.Exists(rootDirectory.Value) &&
-                            !_fileSystem.Directory.EnumerateFileSystemEntries(rootDirectory.Value).Any())
+                        if (_fileSystem.Directory.Exists(rootDirectory) &&
+                            !_fileSystem.Directory.EnumerateFileSystemEntries(rootDirectory).Any())
                         {
-                            _fileSystem.Directory.Delete(rootDirectory.Value, false);
+                            _fileSystem.Directory.Delete(rootDirectory, false);
                         }
 
                         if (_uninstallCallback != null)
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 rollback: () => {
                     if (tempPackageDirectory != null)
                     {
-                        _fileSystem.Directory.CreateDirectory(rootDirectory.Value);
+                        _fileSystem.Directory.CreateDirectory(rootDirectory);
                         _fileSystem.Directory.Move(tempPackageDirectory, PackageDirectory.Value);
                     }
                 });
