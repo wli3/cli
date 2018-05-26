@@ -50,11 +50,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 File = new FileMock(files);
                 Directory = new DirectoryMock(files, temporaryFolder);
+                Path = new PathUnixishMock(files);
             }
 
             public IFile File { get; }
 
             public IDirectory Directory { get; }
+            public IPath Path { get; }
         }
 
         private class FileMock : IFile
@@ -171,6 +173,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 if (searchPattern != "*")
                 {
                     throw new NotImplementedException();
@@ -184,6 +188,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 foreach (var entry in _files.Keys.Where(k => Path.GetDirectoryName(k) == path))
                 {
                     yield return entry;
@@ -192,6 +198,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 if (searchPattern != "*")
                 {
                     throw new NotImplementedException();
@@ -206,11 +214,15 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 return _files.Keys.Any(k => k.StartsWith(path));
             }
 
             public void CreateDirectory(string path)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 var current = path;
                 while (!string.IsNullOrEmpty(current))
                 {
@@ -221,6 +233,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Delete(string path, bool recursive)
             {
+                path = PathUnixishMock.NormalizeMockPath(path);
+
                 if (!recursive && Exists(path) == true)
                 {
                     if (_files.Keys.Where(k => k.StartsWith(path)).Count() > 1)
@@ -237,6 +251,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Move(string source, string destination)
             {
+                source = PathUnixishMock.NormalizeMockPath(source);
+                destination = PathUnixishMock.NormalizeMockPath(destination);
+
                 if (!Exists(source))
                 {
                     throw new IOException("The source directory does not exist.");
@@ -275,6 +292,54 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 DisposedTemporaryDirectory = true;
             }
         }
-    }
 
+        private class PathUnixishMock : IPath
+        {
+            private const string DirectorySeparatorChar = "/";
+            private readonly Dictionary<string, string> _files;
+
+            public PathUnixishMock(Dictionary<string, string> files)
+            {
+                _files = files;
+            }
+
+            public string Combine(params string[] paths)
+            {
+                return DirectorySeparatorChar + string.Join(
+                           DirectorySeparatorChar,
+                           paths.SelectMany(p => p.Split('/', '\\')).Where(p => !string.IsNullOrWhiteSpace(p)));
+            }
+
+            public string GetFullPath(string path)
+            {
+                // all path in mock are full path
+                return path;
+            }
+
+            public bool IsPathRooted(string path)
+            {
+                return path.StartsWith("/");
+            }
+
+            public string GetDirectoryName(string path)
+            {
+                var directoryNames = path.Split('/', '\\');
+                if (directoryNames.Length == 0)
+                {
+                    return path;
+                }
+                else
+                {
+                    return DirectorySeparatorChar + string.Join(DirectorySeparatorChar,
+                               directoryNames);
+                }
+            }
+
+            public static string NormalizeMockPath(string path)
+            {
+                return DirectorySeparatorChar + string.Join(DirectorySeparatorChar,
+                           path.Split('/', '\\').Where(p => !string.IsNullOrWhiteSpace(p)));
+            }
+        }
+    }
 }

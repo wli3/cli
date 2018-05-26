@@ -7,5 +7,6 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
     {
         IFile File { get; }
         IDirectory Directory { get; }
+        IPath Path { get; }
     }
 }
