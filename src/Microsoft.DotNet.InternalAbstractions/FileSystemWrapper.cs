@@ -10,5 +10,7 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
         public IFile File { get; } = new FileWrapper();
 
         public IDirectory Directory { get; } = new DirectoryWrapper();
+        
+        public IPath Path { get; } = new PathWrapper();
     }
 }
