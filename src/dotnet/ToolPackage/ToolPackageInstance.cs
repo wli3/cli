@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.ToolPackage
 
         public void Uninstall()
         {
-            var rootDirectory = PackageDirectory.GetParentPath();
+            var rootDirectory = new DirectoryPath(Directory.GetParent(Path.GetFullPath(PackageDirectory.Value)).FullName); // TODO wul no checkin remove Fullname
             string tempPackageDirectory = null;
 
             TransactionalAction.Run(
