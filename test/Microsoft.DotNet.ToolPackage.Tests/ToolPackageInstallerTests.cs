@@ -163,14 +163,8 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                <root>/packageid/version/packageid/version/tools/framework/rid/mytool.dll
                                        /project.assets.json
              */
-            var assetJsonPath = package.Commands[0].Executable
-                .GetDirectoryPath()
-                .GetParentPath()
-                .GetParentPath()
-                .GetParentPath()
-                .GetParentPath()
-                .GetParentPath()
-                .WithFile("project.assets.json").Value;
+
+            var assetJsonPath = package.PackageDirectory.WithFile("project.assets.json").Value;
 
             fileSystem.File.Exists(assetJsonPath).Should().BeTrue();
 

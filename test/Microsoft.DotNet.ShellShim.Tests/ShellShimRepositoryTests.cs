@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         {
             var outputDll = MakeHelloWorldExecutableDll("GivenAnExecutableAndRelativePath");
             // To reproduce the bug, dll need to be nested under the shim
-            var parentPathAsShimPath = outputDll.GetDirectoryPath().GetParentPath().GetParentPath().Value;
+            var parentPathAsShimPath = new DirectoryInfo(outputDll.GetDirectoryPath().Value).Parent.Parent.FullName;
             var relativePathToShim = Path.GetRelativePath(
                 Directory.GetCurrentDirectory(),
                 parentPathAsShimPath);
