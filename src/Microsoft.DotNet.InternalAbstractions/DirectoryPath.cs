@@ -10,6 +10,10 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
     {
         public string Value { get; }
 
+        /// <summary>
+        /// Create DirectoryPath to repesent a absolute directory path. Note it may not exist.
+        /// </summary>
+        /// <param name="value">If the value is not rooted. Path.GetFullPath will be called during the consturctor.</param>
         public DirectoryPath(string value)
         {
             if (!Path.IsPathRooted(value))
