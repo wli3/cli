@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public ToolUpdateCommandTests()
         {
             _reporter = new BufferedReporter();
-            _fileSystem = new FileSystemMockBuilder().UseCurrentTemporaryDirectory().Build();
+            _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             var tempDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _shimsDirectory = Path.Combine(tempDirectory, "shims");
             _toolsDirectory = Path.Combine(tempDirectory, "tools");

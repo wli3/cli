@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public ToolInstallCommandTests()
         {
             _reporter = new BufferedReporter();
-            _fileSystem = new FileSystemMockBuilder().UseCurrentTemporaryDirectory().Build();
+            _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _temporaryDirectory =  _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlaceShim = Path.Combine(_temporaryDirectory, "pathToPlace");
             _pathToPlacePackages = _pathToPlaceShim + "Packages";
