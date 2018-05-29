@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public ToolInstallCommandTests()
         {
             _reporter = new BufferedReporter();
-            _fileSystem = new FileSystemMockBuilder().Build();
+            _fileSystem = new FileSystemMockBuilder().UseCurrentTemporaryDirectory().Build();
             _toolPackageStore = new ToolPackageStoreMock(new DirectoryPath(PathToPlacePackages), _fileSystem);
             _createShellShimRepository =
                 (nonGlobalLocation) => new ShellShimRepository(
