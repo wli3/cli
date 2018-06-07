@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
 
-            string nonAscii = "ab Ṱ̺̺̕o͞;.田中さん ,åä";
+            string nonAscii = "ab Ṱ̺̺̕o;.田中さん ,åä";
             var root = new DirectoryPath(Path.Combine(TempRoot.Root, nonAscii, Path.GetRandomFileName()));
             var reporter = new BufferedReporter();
             var fileSystem = new FileSystemWrapper();
