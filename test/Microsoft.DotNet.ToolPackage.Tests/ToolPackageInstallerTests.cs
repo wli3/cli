@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,8 +17,10 @@ using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Cli;
 using NuGet.Versioning;
 using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
@@ -617,7 +620,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
 
-            string nonAscii = "ab Ṱ̺̺̕o 田中さん åä";
+            var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
+            string nonAscii = "ab Ṱ̺̺̕o 田中さん åä" + surrogate;
+
             var root = new DirectoryPath(Path.Combine(TempRoot.Root, nonAscii, Path.GetRandomFileName()));
             var reporter = new BufferedReporter();
             var fileSystem = new FileSystemWrapper();
