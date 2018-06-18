@@ -621,7 +621,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
 
             var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
-            string nonAscii = "ab Ṱ̺̺̕o 田中さん åä" + surrogate;
+            string nonAscii = "ab Ṱ̺̺̕o 田中さん åä < , >" + surrogate;
 
             var root = new DirectoryPath(Path.Combine(TempRoot.Root, nonAscii, Path.GetRandomFileName()));
             var reporter = new BufferedReporter();
