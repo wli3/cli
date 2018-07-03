@@ -15,7 +15,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match='wix:Wix/wix:Fragment/wix:DirectoryRef/wix:Component/wix:File[@Id and not (@Id = "EmailGenerationService.exe")]'>
+    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Id and not (@Id = "EmailGenerationService.exe")]'>
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
             <xsl:attribute name="KeyPath">
