@@ -28,7 +28,19 @@ function RunHeat
 
     Write-Output Running heat..
 
-    .\heat.exe dir `"$inputDir`" -template fragment -sreg -gg -var var.DotnetSrc -cg InstallFiles -srd -dr DOTNETHOME -t $StableFileIdForApphostTransform -out $InstallFileswsx | Out-Host
+    # (1) To avoid sign check whitelist apphost.exe name changes very build. Sign check uses File Id in MSI as whitelist name.
+    # Template apphost.exe get a new "File Id" in msi different every time (since File Id is generated according to file
+    # path, and file path has version number)
+    # use XSLT tranform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
+
+    .\heat.exe dir `"$inputDir`" -template fragment  `
+        -sreg -gg  `
+        -var var.DotnetSrc  `
+        -cg InstallFiles  `
+        -srd  `
+        -dr DOTNETHOME  `
+        -t $StableFileIdForApphostTransform  ` # see (1) above
+        -out $InstallFileswsx | Out-Host
 
     if($LastExitCode -ne 0)
     {
