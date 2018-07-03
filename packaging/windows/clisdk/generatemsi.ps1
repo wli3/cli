@@ -19,6 +19,8 @@ $RepoRoot = Convert-Path "$PSScriptRoot\..\..\.."
 $InstallFileswsx = "install-files.wxs"
 $InstallFilesWixobj = "install-files.wixobj"
 
+# TODO not checkin WUL fix
+$StableFileIdForApphostTransform = "C:\work\cli\packaging\windows\clisdk\StableFileIdForApphostTransform.xslt"
 function RunHeat
 {
     $result = $true
@@ -26,7 +28,7 @@ function RunHeat
 
     Write-Output Running heat..
 
-    .\heat.exe dir `"$inputDir`" -template fragment -sreg -gg -var var.DotnetSrc -cg InstallFiles -srd -dr DOTNETHOME -out $InstallFileswsx | Out-Host
+    .\heat.exe dir `"$inputDir`" -template fragment -sreg -gg -var var.DotnetSrc -cg InstallFiles -srd -dr DOTNETHOME -t $StableFileIdForApphostTransform -out $InstallFileswsx | Out-Host
 
     if($LastExitCode -ne 0)
     {
