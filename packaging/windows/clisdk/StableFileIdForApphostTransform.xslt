@@ -7,15 +7,7 @@
 
     <xsl:output method="xml" indent="yes" />
 
-    <xsl:strip-space elements="*"/>
-
-    <xsl:template match="@*|node()">
-        <xsl:copy>
-            <xsl:apply-templates select="@*|node()"/>
-        </xsl:copy>
-    </xsl:template>
-
-    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Source=*[matches(name(), ".*\AppHostTemplate\apphost.exe")]'>
+    <xsl:template match="*[contains(name(), 'AppHostTemplate\apphost.exe')]">
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
             <xsl:attribute name="Id">
