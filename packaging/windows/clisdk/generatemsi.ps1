@@ -10,7 +10,8 @@ param(
     [Parameter(Mandatory=$true)][string]$DotnetCLIDisplayVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
-    [Parameter(Mandatory=$true)][string]$Architecture
+    [Parameter(Mandatory=$true)][string]$Architecture,
+    [Parameter(Mandatory=$true)][string]$StableFileIdForApphostTransform
 )
 
 . "$PSScriptRoot\..\..\..\scripts\common\_common.ps1"
@@ -19,8 +20,6 @@ $RepoRoot = Convert-Path "$PSScriptRoot\..\..\.."
 $InstallFileswsx = "install-files.wxs"
 $InstallFilesWixobj = "install-files.wixobj"
 
-# TODO not checkin WUL fix
-$StableFileIdForApphostTransform = "C:\work\cli\packaging\windows\clisdk\StableFileIdForApphostTransform.xslt"
 function RunHeat
 {
     $result = $true
@@ -28,7 +27,7 @@ function RunHeat
 
     Write-Output Running heat..
 
-    # (1) To avoid sign check whitelist apphost.exe name changes very build. Sign check uses File Id in MSI as whitelist name.
+    # -t $StableFileIdForApphostTransform to avoid sign check whitelist apphost.exe name changes very build. Sign check uses File Id in MSI as whitelist name.
     # Template apphost.exe get a new "File Id" in msi different every time (since File Id is generated according to file
     # path, and file path has version number)
     # use XSLT tranform to match the file path contains "AppHostTemplate\apphost.exe" and give it the same ID all the time.
@@ -39,7 +38,7 @@ function RunHeat
         -cg InstallFiles  `
         -srd  `
         -dr DOTNETHOME  `
-        -t $StableFileIdForApphostTransform  ` # see (1) above
+        -t $StableFileIdForApphostTransform  `
         -out $InstallFileswsx | Out-Host
 
     if($LastExitCode -ne 0)
