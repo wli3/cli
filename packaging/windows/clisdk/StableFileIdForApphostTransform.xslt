@@ -15,11 +15,11 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Id and not (@Id = "EmailGenerationService.exe")]'>
+    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Source="*\AppHostTemplate\apphost.exe"]'>
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
-            <xsl:attribute name="KeyPath">
-                <xsl:text>no</xsl:text>
+            <xsl:attribute name="Id">
+                <xsl:text>apphosttemplateapphostexe</xsl:text>
             </xsl:attribute>
         </xsl:copy>
     </xsl:template>
