@@ -15,7 +15,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Source=[matches(.,&quot;.*\AppHostTemplate\apphost.exe&quot;)]"]'>
+    <xsl:template match='wix:Wix/wix:Fragment/wix:ComponentGroup/wix:Component/wix:File[@Source="$(var.DotnetSrc)\sdk\2.1.400-preview-009077\AppHostTemplate\apphost.exe"]'>
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
             <xsl:attribute name="Id">
