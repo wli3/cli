@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.ToolPackage
     {
         void Restore(FilePath project,
             FilePath? nugetConfig = null,
-            string verbosity = null);
+            string verbosity = null,
+            DirectoryPath? nugetCacheLocation = null);
     }
 }
