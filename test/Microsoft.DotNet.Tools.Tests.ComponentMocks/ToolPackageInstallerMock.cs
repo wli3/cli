@@ -9,6 +9,7 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -110,6 +111,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         _fileSystem.Directory.Delete(packageRootDirectory.Value, false);
                     }
                 });
+        }
+
+        public IReadOnlyList<CommandSettings> InstallPackageToNuGetCache(
+            PackageId packageId,
+            VersionRange versionRange = null,
+            FilePath? nugetConfig = null,
+            DirectoryPath? rootConfigDirectory = null,
+            string[] additionalFeeds = null,
+            string targetFramework = null,
+            string verbosity = null)
+        {
+            var packageDirectory = new DirectoryPath(NuGetCache.GetLocation()).WithSubDirectories(packageId.ToString());
+            _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
+            var executable = packageDirectory.WithFile("exe");
+            _fileSystem.File.CreateEmptyFile(executable.Value);
+            return new List<CommandSettings> { new CommandSettings(ProjectRestorerMock.FakeCommandName, "runnner", executable) };
         }
     }
 }

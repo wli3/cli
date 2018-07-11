@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.ToolPackage
         private FilePath CreateTempProject(PackageId packageId,
             VersionRange versionRange,
             string targetFramework,
-            DirectoryPath restoreDirectory,
+            DirectoryPath? restoreDirectory,
             DirectoryPath assetJsonOutputDirectory,
             DirectoryPath? rootConfigDirectory,
             string[] additionalFeeds)
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.ToolPackage
                         new XAttribute("Sdk", "Microsoft.NET.Sdk")),
                     new XElement("PropertyGroup",
                         new XElement("TargetFramework", targetFramework),
-                        new XElement("RestorePackagesPath", restoreDirectory.Value),
+                        restoreDirectory.HasValue ? new XElement("RestorePackagesPath", restoreDirectory.Value.Value) : null,
                         new XElement("RestoreProjectStyle", "DotnetToolReference"), // without it, project cannot reference tool package
                         new XElement("RestoreRootConfigDirectory", rootConfigDirectory?.Value ?? Directory.GetCurrentDirectory()), // config file probing start directory
                         new XElement("DisableImplicitFrameworkReferences", "true"), // no Microsoft.NETCore.App in tool folder
@@ -189,6 +189,42 @@ namespace Microsoft.DotNet.ToolPackage
             }
 
             return string.Join(";", feeds);
+        }
+
+        public IReadOnlyList<CommandSettings> InstallPackageToNuGetCache(
+            PackageId packageId, 
+            VersionRange versionRange = null, 
+            FilePath? nugetConfig = null, 
+            DirectoryPath? rootConfigDirectory = null, 
+            string[] additionalFeeds = null, 
+            string targetFramework = null, 
+            string verbosity = null)
+        {
+            var assetJsonOutput = new DirectoryPath(Path.GetTempPath());
+            Directory.CreateDirectory(assetJsonOutput.Value);
+
+            var tempProject = CreateTempProject(
+               packageId: packageId,
+               versionRange: versionRange,
+               targetFramework: targetFramework ?? BundledTargetFramework.GetTargetFrameworkMoniker(),
+               restoreDirectory: null,
+               assetJsonOutputDirectory: assetJsonOutput,
+               rootConfigDirectory: rootConfigDirectory,
+               additionalFeeds: additionalFeeds);
+
+            try
+            {
+                _projectRestorer.Restore(
+                    tempProject,
+                    nugetConfig,
+                    verbosity);
+            }
+            finally
+            {
+                File.Delete(tempProject.Value);
+            }
+
+            return CommandSettingsRetriver.GetCommands(packageId, assetJsonOutput, true);
         }
     }
 }
