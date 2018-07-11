@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Configurer
                 Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
 
         public static string ToolsShimPath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName);
+        public static string RepotoolcachePath => Path.Combine(DotnetUserProfileFolderPath, "repotoolcache");
 
         public static string ToolsPackagePath => ToolPackageFolderPathCalculator.GetToolPackageFolderPath(ToolsShimPath);
 

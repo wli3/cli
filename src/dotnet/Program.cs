@@ -219,11 +219,15 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                CommandResult result = Command.Create(
-                        "dotnet-" + topLevelCommandParserResult.Command,
-                        appArgs,
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15)
-                    .Execute();
+                var commandResolverPolicy = new DefaultCommandResolverPolicy();
+                var c = commandResolverPolicy.CreateCommandResolver();
+                CommandResult result = 
+                        Command.Create(
+                            new DefaultCommandResolverPolicy(new RepoToolsCommandResolver()),
+                            "dotnet-" + topLevelCommandParserResult.Command,
+                            appArgs,
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                            Constants.DefaultConfiguration).Execute();
                 exitCode = result.ExitCode;
             }
             return exitCode;

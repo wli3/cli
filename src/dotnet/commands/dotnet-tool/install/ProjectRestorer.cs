@@ -57,7 +57,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     .OnErrorLine(line => WriteLine(_errorReporter, line, project));
             }
 
-            var result = command.Execute();
+            var result = command
+                .Execute();
+
             if (result.ExitCode != 0)
             {
                 throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);

@@ -111,5 +111,21 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     }
                 });
         }
+
+        public IReadOnlyList<CommandSettings> InstallPackageToNuGetCache(
+            PackageId packageId,
+            VersionRange versionRange = null,
+            FilePath? nugetConfig = null,
+            DirectoryPath? rootConfigDirectory = null,
+            string[] additionalFeeds = null,
+            string targetFramework = null,
+            string verbosity = null)
+        {
+            var packageDirectory = new DirectoryPath("anypath").WithSubDirectories(packageId.ToString());
+            _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
+            var executable = packageDirectory.WithFile("exe");
+            _fileSystem.File.CreateEmptyFile(executable.Value);
+            return new List<CommandSettings> { new CommandSettings(ProjectRestorerMock.FakeCommandName, "runnner", executable) };
+        }
     }
 }
