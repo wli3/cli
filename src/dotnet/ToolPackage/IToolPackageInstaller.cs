@@ -17,5 +17,16 @@ namespace Microsoft.DotNet.ToolPackage
             DirectoryPath? rootConfigDirectory = null,
             string[] additionalFeeds = null,
             string verbosity = null);
+
+        IReadOnlyList<CommandSettings>
+            InstallPackageToNuGetCache(
+                PackageId packageId,
+                VersionRange versionRange = null,
+                FilePath? nugetConfig = null,
+                DirectoryPath? rootConfigDirectory = null,
+                string[] additionalFeeds = null,
+                string targetFramework = null,
+                string verbosity = null,
+                DirectoryPath? nugetCacheLocation = null);
     }
 }
