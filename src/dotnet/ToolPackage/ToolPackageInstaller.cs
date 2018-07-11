@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.ToolPackage
                 File.Delete(tempProject.Value);
             }
 
-            return CommandSettingsRetriver.GetCommands(nuGetPackageLocation.PackageId, assetJsonOutput, true);
+            return CommandSettingsRetriver.GetCommands(packageId, assetJsonOutput, true);
         }
     }
 }
