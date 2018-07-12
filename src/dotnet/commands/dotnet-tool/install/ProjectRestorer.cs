@@ -28,8 +28,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public void Restore(FilePath project,
             FilePath? nugetConfig = null,
-            string verbosity = null,
-            DirectoryPath ? nugetCacheLocation = null)
+            string verbosity = null)
         {
             var argsToPassToRestore = new List<string>();
 
@@ -58,12 +57,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     .OnErrorLine(line => WriteLine(_errorReporter, line, project));
             }
 
-            if (nugetCacheLocation.HasValue)
-            {
-                command = command.EnvironmentVariable("NUGET_PACKAGES ", nugetCacheLocation.Value.Value);
-            }
+            var result = command
+                .Execute();
 
-            var result = command.Execute();
             if (result.ExitCode != 0)
             {
                 throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);

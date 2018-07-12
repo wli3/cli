@@ -58,8 +58,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public void Restore(FilePath project,
             FilePath? nugetConfig = null,
-            string verbosity = null,
-            DirectoryPath? nugetCacheLocation = null)
+            string verbosity = null)
         {
             string packageId;
             VersionRange versionRange;

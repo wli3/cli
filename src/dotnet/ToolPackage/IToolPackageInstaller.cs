@@ -26,7 +26,6 @@ namespace Microsoft.DotNet.ToolPackage
                 DirectoryPath? rootConfigDirectory = null,
                 string[] additionalFeeds = null,
                 string targetFramework = null,
-                string verbosity = null,
-                DirectoryPath? nugetCacheLocation = null);
+                string verbosity = null);
     }
 }
