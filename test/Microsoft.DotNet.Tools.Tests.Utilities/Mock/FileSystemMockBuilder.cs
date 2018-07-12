@@ -113,9 +113,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryMock : IDirectory
         {
-            public DirectoryMock(Dictionary<string, string> files, string temporaryFolder)
+            private readonly TemporaryDirectoryMock _temporaryDirectory;
+            
+            public DirectoryMock(Dictionary<string, string> files, string temporaryDirectory)
             {
-                throw new NotImplementedException();
+                _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
             }
 
             public bool Exists(string path)
@@ -125,7 +127,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
-                throw new NotImplementedException();
+                return _temporaryDirectory;
             }
 
             public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
