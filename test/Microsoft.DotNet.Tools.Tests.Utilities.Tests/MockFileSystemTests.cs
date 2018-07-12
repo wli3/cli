@@ -3,6 +3,7 @@
 
 using System.IO;
 using FluentAssertions;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
@@ -17,13 +18,14 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         public void DirectoryExistsShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            var directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             var nestedFilePath = $"{directroy}\\filename";
             fileSystem.File.CreateEmptyFile(nestedFilePath);
 
             fileSystem.Directory.Exists(nestedFilePath).Should().BeFalse();
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
         public void DifferentDirectorySeparatorShouldBeSameFile(bool testMockBehaviorIsInSync)

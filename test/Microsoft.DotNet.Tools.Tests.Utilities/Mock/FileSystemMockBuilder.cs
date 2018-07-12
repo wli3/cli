@@ -59,144 +59,88 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileMock : IFile
         {
-            private Dictionary<string, string> _files;
-            
             public FileMock(Dictionary<string, string> files)
             {
-                _files = files;
+                throw new NotImplementedException();
             }
 
             public bool Exists(string path)
             {
-                return _files.ContainsKey(path);
+                throw new NotImplementedException();
             }
 
             public string ReadAllText(string path)
             {
-                string text;
-                if (!_files.TryGetValue(path, out text))
-                {
-                    throw new FileNotFoundException(path);
-                }
-                return text;
+                throw new NotImplementedException();
             }
 
             public Stream OpenRead(string path)
             {
-                return new MemoryStream(Encoding.UTF8.GetBytes(ReadAllText(path)));
+                throw new NotImplementedException();
             }
 
-            public Stream OpenFile(
-                string path,
-                FileMode fileMode,
-                FileAccess fileAccess,
-                FileShare fileShare,
-                int bufferSize,
+            public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare, int bufferSize,
                 FileOptions fileOptions)
             {
-                if (fileMode == FileMode.Open && fileAccess == FileAccess.Read)
-                {
-                    return OpenRead(path);
-                }
-
                 throw new NotImplementedException();
             }
 
             public void CreateEmptyFile(string path)
             {
-                _files.Add(path, string.Empty);
+                throw new NotImplementedException();
             }
 
             public void WriteAllText(string path, string content)
             {
-                _files[path] = content;
+                throw new NotImplementedException();
             }
 
             public void Move(string source, string destination)
             {
-                if (!Exists(source))
-                {
-                    throw new FileNotFoundException("source does not exist.");
-                }
-                if (Exists(destination))
-                {
-                    throw new IOException("destination exists.");
-                }
-
-                var content = _files[source];
-                _files.Remove(source);
-                _files[destination] = content;
-            }
-
-            public void Delete(string path)
-            {
-                if (!Exists(path))
-                {
-                    return;
-                }
-
-                _files.Remove(path);
+                throw new NotImplementedException();
             }
 
             public void Copy(string source, string destination)
             {
-                if (!Exists(source))
-                {
-                    throw new FileNotFoundException("source does not exist.");
-                }
-                if (Exists(destination))
-                {
-                    throw new IOException("destination exists.");
-                }
+                throw new NotImplementedException();
+            }
 
-                _files[destination] = _files[source];
+            public void Delete(string path)
+            {
+                throw new NotImplementedException();
             }
         }
 
         private class DirectoryMock : IDirectory
         {
-            private Dictionary<string, string> _files;
-            private readonly TemporaryDirectoryMock _temporaryDirectory;
-
-            public DirectoryMock(Dictionary<string, string> files, string temporaryDirectory)
+            public DirectoryMock(Dictionary<string, string> files, string temporaryFolder)
             {
-                _files = files;
-                _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
+                throw new NotImplementedException();
+            }
+
+            public bool Exists(string path)
+            {
+                throw new NotImplementedException();
             }
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
-                return _temporaryDirectory;
+                throw new NotImplementedException();
             }
 
             public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
             {
-                if (searchPattern != "*")
-                {
-                    throw new NotImplementedException();
-                }
-
-                foreach (var kvp in _files.Where(kvp => kvp.Key != kvp.Value && Path.GetDirectoryName(kvp.Key) == path))
-                {
-                    yield return kvp.Key;
-                }
+                throw new NotImplementedException();
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
-                foreach (var entry in _files.Keys.Where(k => Path.GetDirectoryName(k) == path))
-                {
-                    yield return entry;
-                }
+                throw new NotImplementedException();
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
             {
-                if (searchPattern != "*")
-                {
-                    throw new NotImplementedException();
-                }
-                return EnumerateFileSystemEntries(path);
+                throw new NotImplementedException();
             }
 
             public string GetDirectoryFullName(string path)
@@ -204,59 +148,47 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 throw new NotImplementedException();
             }
 
-            public bool Exists(string path)
-            {
-                return _files.Keys.Any(k => k.StartsWith(path));
-            }
-
             public void CreateDirectory(string path)
             {
-                var current = path;
-                while (!string.IsNullOrEmpty(current))
-                {
-                    _files[current] = current;
-                    current = Path.GetDirectoryName(current);
-                }
+                throw new NotImplementedException();
             }
 
             public void Delete(string path, bool recursive)
             {
-                if (!recursive && Exists(path) == true)
-                {
-                    if (_files.Keys.Where(k => k.StartsWith(path)).Count() > 1)
-                    {
-                        throw new IOException("The directory is not empty");
-                    }
-                }
-
-                foreach (var k in _files.Keys.Where(k => k.StartsWith(path)).ToList())
-                {
-                    _files.Remove(k);
-                }
+                throw new NotImplementedException();
             }
 
             public void Move(string source, string destination)
             {
-                if (!Exists(source))
-                {
-                    throw new IOException("The source directory does not exist.");
-                }
-                if (Exists(destination))
-                {
-                    throw new IOException("The destination already exists.");
-                }
-
-                foreach (var kvp in _files.Where(kvp => kvp.Key.StartsWith(source)).ToList())
-                {
-                    var newKey = destination + kvp.Key.Substring(source.Length);
-                    var newValue = kvp.Value.StartsWith(source) ?
-                        destination + kvp.Value.Substring(source.Length) :
-                        kvp.Value;
-
-                    _files.Add(newKey, newValue);
-                    _files.Remove(kvp.Key);
-                }
+                throw new NotImplementedException();
             }
+        }
+
+        private interface IFileSystemTreeNode
+        {
+            string Name { get; set;}
+        }
+        
+        private class DirectoryNode : IFileSystemTreeNode
+        {
+            public DirectoryNode(string name)
+            {
+                Name = name ?? throw new ArgumentNullException(nameof(name));
+            }
+
+            public string Name { get; set; }
+            public List<IFileSystemTreeNode> Subs { get; set; } = new List<IFileSystemTreeNode>();
+        }
+        
+        private class FileNode : IFileSystemTreeNode
+        {
+            public FileNode(string name)
+            {
+                Name = name ?? throw new ArgumentNullException(nameof(name));
+            }
+
+            public string Name { get;  set; }
+            public string Content { get; set; } = "";
         }
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock
