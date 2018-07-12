@@ -16,6 +16,7 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
@@ -37,7 +38,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             IReadOnlyList<CommandSettings> commands = installer.InstallPackageToNuGetCache(
                 packageId: TestPackageId,
-                packageVersion: TestPackageVersion,
+                versionRange: VersionRange.Parse(TestPackageVersion),
                 nugetConfig: nugetConfigPath, 
                 targetFramework: _testTargetframework, 
                 nugetCacheLocation: nugetCacheLocation);
@@ -61,12 +62,12 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             installer.InstallPackageToNuGetCache(
                 packageId: TestPackageId,
-                packageVersion: TestPackageVersion,
+                versionRange: VersionRange.Parse(TestPackageVersion),
                 nugetConfig: nugetConfigPath,
                 targetFramework: _testTargetframework,
                 nugetCacheLocation: nugetCacheLocation);
 
-            var expectedDirectory = nugetCacheLocation.WithSubDirectories(TestPackageId).Value;
+            var expectedDirectory = nugetCacheLocation.WithSubDirectories(TestPackageId.ToString()).Value;
             fileSystem.Directory.Exists(expectedDirectory).Should().BeTrue(expectedDirectory + " should exist");
         }
 
@@ -91,7 +92,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                     {
                         new MockFeedPackage
                         {
-                            PackageId = TestPackageId,
+                            PackageId = TestPackageId.ToString(),
                             Version = TestPackageVersion
                         }
                     }
@@ -157,6 +158,6 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private static string GetTestLocalFeedPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
-        private const string TestPackageId = "global.tool.console.demo";
+        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
     }
 }
