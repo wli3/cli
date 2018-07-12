@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.ToolPackage
                     tempProject,
                     nugetConfig,
                     verbosity,
-                    nugetCacheLocation);
+                    nugetCacheLocation: nugetCacheLocation);
             }
             finally
             {
