@@ -4,18 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools.Test.Utilities.Mock;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.Extensions.DependencyModel.Tests
 {
-    class FileSystemMockBuilder
+    internal class FileSystemMockBuilder
     {
-        private Dictionary<string, string> _files = new Dictionary<string, string>();
-
+        private DirectoryNode _files;
         public string TemporaryFolder { get; set; }
+        public string WorkingDirectory { get; set; }
 
         internal static IFileSystem Empty { get; } = Create().Build();
 
@@ -26,31 +25,47 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFile(string name, string content = "")
         {
-            _files.Add(name, content);
+            // _files.Add(name, content); TODO wul add files
             return this;
         }
 
         public FileSystemMockBuilder AddFiles(string basePath, params string[] files)
         {
-            foreach (var file in files)
-            {
-                AddFile(Path.Combine(basePath, file));
-            }
+            foreach (string file in files) AddFile(Path.Combine(basePath, file));
             return this;
         }
 
         internal IFileSystem Build()
         {
-            return new FileSystemMock(_files, TemporaryFolder);
+            string fileSystemMockWorkingDirectory = WorkingDirectory;
+            if (fileSystemMockWorkingDirectory == null)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    fileSystemMockWorkingDirectory = @"C:\";
+                else
+                    fileSystemMockWorkingDirectory = "/";
+            }
+
+            _files = new DirectoryNode("");
+            return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
+        }
+
+        private static string[] PathToArray(string path)
+        {
+            const char directorySeparatorChar = '\\';
+            const char altDirectorySeparatorChar = '/';
+            return path.Split(directorySeparatorChar, altDirectorySeparatorChar);
         }
 
         private class FileSystemMock : IFileSystem
         {
-            public FileSystemMock(Dictionary<string, string> files, string temporaryFolder)
+            public FileSystemMock(DirectoryNode files, string temporaryFolder, string workingDirectory)
             {
                 File = new FileMock(files);
                 Directory = new DirectoryMock(files, temporaryFolder);
             }
+
+            public string WorkingDirectory { get; set; }
 
             public IFile File { get; }
 
@@ -59,9 +74,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileMock : IFile
         {
-            public FileMock(Dictionary<string, string> files)
+            private readonly DirectoryNode _files;
+
+            public FileMock(DirectoryNode files)
             {
-                throw new NotImplementedException();
+                _files = files ?? throw new ArgumentNullException(nameof(files));
             }
 
             public bool Exists(string path)
@@ -79,7 +96,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 throw new NotImplementedException();
             }
 
-            public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare, int bufferSize,
+            public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare,
+                int bufferSize,
                 FileOptions fileOptions)
             {
                 throw new NotImplementedException();
@@ -92,7 +110,6 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void WriteAllText(string path, string content)
             {
-                throw new NotImplementedException();
             }
 
             public void Move(string source, string destination)
@@ -113,10 +130,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryMock : IDirectory
         {
+            private readonly DirectoryNode _files;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
-            
-            public DirectoryMock(Dictionary<string, string> files, string temporaryDirectory)
+
+            public DirectoryMock(DirectoryNode files, string temporaryDirectory)
             {
+                if (files != null) _files = files;
                 _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
             }
 
@@ -168,9 +187,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private interface IFileSystemTreeNode
         {
-            string Name { get; set;}
+            string Name { get; set; }
         }
-        
+
         private class DirectoryNode : IFileSystemTreeNode
         {
             public DirectoryNode(string name)
@@ -178,10 +197,29 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 Name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
+            public SortedSet<IFileSystemTreeNode> Subs { get; set; } = new SortedSet<IFileSystemTreeNode>();
+
             public string Name { get; set; }
-            public List<IFileSystemTreeNode> Subs { get; set; } = new List<IFileSystemTreeNode>();
+
+            protected bool Equals(DirectoryNode other)
+            {
+                return string.Equals(Name, other.Name);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+                return Equals((DirectoryNode)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return Name != null ? Name.GetHashCode() : 0;
+            }
         }
-        
+
         private class FileNode : IFileSystemTreeNode
         {
             public FileNode(string name)
@@ -189,18 +227,37 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 Name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
-            public string Name { get;  set; }
             public string Content { get; set; } = "";
+
+            public string Name { get; set; }
+
+            protected bool Equals(FileNode other)
+            {
+                return string.Equals(Name, other.Name);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+                return Equals((FileNode)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return Name != null ? Name.GetHashCode() : 0;
+            }
         }
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock
         {
-            public bool DisposedTemporaryDirectory { get; private set; }
-
             public TemporaryDirectoryMock(string temporaryDirectory)
             {
                 DirectoryPath = temporaryDirectory;
             }
+
+            public bool DisposedTemporaryDirectory { get; private set; }
 
             public string DirectoryPath { get; }
 
@@ -210,5 +267,4 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             }
         }
     }
-
 }
