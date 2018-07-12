@@ -40,35 +40,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 nugetConfig: nugetConfigPath, 
-                targetFramework: _testTargetframework, 
-                nugetCacheLocation: nugetCacheLocation);
+                targetFramework: _testTargetframework);
 
             fileSystem.File.Exists(commands[0].Executable.Value).Should().BeTrue($"{commands[0].Executable.Value} should exist");
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GivenNugetConfigInstallSucceedsAndAssetsStoredInNuGetCache(bool testMockBehaviorIsInSync)
-        {
-            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
-
-            var (store, installer, reporter, fileSystem) = Setup(
-                useMock: testMockBehaviorIsInSync,
-                feeds: GetMockFeedsForConfigFile(nugetConfigPath));
-
-            var nugetCacheLocation =
-                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
-
-            installer.InstallPackageToNuGetCache(
-                packageId: TestPackageId,
-                versionRange: VersionRange.Parse(TestPackageVersion),
-                nugetConfig: nugetConfigPath,
-                targetFramework: _testTargetframework,
-                nugetCacheLocation: nugetCacheLocation);
-
-            var expectedDirectory = nugetCacheLocation.WithSubDirectories(TestPackageId.ToString()).Value;
-            fileSystem.Directory.Exists(expectedDirectory).Should().BeTrue(expectedDirectory + " should exist");
         }
 
         private static FilePath GetUniqueTempProjectPathEachTest()

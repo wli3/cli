@@ -119,12 +119,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             DirectoryPath? rootConfigDirectory = null,
             string[] additionalFeeds = null,
             string targetFramework = null,
-            string verbosity = null,
-            DirectoryPath? nugetCacheLocation = null)
+            string verbosity = null)
         {
-            nugetCacheLocation = nugetCacheLocation ?? new DirectoryPath("anypath");
-
-            var packageDirectory = nugetCacheLocation.Value.WithSubDirectories(packageId.ToString());
+            var packageDirectory = new DirectoryPath("anypath").WithSubDirectories(packageId.ToString());
             _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
             var executable = packageDirectory.WithFile("exe");
             _fileSystem.File.CreateEmptyFile(executable.Value);

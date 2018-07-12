@@ -197,8 +197,7 @@ namespace Microsoft.DotNet.ToolPackage
             DirectoryPath? rootConfigDirectory = null, 
             string[] additionalFeeds = null, 
             string targetFramework = null, 
-            string verbosity = null, 
-            DirectoryPath? nugetCacheLocation = null)
+            string verbosity = null)
         {
             var assetJsonOutput = new DirectoryPath(Path.GetTempPath());
             Directory.CreateDirectory(assetJsonOutput.Value);
@@ -217,8 +216,7 @@ namespace Microsoft.DotNet.ToolPackage
                 _projectRestorer.Restore(
                     tempProject,
                     nugetConfig,
-                    verbosity,
-                    nugetCacheLocation: nugetCacheLocation);
+                    verbosity);
             }
             finally
             {
