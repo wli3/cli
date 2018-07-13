@@ -7,12 +7,19 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     public class DefaultCommandResolverPolicy : ICommandResolverPolicy
     {
+        private IRepoToolsCommandResolver _repoToolsCommandResolver;
+
+        public DefaultCommandResolverPolicy(IRepoToolsCommandResolver repoToolsCommandResolver = null)
+        {
+            _repoToolsCommandResolver = repoToolsCommandResolver;
+        }
+
         public CompositeCommandResolver CreateCommandResolver()
         {
             return Create();
         }
 
-        public static CompositeCommandResolver Create()
+        public CompositeCommandResolver Create()
         {
             var environment = new EnvironmentProvider();
             var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
@@ -35,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 publishedPathCommandSpecFactory);
         }
 
-        public static CompositeCommandResolver CreateDefaultCommandResolver(
+        public  CompositeCommandResolver CreateDefaultCommandResolver(
             IEnvironmentProvider environment,
             IPackagedCommandSpecFactory packagedCommandSpecFactory,
             IPlatformCommandSpecFactory platformCommandSpecFactory,
@@ -55,8 +62,14 @@ namespace Microsoft.DotNet.Cli.Utils
                 new PathCommandResolver(environment, platformCommandSpecFactory));
             compositeCommandResolver.AddCommandResolver(
                 new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
-
+            if (_repoToolsCommandResolver != null)
+            {
+                compositeCommandResolver.AddCommandResolver(_repoToolsCommandResolver);
+            }
             return compositeCommandResolver;
         }
     }
+
+    public interface IRepoToolsCommandResolver : ICommandResolver
+    { }
 }
