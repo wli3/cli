@@ -10,6 +10,10 @@ using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.DotNet.ToolPackage.ToolConfigurationDeserialization;
 using System.Xml;
+using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -23,47 +27,75 @@ namespace Microsoft.DotNet.Cli.Utils
 
             do
             {
+                IReadOnlyList<CommandSettings> commandSettingsList = new List<CommandSettings>();
                 var tryManifest = Path.Combine(currentSearchDirectory.FullName, manifestFileName);
                 if (File.Exists(tryManifest))
                 {
+                    DateTimeOffset? cacheTimeStamp = null;
+                    var commandSettingsCacheStore = new CommandSettingsCacheStore(new DirectoryPath(CliFolderPathCalculator.RepotoolcachePath));
+                    if (commandSettingsCacheStore.Exists(new FilePath(tryManifest)))
+                    {
+                        (commandSettingsList, _, cacheTimeStamp) = commandSettingsCacheStore.Load(new FilePath(tryManifest));
+                    }
+
+                    if (cacheTimeStamp.HasValue && cacheTimeStamp.Value > DateTime.SpecifyKind(new FileInfo(tryManifest).CreationTimeUtc, DateTimeKind.Utc))
+                    {
+                        foreach (var cached in commandSettingsList)
+                        {
+                            if (arguments.CommandName == $"dotnet-{cached.Name}")
+                            {
+                                return CreatePackageCommandSpecUsingMuxer(cached.Executable.Value,
+                                        arguments.CommandArguments,
+                                        CommandResolutionStrategy.DotnetToolsPackage);
+                            }
+                        }
+                    }
+
                     var serializer = new XmlSerializer(typeof(RepoTools));
 
                     RepoTools repoToolManifest;
 
                     // TODO wul to have proper message
-                    using (var fs = new FileStream("DotnetToolSettingsGolden.xml", FileMode.Open))
+                    using (var fs = new FileStream("tryManifest", FileMode.Open))
                     {
                         var reader = XmlReader.Create(fs);
                         repoToolManifest = (RepoTools)serializer.Deserialize(reader);
                     }
 
+                    (var packageStore, var packageInstaller) = ToolPackageFactory.CreateToolPackageStoreAndInstaller();
 
+                    var restoredList = new List<CommandSettings>();
+                    foreach (var repotool in repoToolManifest.Commands)
+                    {
+                        restoredList.AddRange(packageInstaller.InstallPackageToNuGetCache(
+                            new PackageId(repotool.PackageId),
+                            VersionRange.Parse(repotool.Version),
+                            new FilePath(repotool.Configfile),
+                            additionalFeeds: new[] { repotool.AddSource }, targetFramework: repotool.Framework));
+                    }
+
+                    commandSettingsCacheStore.Save(restoredList, new FilePath(tryManifest), DateTimeOffset.UtcNow);
+
+                    // The following is dup
+                    foreach (var cached in restoredList)
+                    {
+                        if (arguments.CommandName == $"dotnet-{cached.Name}")
+                        {
+                            return CreatePackageCommandSpecUsingMuxer(cached.Executable.Value,
+                                    arguments.CommandArguments,
+                                    CommandResolutionStrategy.DotnetToolsPackage);
+                        }
+                    }
+                }
+                else
+                {
+                    currentSearchDirectory = currentSearchDirectory.Parent;
                 }
 
             }
             while (currentSearchDirectory.Parent == null);
 
-            if (string.IsNullOrEmpty(arguments.CommandName))
-            {
-                return null;
-            }
-
-            var packageId = new DirectoryInfo(Path.Combine(_dotnetToolPath, arguments.CommandName));
-            if (!packageId.Exists)
-            {
-                return null;
-            }
-
-            var version = packageId.GetDirectories()[0];
-            var dll = version.GetDirectories("tools")[0]
-                .GetDirectories()[0] // TFM
-                .GetDirectories()[0] // RID
-                .GetFiles($"{arguments.CommandName}.dll")[0];
-
-            return CreatePackageCommandSpecUsingMuxer(
-                    dll.FullName,
-                    arguments.CommandArguments,
-                    CommandResolutionStrategy.DotnetToolsPackage);
+            return null;
         }
 
         private CommandSpec CreatePackageCommandSpecUsingMuxer(

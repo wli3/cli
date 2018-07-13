@@ -14,6 +14,11 @@ namespace Microsoft.DotNet.ToolPackage
             _cacheLocation = cacheLocation;
         }
 
+        internal bool Exists(FilePath currentPath)
+        {
+            return File.Exists(Path.Combine(_cacheLocation.Value, GetShortFileName(currentPath.Value)));
+        }
+
         internal (IReadOnlyList<CommandSettings> commandSettingsList, FilePath currentPath, DateTimeOffset currentTime) Load(FilePath currentPath)
         {
             DirectoryToolCache directoryToolCache;
@@ -37,7 +42,7 @@ namespace Microsoft.DotNet.ToolPackage
             }
 
             return (commandSettingsList,
-                new FilePath(directoryToolCache.DirectoryPath),
+                new FilePath(directoryToolCache.DirectoryPath), // TODO wul this is not needed
                 DateTimeOffset.Parse(directoryToolCache.CurrentTime));
         }
 

@@ -22,6 +22,6 @@ namespace Microsoft.DotNet.ToolPackage.ToolConfigurationDeserialization
         public string Framework { get; set; }
 
         [XmlAttribute]
-        public string AddSource { get; set; }
+        public string AddSource { get; set; } // TODO wul this should be multiple
     }
 }
