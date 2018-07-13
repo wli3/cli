@@ -5,9 +5,9 @@ namespace Microsoft.DotNet.ToolPackage.ToolConfigurationDeserialization
 {
     [DebuggerStepThrough]
     [XmlRoot(Namespace = "", IsNullable = false)]
-    public class RepoToolManifest
+    public class RepoTools
     {
-        [XmlArrayItem("RepoTools", IsNullable = false)]
+        [XmlArrayItem(IsNullable = false)]
         public RepoToolManifestCommand[] Commands { get; set; }
 
         [XmlAttribute(AttributeName = "Version")]

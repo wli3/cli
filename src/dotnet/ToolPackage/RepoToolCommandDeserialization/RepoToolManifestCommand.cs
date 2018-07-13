@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.ToolPackage.ToolConfigurationDeserialization
 {
     [Serializable]
     [DebuggerStepThrough]
-    [XmlType(AnonymousType = true)]
+    [XmlType(TypeName="Command")]
     public class RepoToolManifestCommand
     {
         [XmlAttribute]
