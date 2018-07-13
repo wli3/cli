@@ -5,20 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Transactions;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Versioning;
 using Xunit;
-using System.Security.Cryptography;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
@@ -38,27 +28,12 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             var cacheLocation = new DirectoryPath(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
             Directory.CreateDirectory(cacheLocation.Value);
 
-            var directoryToolCache = new DirectoryToolCache();
-
-            directoryToolCache.CommandSettingsList = new List<SerializableCommandSettings>();
-            foreach (var c in commandSettingsList)
-            {
-                directoryToolCache.CommandSettingsList.Add(new SerializableCommandSettings
-                {
-                    Name = c.Name,
-                    Runner = c.Runner,
-                    Executable = c.Executable.Value
-                });
-            }
-
-            directoryToolCache.CurrentTime = currentTime.ToString("u");
-            directoryToolCache.DirectoryPath = currentPath.Value;
 
             var commandSettingsCacheStore = new CommandSettingsCacheStore(cacheLocation);
-            commandSettingsCacheStore.Save(directoryToolCache);
+            commandSettingsCacheStore.Save(commandSettingsList, currentPath, currentTime);
 
-            var restoredDirectoryToolCache = commandSettingsCacheStore.Load(currentPath);
-            restoredDirectoryToolCache.CommandSettingsList.First().Name.Should().Be("a");
+            (IReadOnlyList<CommandSettings> restoredCommandSettingsList, FilePath restoredCurrentPath, DateTimeOffset restoredCurrentTime) = commandSettingsCacheStore.Load(currentPath);
+            restoredCommandSettingsList.First().Name.Should().Be("a");
         }
 
     }
@@ -90,17 +65,57 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             _cacheLocation = cacheLocation;
         }
 
-        internal DirectoryToolCache Load(FilePath currentPath)
+        internal (IReadOnlyList<CommandSettings> commandSettingsList, FilePath currentPath, DateTimeOffset currentTime) Load(FilePath currentPath)
         {
+            DirectoryToolCache directoryToolCache;
             using (Stream stream = File.Open(Path.Combine(_cacheLocation.Value, GetShortFileName(currentPath.Value)), FileMode.Open))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                return (DirectoryToolCache)binaryFormatter.Deserialize(stream);
+                directoryToolCache = (DirectoryToolCache)binaryFormatter.Deserialize(stream);
             }
+
+            var commandSettingsList = new List<CommandSettings>();
+            if (directoryToolCache == null)
+            {
+                throw new InvalidOperationException("Cannot deserialize directoryToolCache"); // TODO wul loc
+            }
+            if (directoryToolCache.CommandSettingsList != null)
+            {
+                foreach (var s in directoryToolCache.CommandSettingsList)
+                {
+                    commandSettingsList.Add(new CommandSettings(s.Name, s.Runner, new FilePath(s.Executable)));
+                }
+            }
+
+            return (commandSettingsList,
+                new FilePath(directoryToolCache.DirectoryPath),
+                DateTimeOffset.Parse(directoryToolCache.CurrentTime));
         }
 
-        internal void Save(DirectoryToolCache directoryToolCache)
+        private static string GetShortFileName(string directoryPath)
         {
+            return string.Format("{0:X}", directoryPath.GetHashCode());
+        }
+
+        internal void Save(IReadOnlyList<CommandSettings> commandSettingsList, FilePath currentPath, DateTimeOffset currentTime)
+        {
+            var directoryToolCache = new DirectoryToolCache
+            {
+                CommandSettingsList = new List<SerializableCommandSettings>(),
+                CurrentTime = currentTime.ToString("u"),
+                DirectoryPath = currentPath.Value
+            };
+
+            foreach (CommandSettings c in commandSettingsList)
+            {
+                directoryToolCache.CommandSettingsList.Add(new SerializableCommandSettings
+                {
+                    Name = c.Name,
+                    Runner = c.Runner,
+                    Executable = c.Executable.Value
+                });
+            }
+
             string shortFileName = GetShortFileName(directoryToolCache.DirectoryPath);
 
             using (Stream stream = File.Open(Path.Combine(_cacheLocation.Value, shortFileName), FileMode.CreateNew))
@@ -108,11 +123,6 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 binaryFormatter.Serialize(stream, directoryToolCache);
             }
-        }
-
-        private static string GetShortFileName(string directoryPath)
-        {
-            return string.Format("{0:X}", directoryPath.GetHashCode());
         }
     }
 }
