@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ToolPackage
@@ -48,7 +50,20 @@ namespace Microsoft.DotNet.ToolPackage
 
         private static string GetShortFileName(string directoryPath)
         {
-            return string.Format("{0:X}", directoryPath.GetHashCode());
+            MD5 md5 = MD5.Create();
+
+            byte[] inputBytes = Encoding.ASCII.GetBytes(directoryPath);
+
+            byte[] hash = md5.ComputeHash(inputBytes);
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach (byte x in hash)
+            {
+                sb.AppendFormat("{0:x2}", x);
+            }
+            return sb.ToString();
+
         }
 
         internal void Save(IReadOnlyList<CommandSettings> commandSettingsList, FilePath currentPath, DateTimeOffset currentTime)
@@ -72,7 +87,12 @@ namespace Microsoft.DotNet.ToolPackage
 
             string shortFileName = GetShortFileName(directoryToolCache.DirectoryPath);
 
-            using (Stream stream = File.Open(Path.Combine(_cacheLocation.Value, shortFileName), FileMode.CreateNew))
+            string cachePath = Path.Combine(_cacheLocation.Value, shortFileName);
+            if (File.Exists(cachePath))
+            {
+                File.Delete(cachePath);
+            }
+            using (Stream stream = File.Open(cachePath, FileMode.CreateNew))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 binaryFormatter.Serialize(stream, directoryToolCache);
