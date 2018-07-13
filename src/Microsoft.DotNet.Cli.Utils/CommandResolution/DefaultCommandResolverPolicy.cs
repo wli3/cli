@@ -53,6 +53,10 @@ namespace Microsoft.DotNet.Cli.Utils
             compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
             compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
             compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
+            if (_repoToolsCommandResolver != null)
+            {
+                compositeCommandResolver.AddCommandResolver(_repoToolsCommandResolver);
+            }
             compositeCommandResolver.AddCommandResolver(
                 new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
             compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
@@ -62,10 +66,6 @@ namespace Microsoft.DotNet.Cli.Utils
                 new PathCommandResolver(environment, platformCommandSpecFactory));
             compositeCommandResolver.AddCommandResolver(
                 new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
-            if (_repoToolsCommandResolver != null)
-            {
-                compositeCommandResolver.AddCommandResolver(_repoToolsCommandResolver);
-            }
             return compositeCommandResolver;
         }
     }
