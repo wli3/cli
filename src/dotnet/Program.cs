@@ -223,13 +223,11 @@ namespace Microsoft.DotNet.Cli
                 var c = commandResolverPolicy.CreateCommandResolver();
                 CommandResult result = 
                         Command.Create(
-                new DefaultCommandResolverPolicy(new RepoToolsCommandResolver()),
-                "dotnet-" + topLevelCommandParserResult.Command,
-                appArgs,
-                FrameworkConstants.CommonFrameworks.NetStandardApp15,
-                Constants.DefaultConfiguration)
-
-                    .Execute();
+                            new DefaultCommandResolverPolicy(new RepoToolsCommandResolver()),
+                            "dotnet-" + topLevelCommandParserResult.Command,
+                            appArgs,
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                            Constants.DefaultConfiguration).Execute();
                 exitCode = result.ExitCode;
             }
             return exitCode;

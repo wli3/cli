@@ -32,7 +32,14 @@ namespace Microsoft.DotNet.Cli.Utils
                 if (File.Exists(tryManifest))
                 {
                     DateTimeOffset? cacheTimeStamp = null;
-                    var commandSettingsCacheStore = new CommandSettingsCacheStore(new DirectoryPath(CliFolderPathCalculator.RepotoolcachePath));
+
+                    DirectoryPath cacheLocation = new DirectoryPath(CliFolderPathCalculator.RepotoolcachePath);
+                    if (!Directory.Exists(cacheLocation.Value))
+                    {
+                        Directory.CreateDirectory(cacheLocation.Value);
+                    }
+
+                    var commandSettingsCacheStore = new CommandSettingsCacheStore(cacheLocation);
                     if (commandSettingsCacheStore.Exists(new FilePath(tryManifest)))
                     {
                         (commandSettingsList, _, cacheTimeStamp) = commandSettingsCacheStore.Load(new FilePath(tryManifest));
@@ -56,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     RepoTools repoToolManifest;
 
                     // TODO wul to have proper message
-                    using (var fs = new FileStream("tryManifest", FileMode.Open))
+                    using (var fs = new FileStream(tryManifest, FileMode.Open))
                     {
                         var reader = XmlReader.Create(fs);
                         repoToolManifest = (RepoTools)serializer.Deserialize(reader);
@@ -67,11 +74,23 @@ namespace Microsoft.DotNet.Cli.Utils
                     var restoredList = new List<CommandSettings>();
                     foreach (var repotool in repoToolManifest.Commands)
                     {
+                        FilePath? nugetConfig = null;
+                        if (repotool.Configfile != null)
+                        {
+                            nugetConfig = new FilePath(repotool.Configfile);
+                        }
+
+                        VersionRange versionRange = null;
+                        if (repotool.Version != null)
+                        {
+                            versionRange = VersionRange.Parse(repotool.Version);
+                        }
                         restoredList.AddRange(packageInstaller.InstallPackageToNuGetCache(
                             new PackageId(repotool.PackageId),
-                            VersionRange.Parse(repotool.Version),
-                            new FilePath(repotool.Configfile),
-                            additionalFeeds: new[] { repotool.AddSource }, targetFramework: repotool.Framework));
+                            versionRange,
+                            nugetConfig,
+                            additionalFeeds: repotool.AddSource == null ? null : new[] { repotool.AddSource }, 
+                            targetFramework: repotool.Framework));
                     }
 
                     commandSettingsCacheStore.Save(restoredList, new FilePath(tryManifest), DateTimeOffset.UtcNow);
