@@ -1,6 +1,15 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<DotNetCliTool Version="1" >
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RepoTools Version="1">
   <Commands>
-    <Command Name="sayhello" EntryPoint="console.dll" Runner="dotnet" />
+    <Command PackageId="my.command.specific"
+             Version="1.0"
+             Configfile="build/nuget.config"
+             Framework="netcoreapp2.1"  />
+    <Command PackageId="my.command.specific2"
+             Version="1.0"
+             AddSource="https://www.myget.org/F/wultest/api/v3/index.json"
+             Framework="netcoreapp2.1"  />
+    <Command PackageId="my.command.not.specific"
+             Version="2.1"  />
   </Commands>
-</DotNetCliTool>
+</RepoTools>

@@ -24,6 +24,9 @@
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="RepoToolManifestGolden.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="DotnetToolSettingsMissing.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
