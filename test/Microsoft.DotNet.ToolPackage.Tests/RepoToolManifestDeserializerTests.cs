@@ -8,7 +8,6 @@ using System.Xml;
 using System.Xml.Serialization;
 using FluentAssertions;
 using Microsoft.DotNet.ToolPackage.ToolConfigurationDeserialization;
-using Microsoft.DotNet.Tools;
 using Xunit;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
@@ -23,15 +22,15 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         [Fact]
         public void GivenGoldernFileItCanDeserialize()
         {
-            var serializer = new XmlSerializer(typeof(RepoToolManifest));
+            var serializer = new XmlSerializer(typeof(RepoTools));
 
-            RepoToolManifest repoToolManifest;
+            RepoTools repoToolManifest;
 
             // TODO wul to have proper message
             using (var fs = new FileStream("DotnetToolSettingsGolden.xml", FileMode.Open))
             {
                 var reader = XmlReader.Create(fs);
-                repoToolManifest = (RepoToolManifest)serializer.Deserialize(reader);
+                repoToolManifest = (RepoTools)serializer.Deserialize(reader);
             }
 
             repoToolManifest.Commands.First().PackageId.Should().Be("my.command.specific");
