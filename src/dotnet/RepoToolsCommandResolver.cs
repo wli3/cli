@@ -22,13 +22,13 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         public CommandSpec Resolve(CommandResolverArguments arguments)
         {
-            var manifestFileName = "repotools.manifest.xml";
-            var currentSearchDirectory =new DirectoryInfo(Directory.GetCurrentDirectory());
+            string manifestFileName = "repotools.manifest.xml";
+            DirectoryInfo currentSearchDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
 
-            do
+            while (currentSearchDirectory != null)
             {
                 IReadOnlyList<CommandSettings> commandSettingsList = new List<CommandSettings>();
-                var tryManifest = Path.Combine(currentSearchDirectory.FullName, manifestFileName);
+                string tryManifest = Path.Combine(currentSearchDirectory.FullName, manifestFileName);
                 if (File.Exists(tryManifest))
                 {
                     DateTimeOffset? cacheTimeStamp = null;
@@ -39,40 +39,41 @@ namespace Microsoft.DotNet.Cli.Utils
                         Directory.CreateDirectory(cacheLocation.Value);
                     }
 
-                    var commandSettingsCacheStore = new CommandSettingsCacheStore(cacheLocation);
+                    CommandSettingsCacheStore commandSettingsCacheStore = new CommandSettingsCacheStore(cacheLocation);
                     if (commandSettingsCacheStore.Exists(new FilePath(tryManifest)))
                     {
-                        (commandSettingsList, _, cacheTimeStamp) = commandSettingsCacheStore.Load(new FilePath(tryManifest));
+                        (commandSettingsList, _, cacheTimeStamp) =
+                            commandSettingsCacheStore.Load(new FilePath(tryManifest));
                     }
 
-                    if (cacheTimeStamp.HasValue && cacheTimeStamp.Value > DateTime.SpecifyKind(new FileInfo(tryManifest).CreationTimeUtc, DateTimeKind.Utc))
-                    {
-                        foreach (var cached in commandSettingsList)
+                    if (cacheTimeStamp.HasValue && cacheTimeStamp.Value >
+                        DateTime.SpecifyKind(new FileInfo(tryManifest).CreationTimeUtc, DateTimeKind.Utc))
+                        foreach (CommandSettings cached in commandSettingsList)
                         {
                             if (arguments.CommandName == $"dotnet-{cached.Name}")
                             {
                                 return CreatePackageCommandSpecUsingMuxer(cached.Executable.Value,
-                                        arguments.CommandArguments,
-                                        CommandResolutionStrategy.DotnetToolsPackage);
+                                    arguments.CommandArguments,
+                                    CommandResolutionStrategy.DotnetToolsPackage);
                             }
                         }
-                    }
 
-                    var serializer = new XmlSerializer(typeof(RepoTools));
+                    XmlSerializer serializer = new XmlSerializer(typeof(RepoTools));
 
                     RepoTools repoToolManifest;
 
                     // TODO wul to have proper message
-                    using (var fs = new FileStream(tryManifest, FileMode.Open))
+                    using (FileStream fs = new FileStream(tryManifest, FileMode.Open))
                     {
-                        var reader = XmlReader.Create(fs);
+                        XmlReader reader = XmlReader.Create(fs);
                         repoToolManifest = (RepoTools)serializer.Deserialize(reader);
                     }
 
-                    (var packageStore, var packageInstaller) = ToolPackageFactory.CreateToolPackageStoreAndInstaller();
+                    (_, IToolPackageInstaller packageInstaller) =
+                        ToolPackageFactory.CreateToolPackageStoreAndInstaller();
 
-                    var restoredList = new List<CommandSettings>();
-                    foreach (var repotool in repoToolManifest.Commands)
+                    List<CommandSettings> restoredList = new List<CommandSettings>();
+                    foreach (RepoToolManifestCommand repotool in repoToolManifest.Commands)
                     {
                         FilePath? nugetConfig = null;
                         if (repotool.Configfile != null)
@@ -81,38 +82,33 @@ namespace Microsoft.DotNet.Cli.Utils
                         }
 
                         VersionRange versionRange = null;
-                        if (repotool.Version != null)
+                        if (repotool.Version != null) versionRange = VersionRange.Parse(repotool.Version);
                         {
-                            versionRange = VersionRange.Parse(repotool.Version);
+                            restoredList.AddRange(packageInstaller.InstallPackageToNuGetCache(
+                                new PackageId(repotool.PackageId),
+                                versionRange,
+                                nugetConfig,
+                                additionalFeeds: repotool.AddSource == null ? null : new[] {repotool.AddSource},
+                                targetFramework: repotool.Framework));
                         }
-                        restoredList.AddRange(packageInstaller.InstallPackageToNuGetCache(
-                            new PackageId(repotool.PackageId),
-                            versionRange,
-                            nugetConfig,
-                            additionalFeeds: repotool.AddSource == null ? null : new[] { repotool.AddSource }, 
-                            targetFramework: repotool.Framework));
                     }
 
                     commandSettingsCacheStore.Save(restoredList, new FilePath(tryManifest), DateTimeOffset.UtcNow);
 
                     // The following is dup
-                    foreach (var cached in restoredList)
-                    {
+                    foreach (CommandSettings cached in restoredList)
                         if (arguments.CommandName == $"dotnet-{cached.Name}")
                         {
                             return CreatePackageCommandSpecUsingMuxer(cached.Executable.Value,
-                                    arguments.CommandArguments,
-                                    CommandResolutionStrategy.DotnetToolsPackage);
+                                arguments.CommandArguments,
+                                CommandResolutionStrategy.DotnetToolsPackage);
                         }
-                    }
                 }
                 else
                 {
                     currentSearchDirectory = currentSearchDirectory.Parent;
                 }
-
             }
-            while (currentSearchDirectory.Parent == null);
 
             return null;
         }
@@ -122,11 +118,11 @@ namespace Microsoft.DotNet.Cli.Utils
             IEnumerable<string> commandArguments,
             CommandResolutionStrategy commandResolutionStrategy)
         {
-            var arguments = new List<string>();
+            List<string> arguments = new List<string>();
 
-            var muxer = new Muxer();
+            Muxer muxer = new Muxer();
 
-            var host = muxer.MuxerPath;
+            string host = muxer.MuxerPath;
             if (host == null)
             {
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
@@ -147,7 +143,7 @@ namespace Microsoft.DotNet.Cli.Utils
             IEnumerable<string> commandArguments,
             CommandResolutionStrategy commandResolutionStrategy)
         {
-            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
+            string escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
 
             return new CommandSpec(commandPath, escapedArgs, commandResolutionStrategy);
         }
