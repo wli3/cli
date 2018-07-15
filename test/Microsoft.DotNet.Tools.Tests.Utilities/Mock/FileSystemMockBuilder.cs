@@ -63,6 +63,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             const char directorySeparatorChar = '\\';
             const char altDirectorySeparatorChar = '/';
 
+            bool isRooted = false;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentException(nameof(path) + ": " + path);
@@ -71,6 +72,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             string volume = "";
             if (Path.IsPathRooted(path))
             {
+                isRooted = true;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     int charLocation = path.IndexOf(":", StringComparison.Ordinal);
@@ -84,17 +86,19 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             }
 
             string[] pathArray = path.Split(directorySeparatorChar, altDirectorySeparatorChar);
-            return new PathAppleSauce(volume, pathArray);
+            return new PathAppleSauce(volume, pathArray, isRooted);
         }
 
         public class PathAppleSauce
         {
-            public PathAppleSauce(string volume, string[] pathArray)
+            public PathAppleSauce(string volume, string[] pathArray, bool isRootded)
             {
                 Volume = volume ?? throw new ArgumentNullException(nameof(volume));
                 PathArray = pathArray ?? throw new ArgumentNullException(nameof(pathArray));
+                IsRootded = isRootded;
             }
 
+            public bool IsRootded { get; }
             public string Volume { get; }
             public string[] PathArray { get; }
         }
@@ -103,6 +107,17 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         {
             public FileSystemMock(VolumeNode files, string temporaryFolder, string workingDirectory)
             {
+                if (files == null)
+                {
+                    throw new ArgumentNullException(nameof(files));
+                }
+
+                if (temporaryFolder == null)
+                {
+                    throw new ArgumentNullException(nameof(temporaryFolder));
+                }
+
+                WorkingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
                 File = new FileMock(files);
                 Directory = new DirectoryMock(files, temporaryFolder);
             }
