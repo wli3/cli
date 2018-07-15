@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 {
     internal class FileSystemMockBuilder
     {
-        private VolumeNode _files;
+        private FileSystemRoot _files;
         public string TemporaryFolder { get; set; }
         public string WorkingDirectory { get; set; }
 
@@ -48,11 +48,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _files = new VolumeNode("c");
+                _files = new FileSystemRoot("c");
             }
             else
             {
-                _files = new VolumeNode("");
+                _files = new FileSystemRoot("");
             }
 
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileSystemMock : IFileSystem
         {
-            public FileSystemMock(VolumeNode files, string temporaryFolder, string workingDirectory)
+            public FileSystemMock(FileSystemRoot files, string temporaryFolder, string workingDirectory)
             {
                 if (files == null)
                 {
@@ -112,13 +112,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     throw new ArgumentNullException(nameof(temporaryFolder));
                 }
+                
+                // Don't support change working directory
+                if (workingDirectory == null) throw new ArgumentNullException(nameof(workingDirectory));
 
-                WorkingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
-                File = new FileMock(files);
-                Directory = new DirectoryMock(files, temporaryFolder);
+                File = new FileMock(files ,workingDirectory);
+                Directory = new DirectoryMock(files, temporaryFolder, workingDirectory);
             }
-
-            public string WorkingDirectory { get; set; }
 
             public IFile File { get; }
 
@@ -127,11 +127,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileMock : IFile
         {
-            private readonly VolumeNode _files;
+            private readonly FileSystemRoot _files;
+            private readonly string _workingDirectory;
 
-            public FileMock(VolumeNode files)
+            public FileMock(FileSystemRoot files, string workingDirectory)
             {
                 _files = files ?? throw new ArgumentNullException(nameof(files));
+                _workingDirectory = workingDirectory;
             }
 
             public bool Exists(string path)
@@ -183,11 +185,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryMock : IDirectory
         {
-            private readonly VolumeNode _files;
+            private readonly string _workingDirectory;
+            private readonly FileSystemRoot _files;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
 
-            public DirectoryMock(VolumeNode files, string temporaryDirectory)
+            public DirectoryMock(FileSystemRoot files, string temporaryDirectory, string workingDirectory)
             {
+                _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
                 if (files != null) _files = files;
                 _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
             }
@@ -224,7 +228,24 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                var pathAppleSauce = PathAppleSauce(path);
+                var pathAppleSauce = new PathAppleSauce(path);
+                DirectoryNode current;
+                if (_files.Volume.ContainsKey(pathAppleSauce.Volume))
+                {
+                    current = new DirectoryNode();
+                    _files.Volume[pathAppleSauce.Volume] = current;
+                }
+                else
+                {
+                    current = _files.Volume[pathAppleSauce.Volume];
+                }
+
+                _files.Volume[pathAppleSauce.Volume] = _files.Volume[pathAppleSauce.Volume] ?? new DirectoryNode();
+                foreach (var p in pathAppleSauce.PathArray)
+                {
+                    
+                }
+
                 throw new NotImplementedException();
             }
 
@@ -248,15 +269,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } = new Dictionary<string, IFileSystemTreeNode>();
         }
 
-        private class VolumeNode : IFileSystemTreeNode
+        private class FileSystemRoot
         {
-            public VolumeNode(string name)
-            {
-                Name = name ?? throw new ArgumentNullException(nameof(name));
-            }
-
-            public string Name { get; set; }
-            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } = new Dictionary<string, IFileSystemTreeNode>();
+            // in Linux there is only one Node, and the name is empty
+            public Dictionary<string, DirectoryNode> Volume { get; set; } = new Dictionary<string, DirectoryNode>();
         }
 
         private class FileNode : IFileSystemTreeNode

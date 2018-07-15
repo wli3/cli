@@ -78,6 +78,21 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             Action a = () => fileSystem.Directory.CreateDirectory(directroy);
             a.ShouldNotThrow();
         }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ShouldThrowOnCreateDirectoryWhenExistsSameNameFile(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+
+            var path = Path.Combine(directroy, "sub");
+            fileSystem.File.CreateEmptyFile(path);
+            Action a = () => fileSystem.Directory.CreateDirectory(directroy);
+            a.ShouldNotThrow();
+        }
 
         [WindowsOnlyTheory]
         [InlineData(false)]
