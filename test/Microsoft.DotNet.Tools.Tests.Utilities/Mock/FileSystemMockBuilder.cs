@@ -201,11 +201,6 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (1.ToString() == "1")
-                {
-                    throw new ArgumentException(string.Join(Environment.NewLine, _files.DebugShowTree())); 
-                }
-
                 // TODO could extract this
                 var pathAppleSauce = new PathAppleSauce(path);
                 DirectoryNode current;
@@ -357,6 +352,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileNode : IFileSystemTreeNode
         {
+            public FileNode(string content)
+            {
+                Content = content ?? throw new ArgumentNullException(nameof(content));
+            }
+
             public string Content { get; set; } = "";
 
             public IEnumerable<string> DebugShowTreeLines()
