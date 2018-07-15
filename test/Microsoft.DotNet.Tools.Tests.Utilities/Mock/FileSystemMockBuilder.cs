@@ -96,6 +96,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public bool IsRootded { get; }
             public string Volume { get; }
             public string[] PathArray { get; }
+            
+            public override string ToString()
+            {
+                return $"{nameof(IsRootded)}: {IsRootded}, {nameof(Volume)}: {Volume}, {nameof(PathArray)}: {PathArray}";
+            }
+
         }
 
         private class FileSystemMock : IFileSystem
@@ -239,6 +245,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
+                CreateDirectory(_temporaryDirectory.DirectoryPath);
                 return _temporaryDirectory;
             }
 
@@ -265,6 +272,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public void CreateDirectory(string path)
             {
                 var pathAppleSauce = new PathAppleSauce(path);
+
                 DirectoryNode current;
                 if (!_files.Volume.ContainsKey(pathAppleSauce.Volume))
                 {
