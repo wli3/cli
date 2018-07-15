@@ -58,44 +58,40 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
 
-        private static PathAppleSauce PathToArray(string path)
-        {
-            const char directorySeparatorChar = '\\';
-            const char altDirectorySeparatorChar = '/';
-
-            bool isRooted = false;
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException(nameof(path) + ": " + path);
-            }
-
-            string volume = "";
-            if (Path.IsPathRooted(path))
-            {
-                isRooted = true;
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    int charLocation = path.IndexOf(":", StringComparison.Ordinal);
-
-                    if (charLocation > 0)
-                    {
-                        volume = path.Substring(0, charLocation);
-                        path = path.Substring(charLocation + 2);
-                    }
-                }
-            }
-
-            string[] pathArray = path.Split(directorySeparatorChar, altDirectorySeparatorChar);
-            return new PathAppleSauce(volume, pathArray, isRooted);
-        }
-
+        
         public class PathAppleSauce
         {
-            public PathAppleSauce(string volume, string[] pathArray, bool isRootded)
+            public PathAppleSauce(string path)
             {
-                Volume = volume ?? throw new ArgumentNullException(nameof(volume));
-                PathArray = pathArray ?? throw new ArgumentNullException(nameof(pathArray));
-                IsRootded = isRootded;
+                const char directorySeparatorChar = '\\';
+                const char altDirectorySeparatorChar = '/';
+
+                bool isRooted = false;
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    throw new ArgumentException(nameof(path) + ": " + path);
+                }
+
+                string volume = "";
+                if (Path.IsPathRooted(path))
+                {
+                    isRooted = true;
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        int charLocation = path.IndexOf(":", StringComparison.Ordinal);
+
+                        if (charLocation > 0)
+                        {
+                            volume = path.Substring(0, charLocation);
+                            path = path.Substring(charLocation + 2);
+                        }
+                    }
+                }
+
+                string[] pathArray = path.Split(directorySeparatorChar, altDirectorySeparatorChar);
+                Volume = volume;
+                PathArray = pathArray;
+                IsRootded = isRooted;
             }
 
             public bool IsRootded { get; }
@@ -228,6 +224,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
+                var pathAppleSauce = PathAppleSauce(path);
                 throw new NotImplementedException();
             }
 
