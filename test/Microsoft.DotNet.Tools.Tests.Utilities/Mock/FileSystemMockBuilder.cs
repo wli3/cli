@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 {
     internal class FileSystemMockBuilder
     {
-        private DirectoryNode _files;
+        private VolumeNode _files;
         public string TemporaryFolder { get; set; }
         public string WorkingDirectory { get; set; }
 
@@ -46,20 +46,62 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     fileSystemMockWorkingDirectory = "/";
             }
 
-            _files = new DirectoryNode("");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _files = new VolumeNode("c");
+            }
+            else
+            {
+                _files = new VolumeNode("");
+            }
+
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
 
-        private static string[] PathToArray(string path)
+        private static PathAppleSauce PathToArray(string path)
         {
             const char directorySeparatorChar = '\\';
             const char altDirectorySeparatorChar = '/';
-            return path.Split(directorySeparatorChar, altDirectorySeparatorChar);
+
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException(nameof(path) + ": " + path);
+            }
+
+            string volume = "";
+            if (Path.IsPathRooted(path))
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    int charLocation = path.IndexOf(":", StringComparison.Ordinal);
+
+                    if (charLocation > 0)
+                    {
+                        volume = path.Substring(0, charLocation);
+                        path = path.Substring(charLocation + 2);
+                    }
+                }
+            }
+
+            string[] pathArray = path.Split(directorySeparatorChar, altDirectorySeparatorChar);
+            return new PathAppleSauce(volume, pathArray);
+        }
+
+        public class PathAppleSauce
+        {
+            public PathAppleSauce(string volume, string[] pathArray)
+            {
+                Volume = volume ?? throw new ArgumentNullException(nameof(volume));
+                PathArray = pathArray ?? throw new ArgumentNullException(nameof(pathArray));
+            }
+
+            public string Volume { get; }
+            public string[] PathArray { get; }
         }
 
         private class FileSystemMock : IFileSystem
         {
-            public FileSystemMock(DirectoryNode files, string temporaryFolder, string workingDirectory)
+            public FileSystemMock(VolumeNode files, string temporaryFolder, string workingDirectory)
             {
                 File = new FileMock(files);
                 Directory = new DirectoryMock(files, temporaryFolder);
@@ -74,9 +116,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileMock : IFile
         {
-            private readonly DirectoryNode _files;
+            private readonly VolumeNode _files;
 
-            public FileMock(DirectoryNode files)
+            public FileMock(VolumeNode files)
             {
                 _files = files ?? throw new ArgumentNullException(nameof(files));
             }
@@ -130,10 +172,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryMock : IDirectory
         {
-            private readonly DirectoryNode _files;
+            private readonly VolumeNode _files;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
 
-            public DirectoryMock(DirectoryNode files, string temporaryDirectory)
+            public DirectoryMock(VolumeNode files, string temporaryDirectory)
             {
                 if (files != null) _files = files;
                 _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
@@ -218,6 +260,18 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 return Name != null ? Name.GetHashCode() : 0;
             }
+        }
+
+        private class VolumeNode : IFileSystemTreeNode
+        {
+            public VolumeNode(string name)
+            {
+                Name = name ?? throw new ArgumentNullException(nameof(name));
+            }
+
+            public SortedSet<IFileSystemTreeNode> Subs { get; set; } = new SortedSet<IFileSystemTreeNode>();
+
+            public string Name { get; set; }
         }
 
         private class FileNode : IFileSystemTreeNode
