@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void CouldCreateEmptyFileWhenDirectoryExists(bool testMockBehaviorIsInSync)
+        public void WhenDirectoryExistsShouldCreateEmptyFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void CouldCreateDirectory(bool testMockBehaviorIsInSync)
+        public void ShouldCreateDirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void ShouldNotThrowOnCreateDirectoryWhenExists(bool testMockBehaviorIsInSync)
+        public void CreateDirectoryWhenExistsShouldNotThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void ShouldThrowOnCreateDirectoryWhenExistsSameNameFile(bool testMockBehaviorIsInSync)
+        public void CreateDirectoryWhenExistsSameNameFileShouldThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 
@@ -90,14 +90,14 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             var path = Path.Combine(directroy, "sub");
             fileSystem.File.CreateEmptyFile(path);
-            Action a = () => fileSystem.Directory.CreateDirectory(directroy);
-            a.ShouldNotThrow();
+            Action a = () => fileSystem.Directory.CreateDirectory(path);
+            a.ShouldThrow<IOException>();
         }
 
         [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
-        public void CouldThrowWhenDirectoryDoesNotExist(bool testMockBehaviorIsInSync)
+        public void DirectoryDoesNotExistShouldNotThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 

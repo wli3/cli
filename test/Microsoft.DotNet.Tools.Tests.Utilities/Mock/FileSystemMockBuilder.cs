@@ -41,19 +41,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             if (fileSystemMockWorkingDirectory == null)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
                     fileSystemMockWorkingDirectory = @"C:\";
+                }
                 else
+                {
                     fileSystemMockWorkingDirectory = "/";
+                }
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                _files = new FileSystemRoot("c");
-            }
-            else
-            {
-                _files = new FileSystemRoot("");
-            }
+            _files = new FileSystemRoot();
 
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
@@ -230,7 +227,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 var pathAppleSauce = new PathAppleSauce(path);
                 DirectoryNode current;
-                if (_files.Volume.ContainsKey(pathAppleSauce.Volume))
+                if (!_files.Volume.ContainsKey(pathAppleSauce.Volume))
                 {
                     current = new DirectoryNode();
                     _files.Volume[pathAppleSauce.Volume] = current;
@@ -240,13 +237,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     current = _files.Volume[pathAppleSauce.Volume];
                 }
 
-                _files.Volume[pathAppleSauce.Volume] = _files.Volume[pathAppleSauce.Volume] ?? new DirectoryNode();
                 foreach (var p in pathAppleSauce.PathArray)
                 {
-                    
+                    if (!current.Subs.ContainsKey(p))
+                    {
+                        DirectoryNode directoryNode = new DirectoryNode();
+                        current.Subs[p] = directoryNode;
+                        current = directoryNode;
+                    }
+                    // match else
                 }
-
-                throw new NotImplementedException();
             }
 
             public void Delete(string path, bool recursive)
