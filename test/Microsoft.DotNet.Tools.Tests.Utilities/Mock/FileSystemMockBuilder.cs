@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools.Test.Utilities.Mock;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Common;
 
 namespace Microsoft.Extensions.DependencyModel.Tests
 {
@@ -64,7 +66,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 const char altDirectorySeparatorChar = '/';
 
                 bool isRooted = false;
-                if (!string.IsNullOrWhiteSpace(path))
+                if (string.IsNullOrWhiteSpace(path))
                 {
                     throw new ArgumentException(nameof(path) + ": " + path);
                 }
@@ -189,13 +191,55 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public DirectoryMock(FileSystemRoot files, string temporaryDirectory, string workingDirectory)
             {
                 _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
-                if (files != null) _files = files;
+                if (files != null)
+                {
+                    _files = files;
+                }
+
                 _temporaryDirectory = new TemporaryDirectoryMock(temporaryDirectory);
             }
 
             public bool Exists(string path)
             {
-                throw new NotImplementedException();
+                if (1.ToString() == "1")
+                {
+                    throw new ArgumentException(string.Join(Environment.NewLine, _files.DebugShowTree())); 
+                }
+
+                // TODO could extract this
+                var pathAppleSauce = new PathAppleSauce(path);
+                DirectoryNode current;
+                if (!_files.Volume.ContainsKey(pathAppleSauce.Volume))
+                {
+                    return false;
+                }
+                else
+                {
+                    current = _files.Volume[pathAppleSauce.Volume];
+                }
+
+                foreach (var p in pathAppleSauce.PathArray)
+                {
+                    if (!current.Subs.ContainsKey(p))
+                    {
+                        return false;
+                    }
+                    else if (current.Subs[p] is DirectoryNode directoryNode)
+                    {
+                        current = directoryNode;
+                    }
+                    else if (current.Subs[p] is FileNode)
+                    {
+                        return false;
+                    }
+                }
+
+                if (current != null)
+                {
+                    return true;
+                }
+
+                return false;
             }
 
             public ITemporaryDirectory CreateTemporaryDirectory()
@@ -245,7 +289,15 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         current.Subs[p] = directoryNode;
                         current = directoryNode;
                     }
-                    // match else
+                    else if (current.Subs[p] is DirectoryNode directoryNode)
+                    {
+                        current = directoryNode;
+                    }
+                    else if (current.Subs[p] is FileNode)
+                    {
+                        throw new IOException(
+                            $"Cannot create '{path}' because a file or directory with the same name already exists.");
+                    }
                 }
             }
 
@@ -262,22 +314,55 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private interface IFileSystemTreeNode
         {
+            IEnumerable<string> DebugShowTreeLines();
         }
 
         private class DirectoryNode : IFileSystemTreeNode
         {
-            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } = new Dictionary<string, IFileSystemTreeNode>();
+            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } =
+                new Dictionary<string, IFileSystemTreeNode>();
+            
+            public IEnumerable<string> DebugShowTreeLines()
+            {
+                var lines = new List<string>();
+
+                foreach (var fileSystemTreeNode in Subs)
+                {
+                    lines.Add(fileSystemTreeNode.Key);
+                    lines.AddRange(fileSystemTreeNode.Value.DebugShowTreeLines().Select(l => "-- " + l));
+                }
+
+                return lines;
+            }
         }
 
         private class FileSystemRoot
         {
             // in Linux there is only one Node, and the name is empty
             public Dictionary<string, DirectoryNode> Volume { get; set; } = new Dictionary<string, DirectoryNode>();
+            
+            public IEnumerable<string> DebugShowTree()
+            {
+                var lines = new List<string>();
+
+                foreach (var fileSystemTreeNode in Volume)
+                {
+                    lines.Add(fileSystemTreeNode.Key);
+                    lines.AddRange(fileSystemTreeNode.Value.DebugShowTreeLines().Select(l => "-- " + l));
+                }
+
+                return lines;
+            }
         }
 
         private class FileNode : IFileSystemTreeNode
         {
             public string Content { get; set; } = "";
+
+            public IEnumerable<string> DebugShowTreeLines()
+            {
+                return new List<string> {Content};
+            }
         }
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock
