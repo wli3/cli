@@ -244,37 +244,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private interface IFileSystemTreeNode
         {
-            string Name { get; set; }
         }
 
         private class DirectoryNode : IFileSystemTreeNode
         {
-            public DirectoryNode(string name)
-            {
-                Name = name ?? throw new ArgumentNullException(nameof(name));
-            }
-
-            public SortedSet<IFileSystemTreeNode> Subs { get; set; } = new SortedSet<IFileSystemTreeNode>();
-
-            public string Name { get; set; }
-
-            protected bool Equals(DirectoryNode other)
-            {
-                return string.Equals(Name, other.Name);
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != GetType()) return false;
-                return Equals((DirectoryNode)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                return Name != null ? Name.GetHashCode() : 0;
-            }
+            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } = new Dictionary<string, IFileSystemTreeNode>();
         }
 
         private class VolumeNode : IFileSystemTreeNode
@@ -284,39 +258,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 Name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
-            public SortedSet<IFileSystemTreeNode> Subs { get; set; } = new SortedSet<IFileSystemTreeNode>();
-
             public string Name { get; set; }
+            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } = new Dictionary<string, IFileSystemTreeNode>();
         }
 
         private class FileNode : IFileSystemTreeNode
         {
-            public FileNode(string name)
-            {
-                Name = name ?? throw new ArgumentNullException(nameof(name));
-            }
-
             public string Content { get; set; } = "";
-
-            public string Name { get; set; }
-
-            protected bool Equals(FileNode other)
-            {
-                return string.Equals(Name, other.Name);
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != GetType()) return false;
-                return Equals((FileNode)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                return Name != null ? Name.GetHashCode() : 0;
-            }
         }
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock
