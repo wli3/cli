@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools.Test.Utilities.Mock;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Common;
 
 namespace Microsoft.Extensions.DependencyModel.Tests
 {
@@ -57,7 +56,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
 
-        
+
         public class PathAppleSauce
         {
             public PathAppleSauce(string path)
@@ -96,12 +95,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public bool IsRootded { get; }
             public string Volume { get; }
             public string[] PathArray { get; }
-            
+
             public override string ToString()
             {
-                return $"{nameof(IsRootded)}: {IsRootded}, {nameof(Volume)}: {Volume}, {nameof(PathArray)}: {PathArray}";
+                return
+                    $"{nameof(IsRootded)}: {IsRootded}, {nameof(Volume)}: {Volume}, {nameof(PathArray)}: {PathArray}";
             }
-
         }
 
         private class FileSystemMock : IFileSystem
@@ -117,11 +116,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     throw new ArgumentNullException(nameof(temporaryFolder));
                 }
-                
+
                 // Don't support change working directory
                 if (workingDirectory == null) throw new ArgumentNullException(nameof(workingDirectory));
 
-                File = new FileMock(files ,workingDirectory);
+                File = new FileMock(files, workingDirectory);
                 Directory = new DirectoryMock(files, temporaryFolder, workingDirectory);
             }
 
@@ -190,9 +189,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryMock : IDirectory
         {
-            private readonly string _workingDirectory;
             private readonly FileSystemRoot _files;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
+            private readonly string _workingDirectory;
 
             public DirectoryMock(FileSystemRoot files, string temporaryDirectory, string workingDirectory)
             {
@@ -214,10 +213,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     return false;
                 }
-                else
-                {
-                    current = _files.Volume[pathAppleSauce.Volume];
-                }
+
+                current = _files.Volume[pathAppleSauce.Volume];
 
                 foreach (var p in pathAppleSauce.PathArray)
                 {
@@ -225,7 +222,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     {
                         return false;
                     }
-                    else if (current.Subs[p] is DirectoryNode directoryNode)
+
+                    if (current.Subs[p] is DirectoryNode directoryNode)
                     {
                         current = directoryNode;
                     }
@@ -322,9 +320,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class DirectoryNode : IFileSystemTreeNode
         {
-            public Dictionary<string, IFileSystemTreeNode> Subs { get; set; } =
+            public Dictionary<string, IFileSystemTreeNode> Subs { get; } =
                 new Dictionary<string, IFileSystemTreeNode>();
-            
+
             public IEnumerable<string> DebugShowTreeLines()
             {
                 var lines = new List<string>();
@@ -342,8 +340,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         private class FileSystemRoot
         {
             // in Linux there is only one Node, and the name is empty
-            public Dictionary<string, DirectoryNode> Volume { get; set; } = new Dictionary<string, DirectoryNode>();
-            
+            public Dictionary<string, DirectoryNode> Volume { get; } = new Dictionary<string, DirectoryNode>();
+
             public IEnumerable<string> DebugShowTree()
             {
                 var lines = new List<string>();
@@ -365,7 +363,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 Content = content ?? throw new ArgumentNullException(nameof(content));
             }
 
-            public string Content { get; set; } = "";
+            public string Content { get; } = "";
 
             public IEnumerable<string> DebugShowTreeLines()
             {
