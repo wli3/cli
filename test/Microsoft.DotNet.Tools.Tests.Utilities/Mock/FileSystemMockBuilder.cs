@@ -57,9 +57,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         }
 
 
-        public class PathAppleSauce
+        public class PathModule
         {
-            public PathAppleSauce(string path)
+            public PathModule(string path)
             {
                 const char directorySeparatorChar = '\\';
                 const char altDirectorySeparatorChar = '/';
@@ -98,8 +98,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public override string ToString()
             {
-                return
-                    $"{nameof(IsRootded)}: {IsRootded}, {nameof(Volume)}: {Volume}, {nameof(PathArray)}: {PathArray}";
+                return $"{nameof(IsRootded)}: {IsRootded}" +
+                       $", {nameof(Volume)}: {Volume}" +
+                       $", {nameof(PathArray)}: {string.Join("-", PathArray)}";
             }
         }
 
@@ -206,18 +207,17 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                // TODO could extract this
-                var pathAppleSauce = new PathAppleSauce(path);
-                DirectoryNode current;
-                if (!_files.Volume.ContainsKey(pathAppleSauce.Volume))
+                var pathModule = new PathModule(path);
+                if (!_files.Volume.ContainsKey(pathModule.Volume))
                 {
                     return false;
                 }
 
-                current = _files.Volume[pathAppleSauce.Volume];
+                DirectoryNode current = _files.Volume[pathModule.Volume];
 
-                foreach (var p in pathAppleSauce.PathArray)
+                for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
                 {
+                    var p = pathModule.PathArray[i];
                     if (!current.Subs.ContainsKey(p))
                     {
                         return false;
@@ -233,7 +233,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     }
                 }
 
-                if (current != null)
+                if (current is DirectoryNode)
                 {
                     return true;
                 }
@@ -269,20 +269,20 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                var pathAppleSauce = new PathAppleSauce(path);
+                var pathModule = new PathModule(path);
 
                 DirectoryNode current;
-                if (!_files.Volume.ContainsKey(pathAppleSauce.Volume))
+                if (!_files.Volume.ContainsKey(pathModule.Volume))
                 {
                     current = new DirectoryNode();
-                    _files.Volume[pathAppleSauce.Volume] = current;
+                    _files.Volume[pathModule.Volume] = current;
                 }
                 else
                 {
-                    current = _files.Volume[pathAppleSauce.Volume];
+                    current = _files.Volume[pathModule.Volume];
                 }
 
-                foreach (var p in pathAppleSauce.PathArray)
+                foreach (var p in pathModule.PathArray)
                 {
                     if (!current.Subs.ContainsKey(p))
                     {
