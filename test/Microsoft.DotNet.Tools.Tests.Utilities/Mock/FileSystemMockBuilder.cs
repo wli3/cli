@@ -174,7 +174,17 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                throw new NotImplementedException();
+                if (TryGetLastNodeParent(_files, path, out var current))
+                {
+                    if (current != null)
+                    {
+                        var pathModule = new PathModule(path);
+                        return current.Subs.ContainsKey(pathModule.PathArray.Last())
+                               && current.Subs[pathModule.PathArray.Last()] is FileNode;
+                    }
+                }
+
+                return false;
             }
 
             public string ReadAllText(string path)
