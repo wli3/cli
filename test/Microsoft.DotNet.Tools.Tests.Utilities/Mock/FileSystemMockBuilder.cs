@@ -87,6 +87,45 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             return true;
         }
 
+        private static void CreateDirectory(FileSystemRoot fileSystemRoot, string path)
+        {
+            var pathModule = new PathModule(path);
+
+            CreateDirectory(fileSystemRoot, pathModule);
+        }
+
+        private static void CreateDirectory(FileSystemRoot fileSystemRoot, PathModule pathModule)
+        {
+            DirectoryNode current;
+            if (!fileSystemRoot.Volume.ContainsKey(pathModule.Volume))
+            {
+                current = new DirectoryNode();
+                fileSystemRoot.Volume[pathModule.Volume] = current;
+            }
+            else
+            {
+                current = fileSystemRoot.Volume[pathModule.Volume];
+            }
+
+            foreach (var p in pathModule.PathArray)
+            {
+                if (!current.Subs.ContainsKey(p))
+                {
+                    DirectoryNode directoryNode = new DirectoryNode();
+                    current.Subs[p] = directoryNode;
+                    current = directoryNode;
+                }
+                else if (current.Subs[p] is DirectoryNode directoryNode)
+                {
+                    current = directoryNode;
+                }
+                else if (current.Subs[p] is FileNode)
+                {
+                    throw new IOException(
+                        $"Cannot create '{pathModule}' because a file or directory with the same name already exists.");
+                }
+            }
+        }
 
         public class PathModule
         {
@@ -117,10 +156,19 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     }
                 }
 
-                string[] pathArray = path.Split(directorySeparatorChar, altDirectorySeparatorChar);
+                string[] pathArray = path.Split(
+                    new[] {directorySeparatorChar, altDirectorySeparatorChar},
+                    StringSplitOptions.RemoveEmptyEntries);
                 Volume = volume;
                 PathArray = pathArray;
                 IsRootded = isRooted;
+            }
+
+            public PathModule(bool isRootded, string volume, string[] pathArray)
+            {
+                IsRootded = isRootded;
+                Volume = volume ?? throw new ArgumentNullException(nameof(volume));
+                PathArray = pathArray ?? throw new ArgumentNullException(nameof(pathArray));
             }
 
             public bool IsRootded { get; }
@@ -161,6 +209,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public IDirectory Directory { get; }
         }
 
+        // fasade
         private class FileMock : IFile
         {
             private readonly FileSystemRoot _files;
@@ -206,11 +255,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
+                var pathModule = new PathModule(path);
+
                 if (TryGetLastNodeParent(_files, path, out var current))
                 {
                     if (current != null)
                     {
-                        var pathModule = new PathModule(path);
                         if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
                         {
                             var possibleConflict = current.Subs[pathModule.PathArray.Last()];
@@ -224,6 +274,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                             current.Subs[pathModule.PathArray.Last()] = new FileNode("");
                         }
                     }
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"{path} is a directory");
                 }
             }
 
@@ -247,6 +301,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             }
         }
 
+        // fasade
         private class DirectoryMock : IDirectory
         {
             private readonly FileSystemRoot _files;
@@ -307,37 +362,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                var pathModule = new PathModule(path);
-
-                DirectoryNode current;
-                if (!_files.Volume.ContainsKey(pathModule.Volume))
-                {
-                    current = new DirectoryNode();
-                    _files.Volume[pathModule.Volume] = current;
-                }
-                else
-                {
-                    current = _files.Volume[pathModule.Volume];
-                }
-
-                foreach (var p in pathModule.PathArray)
-                {
-                    if (!current.Subs.ContainsKey(p))
-                    {
-                        DirectoryNode directoryNode = new DirectoryNode();
-                        current.Subs[p] = directoryNode;
-                        current = directoryNode;
-                    }
-                    else if (current.Subs[p] is DirectoryNode directoryNode)
-                    {
-                        current = directoryNode;
-                    }
-                    else if (current.Subs[p] is FileNode)
-                    {
-                        throw new IOException(
-                            $"Cannot create '{path}' because a file or directory with the same name already exists.");
-                    }
-                }
+                FileSystemMockBuilder.CreateDirectory(_files, path);
             }
 
             public void Delete(string path, bool recursive)

@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
-        public void DirectoryDoesNotExistShouldNotThrow(bool testMockBehaviorIsInSync)
+        public void DirectoryDoesNotExistShouldThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
 
