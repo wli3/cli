@@ -207,13 +207,26 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
+                if (TryGetLastNode(path, out var current))
+                {
+                    if (current is DirectoryNode)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            private bool TryGetLastNode(string path, out DirectoryNode current)
+            {
                 var pathModule = new PathModule(path);
+                current = _files.Volume[pathModule.Volume];
+
                 if (!_files.Volume.ContainsKey(pathModule.Volume))
                 {
                     return false;
                 }
-
-                DirectoryNode current = _files.Volume[pathModule.Volume];
 
                 for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
                 {
@@ -233,12 +246,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     }
                 }
 
-                if (current is DirectoryNode)
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
             public ITemporaryDirectory CreateTemporaryDirectory()
