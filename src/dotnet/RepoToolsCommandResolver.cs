@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     }
 
                     if (cacheTimeStamp.HasValue && cacheTimeStamp.Value >
-                        DateTime.SpecifyKind(new FileInfo(tryManifest).CreationTimeUtc, DateTimeKind.Utc))
+                        DateTime.SpecifyKind(new FileInfo(tryManifest).LastWriteTimeUtc, DateTimeKind.Utc))
                         foreach (CommandSettings cached in commandSettingsList)
                         {
                             if (arguments.CommandName == $"dotnet-{cached.Name}")
@@ -97,12 +97,18 @@ namespace Microsoft.DotNet.Cli.Utils
 
                     // The following is dup
                     foreach (CommandSettings cached in restoredList)
+                    {
                         if (arguments.CommandName == $"dotnet-{cached.Name}")
                         {
                             return CreatePackageCommandSpecUsingMuxer(cached.Executable.Value,
                                 arguments.CommandArguments,
                                 CommandResolutionStrategy.DotnetToolsPackage);
                         }
+                        else
+                        {
+                            currentSearchDirectory = currentSearchDirectory.Parent;
+                        }
+                    }
                 }
                 else
                 {
