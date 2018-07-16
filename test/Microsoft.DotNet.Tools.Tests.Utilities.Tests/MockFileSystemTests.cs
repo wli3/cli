@@ -53,6 +53,20 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             fileSystem.File.Exists(nestedFilePath).Should().BeTrue();
         }
+        
+        [Theory(Skip="pending")]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DirectoryExistsWithRelativePathShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)
+        {
+        }
+        
+        [Theory(Skip="pending")]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WithRelativePathShouldCreateDirectory(bool testMockBehaviorIsInSync)
+        {
+        }
 
         [Theory]
         [InlineData(false)]
