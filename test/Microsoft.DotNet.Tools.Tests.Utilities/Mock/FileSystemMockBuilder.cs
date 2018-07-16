@@ -261,7 +261,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     if (current != null)
                     {
                         var pathModule = new PathModule(path);
-                        return current.Subs.ContainsKey(pathModule.PathArray.Last());
+                        return current.Subs.ContainsKey(pathModule.PathArray.Last())
+                               && current.Subs[pathModule.PathArray.Last()] is DirectoryNode;
                     }
                 }
 
