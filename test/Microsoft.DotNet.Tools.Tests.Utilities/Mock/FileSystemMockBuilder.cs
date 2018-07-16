@@ -56,6 +56,37 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
 
+        private static bool TryGetLastNodeParent(FileSystemRoot fileSystemRoot, string path, out DirectoryNode current)
+        {
+            var pathModule = new PathModule(path);
+            current = fileSystemRoot.Volume[pathModule.Volume];
+
+            if (!fileSystemRoot.Volume.ContainsKey(pathModule.Volume))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
+            {
+                var p = pathModule.PathArray[i];
+                if (!current.Subs.ContainsKey(p))
+                {
+                    return false;
+                }
+
+                if (current.Subs[p] is DirectoryNode directoryNode)
+                {
+                    current = directoryNode;
+                }
+                else if (current.Subs[p] is FileNode)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 
         public class PathModule
         {
@@ -165,7 +196,25 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
-                throw new NotImplementedException();
+                if (TryGetLastNodeParent(_files, path, out var current))
+                {
+                    if (current != null)
+                    {
+                        var pathModule = new PathModule(path);
+                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                        {
+                            var possibleConflict = current.Subs[pathModule.PathArray.Last()];
+                            if (possibleConflict is DirectoryNode)
+                            {
+                                throw new IOException($"{path} is a directory");
+                            }
+                        }
+                        else
+                        {
+                            current.Subs[pathModule.PathArray.Last()] = new FileNode("");
+                        }
+                    }
+                }
             }
 
             public void WriteAllText(string path, string content)
@@ -207,46 +256,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (TryGetLastNode(path, out var current))
+                if (TryGetLastNodeParent(_files, path, out var current))
                 {
-                    if (current is DirectoryNode)
+                    if (current != null)
                     {
-                        return true;
+                        var pathModule = new PathModule(path);
+                        return current.Subs.ContainsKey(pathModule.PathArray.Last());
                     }
                 }
 
                 return false;
-            }
-
-            private bool TryGetLastNode(string path, out DirectoryNode current)
-            {
-                var pathModule = new PathModule(path);
-                current = _files.Volume[pathModule.Volume];
-
-                if (!_files.Volume.ContainsKey(pathModule.Volume))
-                {
-                    return false;
-                }
-
-                for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
-                {
-                    var p = pathModule.PathArray[i];
-                    if (!current.Subs.ContainsKey(p))
-                    {
-                        return false;
-                    }
-
-                    if (current.Subs[p] is DirectoryNode directoryNode)
-                    {
-                        current = directoryNode;
-                    }
-                    else if (current.Subs[p] is FileNode)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
             }
 
             public ITemporaryDirectory CreateTemporaryDirectory()
