@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 {
     internal class FileSystemMockBuilder
     {
-        private FileSystemRoot _files;
+        private MockFileSystemModel _mockFileSystemModel;
         public string TemporaryFolder { get; set; }
         public string WorkingDirectory { get; set; }
 
@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFiles(string basePath, params string[] files)
         {
+            // TODO WUL this is wrong, just call model
             foreach (string file in files) AddFile(Path.Combine(basePath, file));
             return this;
         }
@@ -51,83 +52,93 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 }
             }
 
-            _files = new FileSystemRoot();
+            _mockFileSystemModel = new MockFileSystemModel();
 
-            return new FileSystemMock(_files, TemporaryFolder, fileSystemMockWorkingDirectory);
+            return new FileSystemMock(_mockFileSystemModel, TemporaryFolder, fileSystemMockWorkingDirectory);
         }
 
-        private static bool TryGetLastNodeParent(FileSystemRoot fileSystemRoot, string path, out DirectoryNode current)
+        private class MockFileSystemModel
         {
-            var pathModule = new PathModule(path);
-            current = fileSystemRoot.Volume[pathModule.Volume];
-
-            if (!fileSystemRoot.Volume.ContainsKey(pathModule.Volume))
+            public MockFileSystemModel(FileSystemRoot files = null)
             {
-                return false;
+                Files = files ?? new FileSystemRoot();
             }
 
-            for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
+            public FileSystemRoot Files { get; }
+
+            public bool TryGetLastNodeParent(string path, out DirectoryNode current)
             {
-                var p = pathModule.PathArray[i];
-                if (!current.Subs.ContainsKey(p))
+                var pathModule = new PathModule(path);
+                current = Files.Volume[pathModule.Volume];
+
+                if (!Files.Volume.ContainsKey(pathModule.Volume))
                 {
                     return false;
                 }
 
-                if (current.Subs[p] is DirectoryNode directoryNode)
+                for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
                 {
-                    current = directoryNode;
+                    var p = pathModule.PathArray[i];
+                    if (!current.Subs.ContainsKey(p))
+                    {
+                        return false;
+                    }
+
+                    if (current.Subs[p] is DirectoryNode directoryNode)
+                    {
+                        current = directoryNode;
+                    }
+                    else if (current.Subs[p] is FileNode)
+                    {
+                        return false;
+                    }
                 }
-                else if (current.Subs[p] is FileNode)
-                {
-                    return false;
-                }
+
+                return true;
             }
 
-            return true;
+            public void CreateDirectory(string path)
+            {
+                var pathModule = new PathModule(path);
+
+                CreateDirectory(pathModule);
+            }
+
+            private void CreateDirectory(PathModule pathModule)
+            {
+                DirectoryNode current;
+                if (!Files.Volume.ContainsKey(pathModule.Volume))
+                {
+                    current = new DirectoryNode();
+                    Files.Volume[pathModule.Volume] = current;
+                }
+                else
+                {
+                    current = Files.Volume[pathModule.Volume];
+                }
+
+                foreach (var p in pathModule.PathArray)
+                {
+                    if (!current.Subs.ContainsKey(p))
+                    {
+                        DirectoryNode directoryNode = new DirectoryNode();
+                        current.Subs[p] = directoryNode;
+                        current = directoryNode;
+                    }
+                    else if (current.Subs[p] is DirectoryNode directoryNode)
+                    {
+                        current = directoryNode;
+                    }
+                    else if (current.Subs[p] is FileNode)
+                    {
+                        throw new IOException(
+                            $"Cannot create '{pathModule}' because a file or directory with the same name already exists.");
+                    }
+                }
+            }
         }
 
-        private static void CreateDirectory(FileSystemRoot fileSystemRoot, string path)
-        {
-            var pathModule = new PathModule(path);
-
-            CreateDirectory(fileSystemRoot, pathModule);
-        }
-
-        private static void CreateDirectory(FileSystemRoot fileSystemRoot, PathModule pathModule)
-        {
-            DirectoryNode current;
-            if (!fileSystemRoot.Volume.ContainsKey(pathModule.Volume))
-            {
-                current = new DirectoryNode();
-                fileSystemRoot.Volume[pathModule.Volume] = current;
-            }
-            else
-            {
-                current = fileSystemRoot.Volume[pathModule.Volume];
-            }
-
-            foreach (var p in pathModule.PathArray)
-            {
-                if (!current.Subs.ContainsKey(p))
-                {
-                    DirectoryNode directoryNode = new DirectoryNode();
-                    current.Subs[p] = directoryNode;
-                    current = directoryNode;
-                }
-                else if (current.Subs[p] is DirectoryNode directoryNode)
-                {
-                    current = directoryNode;
-                }
-                else if (current.Subs[p] is FileNode)
-                {
-                    throw new IOException(
-                        $"Cannot create '{pathModule}' because a file or directory with the same name already exists.");
-                }
-            }
-        }
-
-        public class PathModule
+        private class PathModule
         {
             public PathModule(string path)
             {
@@ -185,7 +196,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class FileSystemMock : IFileSystem
         {
-            public FileSystemMock(FileSystemRoot files, string temporaryFolder, string workingDirectory)
+            public FileSystemMock(MockFileSystemModel files, string temporaryFolder, string workingDirectory)
             {
                 if (files == null)
                 {
@@ -212,10 +223,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         // fasade
         private class FileMock : IFile
         {
-            private readonly FileSystemRoot _files;
+            private readonly MockFileSystemModel _files;
             private readonly string _workingDirectory;
 
-            public FileMock(FileSystemRoot files, string workingDirectory)
+            public FileMock(MockFileSystemModel files, string workingDirectory)
             {
                 _files = files ?? throw new ArgumentNullException(nameof(files));
                 _workingDirectory = workingDirectory;
@@ -223,7 +234,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (TryGetLastNodeParent(_files, path, out var current))
+                if (_files.TryGetLastNodeParent(path, out var current))
                 {
                     if (current != null)
                     {
@@ -257,7 +268,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 var pathModule = new PathModule(path);
 
-                if (TryGetLastNodeParent(_files, path, out var current))
+                if (_files.TryGetLastNodeParent(path, out var current))
                 {
                     if (current != null)
                     {
@@ -304,11 +315,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         // fasade
         private class DirectoryMock : IDirectory
         {
-            private readonly FileSystemRoot _files;
+            private readonly MockFileSystemModel _files;
             private readonly TemporaryDirectoryMock _temporaryDirectory;
             private readonly string _workingDirectory;
 
-            public DirectoryMock(FileSystemRoot files, string temporaryDirectory, string workingDirectory)
+            public DirectoryMock(MockFileSystemModel files, string temporaryDirectory, string workingDirectory)
             {
                 _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
                 if (files != null)
@@ -321,7 +332,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (TryGetLastNodeParent(_files, path, out var current))
+                if (_files.TryGetLastNodeParent(path, out var current))
                 {
                     if (current != null)
                     {
@@ -362,7 +373,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                FileSystemMockBuilder.CreateDirectory(_files, path);
+                _files.CreateDirectory(path);
             }
 
             public void Delete(string path, bool recursive)
