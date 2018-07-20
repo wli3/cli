@@ -53,6 +53,11 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             return directoryFullName;
         }
 
+        public string GetCurrentDirectory()
+        {
+            return Directory.GetCurrentDirectory();
+        }
+
         public void CreateDirectory(string path)
         {
             Directory.CreateDirectory(path);

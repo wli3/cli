@@ -59,6 +59,12 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [InlineData(true)]
         public void DirectoryExistsWithRelativePathShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)
         {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+
+            string directroy = fileSystem.Directory.GetCurrentDirectory();
+            fileSystem.File.CreateEmptyFile("file");
+
+            fileSystem.File.Exists(Path.Combine(directroy, "file")).Should().BeTrue();
         }
         
         [Theory(Skip="pending")]

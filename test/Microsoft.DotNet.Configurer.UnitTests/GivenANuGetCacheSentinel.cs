@@ -203,6 +203,11 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 throw new NotImplementedException();
             }
 
+            public string GetCurrentDirectory()
+            {
+                throw new NotImplementedException();
+            }
+
             public void CreateDirectory(string path)
             {
                 throw new UnauthorizedAccessException();

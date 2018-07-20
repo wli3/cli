@@ -169,6 +169,11 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 throw new NotImplementedException();
             }
 
+            public string GetCurrentDirectory()
+            {
+                throw new NotImplementedException();
+            }
+
             public bool Exists(string path)
             {
                 return false;
