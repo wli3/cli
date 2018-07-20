@@ -54,6 +54,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fileSystem.File.Exists(nestedFilePath).Should().BeTrue();
         }
         
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void DirectoryExistsWithRelativePathShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)

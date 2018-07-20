@@ -66,16 +66,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 WorkingDirectory = fileSystemMockWorkingDirectory;
                 TemporaryFolder = temporaryFolder ?? throw new ArgumentNullException(nameof(temporaryFolder));
                 Files = files ?? new FileSystemRoot();
+                CreateDirectory(WorkingDirectory);
             }
 
             public string WorkingDirectory { get; }
             public string TemporaryFolder { get; }
-
             public FileSystemRoot Files { get; }
 
             public bool TryGetLastNodeParent(string path, out DirectoryNode current)
             {
-                var pathModule = new PathModule(path);
+                PathModel pathModule = CreateFullPathModule(path);
                 current = Files.Volume[pathModule.Volume];
 
                 if (!Files.Volume.ContainsKey(pathModule.Volume))
@@ -106,13 +106,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                var pathModule = new PathModule(path);
+                PathModel pathModule = CreateFullPathModule(path);
 
-                CreateDirectory(pathModule);
-            }
-
-            private void CreateDirectory(PathModule pathModule)
-            {
                 DirectoryNode current;
                 if (!Files.Volume.ContainsKey(pathModule.Volume))
                 {
@@ -143,11 +138,51 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     }
                 }
             }
+
+            private PathModel CreateFullPathModule(string path)
+            {
+                if (!Path.IsPathRooted(path))
+                {
+                    path = Path.Combine(WorkingDirectory, path);
+                }
+
+                var pathModule = new PathModel(path);
+
+                return pathModule;
+            }
+
+            public void CreateEmptyFile(string path)
+            {
+                PathModel pathModule = CreateFullPathModule(path);
+
+                if (TryGetLastNodeParent(path, out var current))
+                {
+                    if (current != null)
+                    {
+                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                        {
+                            var possibleConflict = current.Subs[pathModule.PathArray.Last()];
+                            if (possibleConflict is DirectoryNode)
+                            {
+                                throw new IOException($"{path} is a directory");
+                            }
+                        }
+                        else
+                        {
+                            current.Subs[pathModule.PathArray.Last()] = new FileNode("");
+                        }
+                    }
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"{path} is a directory");
+                }
+            }
         }
 
-        private class PathModule
+        private class PathModel
         {
-            public PathModule(string path)
+            public PathModel(string path)
             {
                 const char directorySeparatorChar = '\\';
                 const char altDirectorySeparatorChar = '/';
@@ -182,7 +217,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 IsRootded = isRooted;
             }
 
-            public PathModule(bool isRootded, string volume, string[] pathArray)
+            public PathModel(bool isRootded, string volume, string[] pathArray)
             {
                 IsRootded = isRootded;
                 Volume = volume ?? throw new ArgumentNullException(nameof(volume));
@@ -235,7 +270,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     if (current != null)
                     {
-                        var pathModule = new PathModule(path);
+                        var pathModule = new PathModel(path);
                         return current.Subs.ContainsKey(pathModule.PathArray.Last())
                                && current.Subs[pathModule.PathArray.Last()] is FileNode;
                     }
@@ -263,30 +298,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
-                var pathModule = new PathModule(path);
-
-                if (_files.TryGetLastNodeParent(path, out var current))
-                {
-                    if (current != null)
-                    {
-                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
-                        {
-                            var possibleConflict = current.Subs[pathModule.PathArray.Last()];
-                            if (possibleConflict is DirectoryNode)
-                            {
-                                throw new IOException($"{path} is a directory");
-                            }
-                        }
-                        else
-                        {
-                            current.Subs[pathModule.PathArray.Last()] = new FileNode("");
-                        }
-                    }
-                }
-                else
-                {
-                    throw new DirectoryNotFoundException($"{path} is a directory");
-                }
+                _files.CreateEmptyFile(path);
             }
 
             public void WriteAllText(string path, string content)
@@ -328,7 +340,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     if (current != null)
                     {
-                        var pathModule = new PathModule(path);
+                        var pathModule = new PathModel(path);
                         return current.Subs.ContainsKey(pathModule.PathArray.Last())
                                && current.Subs[pathModule.PathArray.Last()] is DirectoryNode;
                     }
@@ -366,7 +378,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public string GetCurrentDirectory()
             {
-                throw new NotImplementedException();
+                return _files.WorkingDirectory;
             }
 
             public void CreateDirectory(string path)
