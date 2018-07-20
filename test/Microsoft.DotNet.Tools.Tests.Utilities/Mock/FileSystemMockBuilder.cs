@@ -39,38 +39,37 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         internal IFileSystem Build()
         {
-            string fileSystemMockWorkingDirectory = WorkingDirectory;
-            if (fileSystemMockWorkingDirectory == null)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    fileSystemMockWorkingDirectory = @"C:\";
-                }
-                else
-                {
-                    fileSystemMockWorkingDirectory = "/";
-                }
-            }
-
-            _mockFileSystemModel = new MockFileSystemModel(TemporaryFolder, fileSystemMockWorkingDirectory);
+            _mockFileSystemModel =
+                new MockFileSystemModel(TemporaryFolder, fileSystemMockWorkingDirectory: WorkingDirectory);
 
             return new FileSystemMock(_mockFileSystemModel);
         }
 
         private class MockFileSystemModel
         {
-            public string WorkingDirectory { get; }
-            public string TemporaryFolder { get; }
-
-            public MockFileSystemModel(
-                string fileSystemMockWorkingDirectory,
-                string temporaryFolder,
-                FileSystemRoot files = null)
+            public MockFileSystemModel(string temporaryFolder,
+                FileSystemRoot files = null,
+                string fileSystemMockWorkingDirectory = null)
             {
-                WorkingDirectory = fileSystemMockWorkingDirectory ?? throw new ArgumentNullException(nameof(fileSystemMockWorkingDirectory));
+                if (fileSystemMockWorkingDirectory == null)
+                {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        fileSystemMockWorkingDirectory = @"C:\";
+                    }
+                    else
+                    {
+                        fileSystemMockWorkingDirectory = "/";
+                    }
+                }
+
+                WorkingDirectory = fileSystemMockWorkingDirectory;
                 TemporaryFolder = temporaryFolder ?? throw new ArgumentNullException(nameof(temporaryFolder));
                 Files = files ?? new FileSystemRoot();
             }
+
+            public string WorkingDirectory { get; }
+            public string TemporaryFolder { get; }
 
             public FileSystemRoot Files { get; }
 
@@ -341,8 +340,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
                 var temporaryDirectoryMock = new TemporaryDirectoryMock(_files.TemporaryFolder);
-                CreateDirectory(temporaryDirectoryMock .DirectoryPath);
-                return temporaryDirectoryMock ;
+                CreateDirectory(temporaryDirectoryMock.DirectoryPath);
+                return temporaryDirectoryMock;
             }
 
             public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
