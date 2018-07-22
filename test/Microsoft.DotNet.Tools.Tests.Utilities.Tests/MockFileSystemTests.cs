@@ -67,11 +67,17 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fileSystem.File.Exists(Path.Combine(directroy, "file")).Should().BeTrue();
         }
         
-        [Theory(Skip="pending")]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void WithRelativePathShouldCreateDirectory(bool testMockBehaviorIsInSync)
         {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+
+            string directroy = fileSystem.Directory.GetCurrentDirectory();
+            fileSystem.Directory.CreateDirectory("dir");
+
+            fileSystem.Directory.Exists(Path.Combine(directroy, "dir")).Should().BeTrue();
         }
 
         [Theory]
