@@ -132,6 +132,34 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             Action a = () => fileSystem.File.CreateEmptyFile(nestedFilePath);
             a.ShouldThrow<DirectoryNotFoundException>();
         }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileReadAllTextWhenExists(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            const string content = "content";
+            var path = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.WriteAllText(path, content);
+            
+            fileSystem.File.ReadAllText(path).Should().Be(content);
+        }
+         
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileThrowsWhenTryToReadNonExistFile(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            const string content = "content";
+            var path = Path.Combine(directroy, Path.GetRandomFileName());
+            
+            Action a = () => fileSystem.File.ReadAllText(path).Should().Be(content);
+            a.ShouldThrow<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
+        }
 
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {

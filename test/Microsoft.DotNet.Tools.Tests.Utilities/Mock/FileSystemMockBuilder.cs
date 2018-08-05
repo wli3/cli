@@ -151,8 +151,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 return pathModule;
             }
 
-            public void CreateEmptyFile(string path)
+            public void CreateFile(string path, string content = null)
             {
+                content = content ?? string.Empty;
                 PathModel pathModule = CreateFullPathModule(path);
 
                 if (TryGetLastNodeParent(path, out var current))
@@ -169,7 +170,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         }
                         else
                         {
-                            current.Subs[pathModule.PathArray.Last()] = new FileNode("");
+                            current.Subs[pathModule.PathArray.Last()] = new FileNode(content);
                         }
                     }
                 }
@@ -298,11 +299,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
-                _files.CreateEmptyFile(path);
+                _files.CreateFile(path);
             }
 
             public void WriteAllText(string path, string content)
             {
+                _files.CreateFile(content);
             }
 
             public void Move(string source, string destination)
