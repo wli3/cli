@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
                 {
-                    var p = pathModule.PathArray[i];
+                    string p = pathModule.PathArray[i];
                     if (!current.Subs.ContainsKey(p))
                     {
                         return false;
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     current = Files.Volume[pathModule.Volume];
                 }
 
-                foreach (var p in pathModule.PathArray)
+                foreach (string p in pathModule.PathArray)
                 {
                     if (!current.Subs.ContainsKey(p))
                     {
@@ -146,23 +146,22 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     path = Path.Combine(WorkingDirectory, path);
                 }
 
-                var pathModule = new PathModel(path);
+                PathModel pathModule = new PathModel(path);
 
                 return pathModule;
             }
 
-            public void CreateFile(string path, string content = null)
+            public void CreateFile(string path, string content)
             {
-                content = content ?? string.Empty;
                 PathModel pathModule = CreateFullPathModule(path);
 
-                if (TryGetLastNodeParent(path, out var current))
+                if (TryGetLastNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
                         if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
                         {
-                            var possibleConflict = current.Subs[pathModule.PathArray.Last()];
+                            IFileSystemTreeNode possibleConflict = current.Subs[pathModule.PathArray.Last()];
                             if (possibleConflict is DirectoryNode)
                             {
                                 throw new IOException($"{path} is a directory");
@@ -267,11 +266,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (_files.TryGetLastNodeParent(path, out var current))
+                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
-                        var pathModule = new PathModel(path);
+                        PathModel pathModule = new PathModel(path);
                         return current.Subs.ContainsKey(pathModule.PathArray.Last())
                                && current.Subs[pathModule.PathArray.Last()] is FileNode;
                     }
@@ -282,7 +281,25 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public string ReadAllText(string path)
             {
-                throw new NotImplementedException();
+                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                {
+                    if (current != null)
+                    {
+                        PathModel pathModule = new PathModel(path);
+                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                        {
+                            FileNode fileNode = current.Subs[pathModule.PathArray.Last()] as FileNode;
+                            if (fileNode == null)
+                            {
+                                throw new UnauthorizedAccessException($"Access to the path '{path}' is denied.");
+                            }
+
+                            return fileNode.Content;
+                        }
+                    }
+                }
+
+                throw new FileNotFoundException($"Could not find file '{path}'");
             }
 
             public Stream OpenRead(string path)
@@ -299,12 +316,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
-                _files.CreateFile(path);
+                _files.CreateFile(path, string.Empty);
             }
 
             public void WriteAllText(string path, string content)
             {
-                _files.CreateFile(content);
+                _files.CreateFile(path, content);
             }
 
             public void Move(string source, string destination)
@@ -338,11 +355,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (_files.TryGetLastNodeParent(path, out var current))
+                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
-                        var pathModule = new PathModel(path);
+                        PathModel pathModule = new PathModel(path);
+                        
                         return current.Subs.ContainsKey(pathModule.PathArray.Last())
                                && current.Subs[pathModule.PathArray.Last()] is DirectoryNode;
                     }
@@ -353,7 +371,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
-                var temporaryDirectoryMock = new TemporaryDirectoryMock(_files.TemporaryFolder);
+                TemporaryDirectoryMock temporaryDirectoryMock = new TemporaryDirectoryMock(_files.TemporaryFolder);
                 CreateDirectory(temporaryDirectoryMock.DirectoryPath);
                 return temporaryDirectoryMock;
             }
@@ -406,9 +424,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> DebugShowTreeLines()
             {
-                var lines = new List<string>();
+                List<string> lines = new List<string>();
 
-                foreach (var fileSystemTreeNode in Subs)
+                foreach (KeyValuePair<string, IFileSystemTreeNode> fileSystemTreeNode in Subs)
                 {
                     lines.Add(fileSystemTreeNode.Key);
                     lines.AddRange(fileSystemTreeNode.Value.DebugShowTreeLines().Select(l => "-- " + l));
@@ -425,9 +443,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> DebugShowTree()
             {
-                var lines = new List<string>();
+                List<string> lines = new List<string>();
 
-                foreach (var fileSystemTreeNode in Volume)
+                foreach (KeyValuePair<string, DirectoryNode> fileSystemTreeNode in Volume)
                 {
                     lines.Add(fileSystemTreeNode.Key);
                     lines.AddRange(fileSystemTreeNode.Value.DebugShowTreeLines().Select(l => "-- " + l));

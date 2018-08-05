@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             fileSystem.File.Exists(nestedFilePath).Should().BeTrue();
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             fileSystem.File.Exists(Path.Combine(directroy, "file")).Should().BeTrue();
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             Action a = () => fileSystem.Directory.CreateDirectory(directroy);
             a.ShouldNotThrow();
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
 
-            var path = Path.Combine(directroy, "sub");
+            string path = Path.Combine(directroy, "sub");
             fileSystem.File.CreateEmptyFile(path);
             Action a = () => fileSystem.Directory.CreateDirectory(path);
             a.ShouldThrow<IOException>();
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             Action a = () => fileSystem.File.CreateEmptyFile(nestedFilePath);
             a.ShouldThrow<DirectoryNotFoundException>();
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -141,12 +141,12 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             const string content = "content";
-            var path = Path.Combine(directroy, Path.GetRandomFileName());
+            string path = Path.Combine(directroy, Path.GetRandomFileName());
             fileSystem.File.WriteAllText(path, content);
-            
+
             fileSystem.File.ReadAllText(path).Should().Be(content);
         }
-         
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -154,12 +154,27 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-            const string content = "content";
-            var path = Path.Combine(directroy, Path.GetRandomFileName());
-            
-            Action a = () => fileSystem.File.ReadAllText(path).Should().Be(content);
+            string path = Path.Combine(directroy, Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.ReadAllText(path);
             a.ShouldThrow<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileThrowsWhenTryToReadADictonary(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directory = Path.Combine(
+                fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath,
+                Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(directory);
+
+            Action a = () => fileSystem.File.ReadAllText(directory);
+            a.ShouldThrow<UnauthorizedAccessException>().And.Message.Should().Contain("Access to the path");
+        }
+
 
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {
