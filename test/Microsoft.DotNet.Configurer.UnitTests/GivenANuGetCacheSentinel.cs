@@ -198,11 +198,6 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 throw new NotImplementedException();
             }
 
-            public string GetDirectoryFullName(string path)
-            {
-                throw new NotImplementedException();
-            }
-
             public string GetCurrentDirectory()
             {
                 throw new NotImplementedException();

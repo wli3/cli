@@ -371,11 +371,6 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 throw new NotImplementedException();
             }
 
-            public string GetDirectoryFullName(string path)
-            {
-                throw new NotImplementedException();
-            }
-
             public string GetCurrentDirectory()
             {
                 return _files.WorkingDirectory;

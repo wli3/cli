@@ -34,25 +34,6 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             return Directory.EnumerateFileSystemEntries(path, searchPattern);
         }
 
-        public string GetDirectoryFullName(string path)
-        {
-            var directoryFullName = string.Empty;
-            if (Exists(path))
-            {
-                directoryFullName = new DirectoryInfo(path).FullName;
-            }
-            else
-            {
-                var fileInfo = new FileInfo(path);
-                if (fileInfo.Directory != null)
-                {
-                    directoryFullName = fileInfo.Directory.FullName;
-                }
-            }
-
-            return directoryFullName;
-        }
-
         public string GetCurrentDirectory()
         {
             return Directory.GetCurrentDirectory();
