@@ -312,6 +312,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 int bufferSize,
                 FileOptions fileOptions)
             {
+                if (fileMode == FileMode.Open && fileAccess == FileAccess.Read)
+                {
+                    return OpenRead(path);
+                }
+
                 throw new NotImplementedException();
             }
 
