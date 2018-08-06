@@ -289,8 +289,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         PathModel pathModule = new PathModel(path);
                         if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
                         {
-                            FileNode fileNode = current.Subs[pathModule.PathArray.Last()] as FileNode;
-                            if (fileNode == null)
+                            if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
                             {
                                 throw new UnauthorizedAccessException($"Access to the path '{path}' is denied.");
                             }
