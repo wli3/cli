@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
@@ -173,6 +174,32 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
 
             Action a = () => fileSystem.File.ReadAllText(directory);
             a.ShouldThrow<UnauthorizedAccessException>().And.Message.Should().Contain("Access to the path");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileOpenReadWhenExists(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            const string content = "content";
+            string path = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.WriteAllText(path, content);
+
+            string fullstring = "";
+            using (Stream fs = fileSystem.File.OpenRead(path))
+            {
+                byte[] b = new byte[1024];
+                UTF8Encoding temp = new UTF8Encoding(true);
+
+                while (fs.Read(b, 0, b.Length) > 0)
+                {
+                    fullstring += temp.GetString(b);
+                }
+            }
+
+            fullstring.Should().StartWith(content);
         }
 
 

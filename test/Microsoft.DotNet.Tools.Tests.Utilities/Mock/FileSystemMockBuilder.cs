@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.DotNet.Tools.Test.Utilities.Mock;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -304,7 +305,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public Stream OpenRead(string path)
             {
-                throw new NotImplementedException();
+                return new MemoryStream(Encoding.UTF8.GetBytes(ReadAllText(path)));
             }
 
             public Stream OpenFile(string path, FileMode fileMode, FileAccess fileAccess, FileShare fileShare,
@@ -360,7 +361,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     if (current != null)
                     {
                         PathModel pathModule = new PathModel(path);
-                        
+
                         return current.Subs.ContainsKey(pathModule.PathArray.Last())
                                && current.Subs[pathModule.PathArray.Last()] is DirectoryNode;
                     }
