@@ -179,6 +179,25 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new DirectoryNotFoundException($"{path} is a directory");
                 }
             }
+
+            public (DirectoryNode, FileNode) GetParentDirectoryAndFileNode(string path)
+            {
+                if (TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
+                {
+                    PathModel pathModule = new PathModel(path);
+                    if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                    {
+                        if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
+                        {
+                            throw new FileNotFoundException($"Could not find file '{path}'");
+                        }
+
+                        return (current, fileNode);
+                    }
+                }
+
+                throw new FileNotFoundException($"Could not find file '{path}'");
+            }
         }
 
         private class PathModel
@@ -282,20 +301,17 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public string ReadAllText(string path)
             {
-                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                if (_files.TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
                 {
-                    if (current != null)
+                    PathModel pathModule = new PathModel(path);
+                    if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
                     {
-                        PathModel pathModule = new PathModel(path);
-                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                        if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
                         {
-                            if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
-                            {
-                                throw new UnauthorizedAccessException($"Access to the path '{path}' is denied.");
-                            }
-
-                            return fileNode.Content;
+                            throw new UnauthorizedAccessException($"Access to the path '{path}' is denied.");
                         }
+
+                        return fileNode.Content;
                     }
                 }
 
@@ -331,7 +347,18 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Move(string source, string destination)
             {
-                throw new NotImplementedException();
+                (DirectoryNode sourceParent, FileNode sourceFileNode) = _files.GetParentDirectoryAndFileNode(source);
+
+                sourceParent.Subs.Remove(new PathModel(source).PathArray.Last());
+
+                if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
+                {
+                    current.Subs.Add(new PathModel(destination).PathArray.Last(), sourceFileNode);
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {destination}");
+                }
             }
 
             public void Copy(string source, string destination)
