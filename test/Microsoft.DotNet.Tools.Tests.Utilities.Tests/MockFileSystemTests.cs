@@ -202,6 +202,74 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fullstring.Should().StartWith(content);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileMoveWhenBothSourceAndDestinationExist(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string sourceFile = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(sourceFile);
+            string destinationFile = Path.Combine(directroy, Path.GetRandomFileName());
+
+            fileSystem.File.Move(sourceFile, destinationFile);
+
+            fileSystem.File.Exists(sourceFile).Should().BeFalse();
+            fileSystem.File.Exists(destinationFile).Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileThrowsWhenSourceDoesNotExist(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string sourceFile = Path.Combine(directroy, Path.GetRandomFileName());
+
+            string destinationFile = Path.Combine(directroy, Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.Move(sourceFile, destinationFile);
+
+            a.ShouldThrow<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileThrowsWhenSourceIsADirectory(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string badSourceFile = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(badSourceFile);
+
+            string destinationFile = Path.Combine(directroy, Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.Move(badSourceFile, destinationFile);
+
+            a.ShouldThrow<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void FileThrowsWhenDestinationDirectoryDoesNotExist(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string sourceFile = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(sourceFile);
+
+            string destinationFile = Path.Combine(directroy, Path.GetRandomFileName(), Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.Move(sourceFile, destinationFile);
+
+            a.ShouldThrow<DirectoryNotFoundException>()
+                .And.Message.Should().Contain("Could not find a part of the path");
+        }
+
 
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {
