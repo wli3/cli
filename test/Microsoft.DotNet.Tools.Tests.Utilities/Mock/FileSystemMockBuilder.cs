@@ -288,6 +288,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
+                if (path == null)
+                {
+                    throw new ArgumentNullException(nameof(path));
+                }
+
                 if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
@@ -303,6 +308,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public string ReadAllText(string path)
             {
+                if (path == null)
+                {
+                    throw new ArgumentNullException(nameof(path));
+                }
+
                 if (_files.TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
                 {
                     PathModel pathModule = new PathModel(path);
@@ -322,6 +332,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public Stream OpenRead(string path)
             {
+                if (path == null)
+                {
+                    throw new ArgumentNullException(nameof(path));
+                }
+
                 return new MemoryStream(Encoding.UTF8.GetBytes(ReadAllText(path)));
             }
 
@@ -339,16 +354,41 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateEmptyFile(string path)
             {
+                if (path == null)
+                {
+                    throw new ArgumentNullException(nameof(path));
+                }
+
                 _files.CreateFile(path, string.Empty);
             }
 
             public void WriteAllText(string path, string content)
             {
+                if (path == null)
+                {
+                    throw new ArgumentNullException(nameof(path));
+                }
+
+                if (content == null)
+                {
+                    throw new ArgumentNullException(nameof(content));
+                }
+
                 _files.CreateFile(path, content);
             }
 
             public void Move(string source, string destination)
             {
+                if (source == null)
+                {
+                    throw new ArgumentNullException(nameof(source));
+                }
+
+                if (destination == null)
+                {
+                    throw new ArgumentNullException(nameof(destination));
+                }
+
                 (DirectoryNode sourceParent, FileNode sourceFileNode)
                     = _files.GetParentDirectoryAndFileNode(
                         source,
@@ -368,6 +408,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Copy(string source, string destination)
             {
+                if (source == null)
+                {
+                    throw new ArgumentNullException(nameof(source));
+                }
+
+                if (destination == null)
+                {
+                    throw new ArgumentNullException(nameof(destination));
+                }
+
                 (_, FileNode sourceFileNode) = _files.GetParentDirectoryAndFileNode(source,
                     () => throw new UnauthorizedAccessException($"Access to the path {source} is denied")
                 );
