@@ -180,7 +180,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 }
             }
 
-            public (DirectoryNode, FileNode) GetParentDirectoryAndFileNode(string path)
+            public (DirectoryNode, FileNode) GetParentDirectoryAndFileNode(string path, Action onNotAFile)
             {
                 if (TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
                 {
@@ -189,10 +189,12 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     {
                         if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
                         {
-                            throw new FileNotFoundException($"Could not find file '{path}'");
+                            onNotAFile();
                         }
-
-                        return (current, fileNode);
+                        else
+                        {
+                            return (current, fileNode);
+                        }
                     }
                 }
 
@@ -347,7 +349,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Move(string source, string destination)
             {
-                (DirectoryNode sourceParent, FileNode sourceFileNode) = _files.GetParentDirectoryAndFileNode(source);
+                (DirectoryNode sourceParent, FileNode sourceFileNode)
+                    = _files.GetParentDirectoryAndFileNode(
+                        source,
+                        () => throw new FileNotFoundException($"Could not find file '{source}'"));
 
                 sourceParent.Subs.Remove(new PathModel(source).PathArray.Last());
 
@@ -363,7 +368,23 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Copy(string source, string destination)
             {
-                throw new NotImplementedException();
+                (_, FileNode sourceFileNode) = _files.GetParentDirectoryAndFileNode(source,
+                    () => throw new UnauthorizedAccessException($"Access to the path {source} is denied")
+                );
+
+                if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
+                {
+                    if (current.Subs.ContainsKey(new PathModel(destination).PathArray.Last()))
+                    {
+                        throw new IOException($"Path {destination} already exists");
+                    }
+
+                    current.Subs.Add(new PathModel(destination).PathArray.Last(), new FileNode(sourceFileNode.Content));
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {destination}");
+                }
             }
 
             public void Delete(string path)
