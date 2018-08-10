@@ -352,6 +352,48 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
                 .And.Message.Should().Contain("already exists");
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DeleteFile(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string file = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(file);
+
+            fileSystem.File.Delete(file);
+
+            fileSystem.File.Exists(file).Should().BeFalse();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DeleteFileShouldNotThrowWhenFileDoesNotExists(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string file = Path.Combine(directroy, Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.Delete(file);
+
+            a.ShouldNotThrow();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DeleteFileShouldNotThrowWhenDirectoryDoesNotExists(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string file = Path.Combine(directroy, Path.GetRandomFileName(), Path.GetRandomFileName());
+
+            Action a = () => fileSystem.File.Delete(file);
+
+            a.ShouldNotThrow();
+        }
 
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {

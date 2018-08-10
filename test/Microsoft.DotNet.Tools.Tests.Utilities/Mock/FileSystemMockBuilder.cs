@@ -439,7 +439,19 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Delete(string path)
             {
-                throw new NotImplementedException();
+                if (!Exists(path))
+                {
+                    return;
+                }
+
+                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                {
+                    if (current != null)
+                    {
+                        PathModel pathModule = new PathModel(path);
+                        current.Subs.Remove(pathModule.PathArray.Last());
+                    }
+                }
             }
         }
 
