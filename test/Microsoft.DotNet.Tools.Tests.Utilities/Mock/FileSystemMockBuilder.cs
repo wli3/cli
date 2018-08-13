@@ -201,6 +201,34 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 throw new FileNotFoundException($"Could not find file '{path}'");
             }
+
+            public IEnumerable<string> EnumerateDirectory(
+                string path,
+                Func<Dictionary<string, IFileSystemTreeNode>, IEnumerable<string>> predicate)
+            {
+                if (!TryGetLastNodeParent(path, out DirectoryNode current) || current == null)
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
+                }
+
+                PathModel pathModule = new PathModel(path);
+
+                if (!current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
+                }
+
+                if (current.Subs[pathModule.FileOrDirectoryName()] is FileNode)
+                {
+                    throw new IOException("Not a directory");
+                }
+
+                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
+
+                Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
+
+                return predicate(directoryNode.Subs);
+            }
         }
 
         private class PathModel
@@ -500,35 +528,15 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateAllFiles(string path)
             {
-                if (!_files.TryGetLastNodeParent(path, out DirectoryNode current) || current == null)
-                {
-                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
-                }
-
-                PathModel pathModule = new PathModel(path);
-
-                if (!current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
-                {
-                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
-                }
-
-                if (current.Subs[pathModule.FileOrDirectoryName()] is FileNode)
-                {
-                    throw new IOException("Not a directory");
-                }
-
-                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
-
-                Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
-
-                return directoryNode.Subs
-                    .Where(s => s.Value is FileNode).Select(s => Path.Combine(path, s.Key))
-                    .ToArray();
+                return _files.EnumerateDirectory(path,
+                    subs => subs.Where(s => s.Value is FileNode)
+                        .Select(s => Path.Combine(path, s.Key)));
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
-                throw new NotImplementedException();
+                return _files.EnumerateDirectory(path,
+                    subs => subs.Select(s => Path.Combine(path, s.Key)));
             }
 
             public string GetCurrentDirectory()
