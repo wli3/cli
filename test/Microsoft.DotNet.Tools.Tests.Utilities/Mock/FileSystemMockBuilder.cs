@@ -491,7 +491,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 return temporaryDirectoryMock;
             }
 
-            public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
+            public IEnumerable<string> EnumerateAllFiles(string path)
             {
                 throw new NotImplementedException();
             }

@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<string> EnumerateFiles(string path, string searchPattern)
+            public IEnumerable<string> EnumerateAllFiles(string path)
             {
                 throw new NotImplementedException();
             }
