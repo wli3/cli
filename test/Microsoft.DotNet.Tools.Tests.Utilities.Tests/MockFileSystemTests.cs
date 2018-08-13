@@ -395,6 +395,70 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             a.ShouldNotThrow();
         }
 
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void EnumerateAllFilesThrowsWhenDirectoryDoesNotExists(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string nonExistDirectory = Path.Combine(directroy, Path.GetRandomFileName(), Path.GetRandomFileName());
+
+            Action a = () => fileSystem.Directory.EnumerateAllFiles(nonExistDirectory);
+
+            a.ShouldThrow<DirectoryNotFoundException>().And.Message.Should()
+                .Contain("Could not find a part of the path");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void EnumerateAllFilesThrowsWhenPathIsAFile(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string directroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string wrongFilePath = Path.Combine(directroy, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(wrongFilePath);
+
+            Action a = () => fileSystem.Directory.EnumerateAllFiles(wrongFilePath);
+
+            a.ShouldThrow<IOException>().And.Message.Should()
+                .Contain("Not a directory");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenEmptyEnumerateAllFiles(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string emptyDirectory = Path.Combine(tempDirectroy, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(emptyDirectory);
+
+            fileSystem.Directory.EnumerateAllFiles(emptyDirectory).Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenFilesExistEnumerateAllFiles(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectroy = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testDirectory = Path.Combine(tempDirectroy, Path.GetRandomFileName());
+            string file1 = Path.Combine(testDirectory, Path.GetRandomFileName());
+            string file2 = Path.Combine(testDirectory, Path.GetRandomFileName());
+
+            fileSystem.Directory.CreateDirectory(testDirectory);
+            fileSystem.File.CreateEmptyFile(file1);
+            fileSystem.File.CreateEmptyFile(file2);
+
+            fileSystem.Directory.EnumerateAllFiles(testDirectory).Should().Contain(file1);
+            fileSystem.Directory.EnumerateAllFiles(testDirectory).Should().Contain(file2);
+        }
+
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem;

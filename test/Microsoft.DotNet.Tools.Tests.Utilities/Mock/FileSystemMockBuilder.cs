@@ -160,9 +160,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 {
                     if (current != null)
                     {
-                        if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                        if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
                         {
-                            IFileSystemTreeNode possibleConflict = current.Subs[pathModule.PathArray.Last()];
+                            IFileSystemTreeNode possibleConflict = current.Subs[pathModule.FileOrDirectoryName()];
                             if (possibleConflict is DirectoryNode)
                             {
                                 throw new IOException($"{path} is a directory");
@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         }
                         else
                         {
-                            current.Subs[pathModule.PathArray.Last()] = new FileNode(content);
+                            current.Subs[pathModule.FileOrDirectoryName()] = new FileNode(content);
                         }
                     }
                 }
@@ -185,9 +185,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 if (TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
                 {
                     PathModel pathModule = new PathModel(path);
-                    if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                    if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
                     {
-                        if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
+                        if (!(current.Subs[pathModule.FileOrDirectoryName()] is FileNode fileNode))
                         {
                             onNotAFile();
                         }
@@ -256,6 +256,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                        $", {nameof(Volume)}: {Volume}" +
                        $", {nameof(PathArray)}: {string.Join("-", PathArray)}";
             }
+
+            public string FileOrDirectoryName()
+            {
+                return PathArray[PathArray.Length - 1];
+            }
         }
 
         private class FileSystemMock : IFileSystem
@@ -298,8 +303,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     if (current != null)
                     {
                         PathModel pathModule = new PathModel(path);
-                        return current.Subs.ContainsKey(pathModule.PathArray.Last())
-                               && current.Subs[pathModule.PathArray.Last()] is FileNode;
+                        return current.Subs.ContainsKey(pathModule.FileOrDirectoryName())
+                               && current.Subs[pathModule.FileOrDirectoryName()] is FileNode;
                     }
                 }
 
@@ -316,9 +321,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 if (_files.TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
                 {
                     PathModel pathModule = new PathModel(path);
-                    if (current.Subs.ContainsKey(pathModule.PathArray.Last()))
+                    if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
                     {
-                        if (!(current.Subs[pathModule.PathArray.Last()] is FileNode fileNode))
+                        if (!(current.Subs[pathModule.FileOrDirectoryName()] is FileNode fileNode))
                         {
                             throw new UnauthorizedAccessException($"Access to the path '{path}' is denied.");
                         }
@@ -394,11 +399,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         source,
                         () => throw new FileNotFoundException($"Could not find file '{source}'"));
 
-                sourceParent.Subs.Remove(new PathModel(source).PathArray.Last());
+                sourceParent.Subs.Remove(new PathModel(source).FileOrDirectoryName());
 
                 if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
                 {
-                    current.Subs.Add(new PathModel(destination).PathArray.Last(), sourceFileNode);
+                    current.Subs.Add(new PathModel(destination).FileOrDirectoryName(), sourceFileNode);
                 }
                 else
                 {
@@ -424,12 +429,13 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
                 {
-                    if (current.Subs.ContainsKey(new PathModel(destination).PathArray.Last()))
+                    if (current.Subs.ContainsKey(new PathModel(destination).FileOrDirectoryName()))
                     {
                         throw new IOException($"Path {destination} already exists");
                     }
 
-                    current.Subs.Add(new PathModel(destination).PathArray.Last(), new FileNode(sourceFileNode.Content));
+                    current.Subs.Add(new PathModel(destination).FileOrDirectoryName(),
+                        new FileNode(sourceFileNode.Content));
                 }
                 else
                 {
@@ -449,7 +455,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     if (current != null)
                     {
                         PathModel pathModule = new PathModel(path);
-                        current.Subs.Remove(pathModule.PathArray.Last());
+                        current.Subs.Remove(pathModule.FileOrDirectoryName());
                     }
                 }
             }
@@ -476,8 +482,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     {
                         PathModel pathModule = new PathModel(path);
 
-                        return current.Subs.ContainsKey(pathModule.PathArray.Last())
-                               && current.Subs[pathModule.PathArray.Last()] is DirectoryNode;
+                        return current.Subs.ContainsKey(pathModule.FileOrDirectoryName())
+                               && current.Subs[pathModule.FileOrDirectoryName()] is DirectoryNode;
                     }
                 }
 
