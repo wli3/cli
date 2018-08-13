@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -499,7 +500,30 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateAllFiles(string path)
             {
-                throw new NotImplementedException();
+                if (!_files.TryGetLastNodeParent(path, out DirectoryNode current) || current == null)
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
+                }
+
+                PathModel pathModule = new PathModel(path);
+
+                if (!current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
+                }
+
+                if (current.Subs[pathModule.FileOrDirectoryName()] is FileNode)
+                {
+                    throw new IOException("Not a directory");
+                }
+
+                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
+
+                Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
+
+                return directoryNode.Subs
+                    .Where(s => s.Value is FileNode).Select(s => Path.Combine(path, s.Key))
+                    .ToArray();
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
