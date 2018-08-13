@@ -29,11 +29,6 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             return Directory.EnumerateFileSystemEntries(path);
         }
 
-        public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-        {
-            return Directory.EnumerateFileSystemEntries(path, searchPattern);
-        }
-
         public string GetCurrentDirectory()
         {
             return Directory.GetCurrentDirectory();

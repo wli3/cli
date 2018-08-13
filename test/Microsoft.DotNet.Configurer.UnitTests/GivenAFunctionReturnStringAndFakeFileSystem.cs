@@ -159,11 +159,6 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 throw new UnauthorizedAccessException();
             }
 
-            public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-            {
-                throw new UnauthorizedAccessException();
-            }
-
             public string GetCurrentDirectory()
             {
                 throw new NotImplementedException();

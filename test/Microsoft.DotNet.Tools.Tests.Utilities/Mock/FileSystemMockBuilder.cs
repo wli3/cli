@@ -501,11 +501,6 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern)
-            {
-                throw new NotImplementedException();
-            }
-
             public string GetCurrentDirectory()
             {
                 return _files.WorkingDirectory;

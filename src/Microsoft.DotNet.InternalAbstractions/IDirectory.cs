@@ -15,8 +15,6 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
 
         IEnumerable<string> EnumerateFileSystemEntries(string path);
 
-        IEnumerable<string> EnumerateFileSystemEntries(string path, string searchPattern);
-
         string GetCurrentDirectory();
 
         void CreateDirectory(string path);
