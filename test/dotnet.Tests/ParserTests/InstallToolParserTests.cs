@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-cache");
 
             var appliedOptions = result["dotnet"]["tool"]["install"];
-            appliedOptions.ValueOrDefault<bool>("no-cache").Should().Be(true);
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--no-cache");
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --ignore-failed-sources");
 
             var appliedOptions = result["dotnet"]["tool"]["install"];
-            appliedOptions.ValueOrDefault<bool>("ignore-failed-sources").Should().Be(true);
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--ignore-failed-sources");
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --disable-parallel");
 
             var appliedOptions = result["dotnet"]["tool"]["install"];
-            appliedOptions.ValueOrDefault<bool>("disable-parallel").Should().Be(true);
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
     }
 }
