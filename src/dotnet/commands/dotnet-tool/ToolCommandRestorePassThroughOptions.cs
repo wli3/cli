@@ -17,16 +17,6 @@ namespace Microsoft.DotNet.Cli
                 Accept.NoArguments().ForwardAs("--disable-parallel"));
         }
 
-        public static Option ConfigfileOption()
-        {
-            return Create.Option(
-                "--configfile",
-                LocalizableStrings.CmdConfigFileOptionDescription,
-                Accept.ExactlyOneArgument()
-                    .With(name: LocalizableStrings.CmdConfigFileOption)
-                    .ForwardAsSingle(o => $"--configfile {o.Arguments.Single()}"));
-        }
-
         public static Option NoCacheOption()
         {
             return Create.Option(
