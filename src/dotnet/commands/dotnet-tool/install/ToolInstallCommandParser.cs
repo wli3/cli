@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Linq;
 using Microsoft.DotNet.Cli.CommandLine;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
@@ -31,6 +30,11 @@ namespace Microsoft.DotNet.Cli
                     Accept.ExactlyOneArgument()
                           .With(name: LocalizableStrings.VersionOptionName)),
                 Create.Option(
+                    "--configfile",
+                    LocalizableStrings.ConfigFileOptionDescription,
+                    Accept.ExactlyOneArgument()
+                        .With(name: LocalizableStrings.ConfigFileOptionName)),
+                Create.Option(
                     "--add-source",
                     LocalizableStrings.AddSourceOptionDescription,
                     Accept.OneOrMoreArguments()
@@ -40,11 +44,6 @@ namespace Microsoft.DotNet.Cli
                     LocalizableStrings.FrameworkOptionDescription,
                     Accept.ExactlyOneArgument()
                           .With(name: LocalizableStrings.FrameworkOptionName)),
-                Create.Option(
-                    "--configfile",
-                    LocalizableStrings.CmdConfigFileOptionDescription,
-                    Accept.ExactlyOneArgument()
-                        .With(name: LocalizableStrings.CmdConfigFileOption)),
                 ToolCommandRestorePassThroughOptions.DisableParallelOption(),
                 ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption(),
                 ToolCommandRestorePassThroughOptions.NoCacheOption(),
