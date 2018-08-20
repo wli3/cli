@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Transactions;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
@@ -39,9 +35,10 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             IReadOnlyList<CommandSettings> commands = installer.InstallPackageToNuGetCache(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                nugetConfig: nugetConfigPath, 
+                nugetConfig: nugetConfigPath,
                 targetFramework: _testTargetframework);
 
+            commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
             fileSystem.File.Exists(commands[0].Executable.Value).Should().BeTrue($"{commands[0].Executable.Value} should exist");
         }
 
