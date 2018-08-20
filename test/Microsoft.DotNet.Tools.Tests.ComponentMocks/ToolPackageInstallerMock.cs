@@ -9,6 +9,7 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -121,7 +122,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             string verbosity = null)
         {
-            var packageDirectory = new DirectoryPath("anypath").WithSubDirectories(packageId.ToString());
+            var packageDirectory = new DirectoryPath(NuGetCache.GetLocation()).WithSubDirectories(packageId.ToString());
             _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
             var executable = packageDirectory.WithFile("exe");
             _fileSystem.File.CreateEmptyFile(executable.Value);
