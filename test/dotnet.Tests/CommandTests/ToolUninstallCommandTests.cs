@@ -20,8 +20,6 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
-using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Microsoft.DotNet.ShellShim;
 
 namespace Microsoft.DotNet.Tests.Commands
@@ -224,8 +222,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 result,
                 (_) => new ToolPackageStoreMock(
                     new DirectoryPath(_toolsDirectory),
-                    _fileSystem,
-                    uninstallCallback),
+                    _fileSystem),
                 (_) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     fileSystem: _fileSystem,
