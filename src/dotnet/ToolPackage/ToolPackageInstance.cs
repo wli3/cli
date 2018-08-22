@@ -44,18 +44,14 @@ namespace Microsoft.DotNet.ToolPackage
         private const string AssetsFileName = "project.assets.json";
         private const string ToolSettingsFileName = "DotnetToolSettings.xml";
 
-        private IToolPackageStoreQuery _store;
         private Lazy<IReadOnlyList<CommandSettings>> _commands;
         private Lazy<ToolConfiguration> _toolConfiguration;
         private Lazy<IReadOnlyList<FilePath>> _packagedShims;
 
-        public ToolPackageInstance(
-            IToolPackageStoreQuery store,
-            PackageId id,
+        public ToolPackageInstance(PackageId id,
             NuGetVersion version,
             DirectoryPath packageDirectory)
         {
-            _store = store ?? throw new ArgumentNullException(nameof(store));
             _commands = new Lazy<IReadOnlyList<CommandSettings>>(GetCommands);
             _packagedShims = new Lazy<IReadOnlyList<FilePath>>(GetPackagedShims);
 

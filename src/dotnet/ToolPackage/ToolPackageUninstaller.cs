@@ -43,7 +43,7 @@ internal class ToolPackageUninstaller : IToolPackageUninstaller
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
-                    throw new ToolPackageException(ex.Message);
+                    throw new ToolPackageException(ex.Message, ex);
                 }
             },
             commit: () =>
