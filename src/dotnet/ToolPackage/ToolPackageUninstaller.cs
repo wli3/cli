@@ -6,12 +6,16 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-internal static class ToolPackageUninstaller
+internal class ToolPackageUninstaller : IToolPackageUninstaller
 {
-    public static void Uninstall(
-        DirectoryPath packageDirectory,
-        IToolPackageStoreQuery toolPackageStore,
-        PackageId packageId)
+    private readonly IToolPackageStoreQuery _toolPackageStoreQuery;
+
+    public ToolPackageUninstaller(IToolPackageStoreQuery toolPackageStoreQuery)
+    {
+        _toolPackageStoreQuery = toolPackageStoreQuery ?? throw new ArgumentException(nameof(toolPackageStoreQuery));
+    }
+
+    public void Uninstall(DirectoryPath packageDirectory)
     {
         var rootDirectory = packageDirectory.GetParentPath();
         string tempPackageDirectory = null;
@@ -25,8 +29,9 @@ internal static class ToolPackageUninstaller
                     {
                         // Use the staging directory for uninstall
                         // This prevents cross-device moves when temp is mounted to a different device
-                        var tempPath = toolPackageStore.GetRandomStagingDirectory().Value;
-                        FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(packageDirectory.Value, tempPath));
+                        var tempPath = _toolPackageStoreQuery.GetRandomStagingDirectory().Value;
+                        FileAccessRetrier.RetryOnMoveAccessFailure(() =>
+                            Directory.Move(packageDirectory.Value, tempPath));
                         tempPackageDirectory = tempPath;
                     }
 
@@ -38,12 +43,7 @@ internal static class ToolPackageUninstaller
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
-                    throw new ToolPackageException(
-                        String.Format(
-                            CommonLocalizableStrings.FailedToUninstallToolPackage,
-                            packageId,
-                            ex.Message),
-                        ex);
+                    throw new ToolPackageUninstallException(ex.Message);
                 }
             },
             commit: () =>
@@ -58,11 +58,12 @@ internal static class ToolPackageUninstaller
                 if (tempPackageDirectory != null)
                 {
                     Directory.CreateDirectory(rootDirectory.Value);
-                    FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(tempPackageDirectory, packageDirectory.Value));
+                    FileAccessRetrier.RetryOnMoveAccessFailure(() =>
+                        Directory.Move(tempPackageDirectory, packageDirectory.Value));
                 }
             });
     }
-    
+
     internal class ToolPackageUninstallException : Exception
     {
         public ToolPackageUninstallException(string message) : base(message)
