@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                         shellShimRepository.RemoveShim(command.Name);
                     }
 
-                    oldPackage.Uninstall();
+                    oldPackage.Uninstall(oldPackage.PackageDirectory, oldPackage._store, oldPackage.Id);
                 });
 
                 RunWithHandlingInstallError(() =>

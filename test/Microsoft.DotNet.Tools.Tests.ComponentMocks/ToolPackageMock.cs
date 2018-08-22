@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             }
         }
 
-        public void Uninstall()
+        public void Uninstall(DirectoryPath packageDirectory, IToolPackageStore toolPackageStore, PackageId packageId)
         {
             var rootDirectory = PackageDirectory.GetParentPath();
             string tempPackageDirectory = null;

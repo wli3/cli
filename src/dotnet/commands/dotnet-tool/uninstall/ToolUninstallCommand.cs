@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
                         shellShimRepository.RemoveShim(command.Name);
                     }
 
-                    package.Uninstall();
+                    package.Uninstall(package.PackageDirectory, package._store, package.Id);
 
                     scope.Complete();
                 }

@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             package.PackagedShims.Should().ContainSingle(f => f.Value.Contains("demo.exe") || f.Value.Contains("demo"));
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         private static FilePath GetUniqueTempProjectPathEachTest()

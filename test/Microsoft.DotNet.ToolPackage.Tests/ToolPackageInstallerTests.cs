@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             fileSystem.File.Exists(assetJsonPath).Should().BeTrue();
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -270,7 +270,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -315,7 +315,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -458,7 +458,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .Should()
                 .BeTrue();
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
 
             fileSystem
                 .Directory
@@ -485,7 +485,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
 
             store.EnumeratePackages().Should().BeEmpty();
         }
@@ -513,7 +513,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                package.Uninstall();
+                package.Uninstall(package.PackageDirectory, package._store, package.Id);
 
                 store.EnumeratePackages().Should().BeEmpty();
             }
@@ -546,7 +546,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                package.Uninstall();
+                package.Uninstall(package.PackageDirectory, package._store, package.Id);
                 scope.Complete();
             }
 
@@ -570,7 +570,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Fact]
@@ -595,7 +595,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Fact]
@@ -623,7 +623,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         [Theory]
@@ -648,7 +648,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             AssertPackageInstall(reporter, fileSystem, package, store);
 
-            package.Uninstall();
+            package.Uninstall(package.PackageDirectory, package._store, package.Id);
         }
 
         private static void AssertPackageInstall(
