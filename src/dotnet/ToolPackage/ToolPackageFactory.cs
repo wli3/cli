@@ -20,6 +20,16 @@ namespace Microsoft.DotNet.ToolPackage
 
             return (toolPackageStore, toolPackageInstaller);
         }
+        
+        public static (IToolPackageStore, IToolPackageUninstaller) CreateToolPackageStoreAndUninstaller(
+            DirectoryPath? nonGlobalLocation = null)
+        {
+            IToolPackageStore toolPackageStore = CreateToolPackageStore(nonGlobalLocation);
+            var toolPackageUninstaller = new ToolPackageUninstaller(
+                toolPackageStore);
+
+            return (toolPackageStore, toolPackageUninstaller);
+        }
 
         public static IToolPackageStore CreateToolPackageStore(
             DirectoryPath? nonGlobalLocation = null)

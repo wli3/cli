@@ -43,7 +43,7 @@ internal class ToolPackageUninstaller : IToolPackageUninstaller
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
-                    throw new ToolPackageUninstallException(ex.Message);
+                    throw new ToolPackageException(ex.Message);
                 }
             },
             commit: () =>
@@ -62,12 +62,5 @@ internal class ToolPackageUninstaller : IToolPackageUninstaller
                         Directory.Move(tempPackageDirectory, packageDirectory.Value));
                 }
             });
-    }
-
-    internal class ToolPackageUninstallException : Exception
-    {
-        public ToolPackageUninstallException(string message) : base(message)
-        {
-        }
     }
 }
