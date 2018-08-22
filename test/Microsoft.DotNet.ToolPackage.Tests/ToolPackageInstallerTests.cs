@@ -20,6 +20,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.TemplateEngine.Cli;
 using NuGet.Versioning;
 using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
