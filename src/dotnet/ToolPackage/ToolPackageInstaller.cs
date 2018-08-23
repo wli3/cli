@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolPackage
@@ -112,10 +113,47 @@ namespace Microsoft.DotNet.ToolPackage
                 });
         }
 
+        public IReadOnlyList<CommandSettings> InstallPackageToNuGetCache(PackageLocation packageLocation, PackageId packageId,
+            VersionRange versionRange = null,
+            string targetFramework = null,
+            string verbosity = null)
+        {
+            var stageDirectory = _store.GetRandomStagingDirectory();
+            Directory.CreateDirectory(stageDirectory.Value);
+
+            var tempProject = CreateTempProject(
+                packageId: packageId,
+                versionRange: versionRange,
+                targetFramework: targetFramework ?? BundledTargetFramework.GetTargetFrameworkMoniker(),
+                assetJsonOutputDirectory: stageDirectory,
+                restoreDirectory: null,
+                rootConfigDirectory: packageLocation.RootConfigDirectory,
+                additionalFeeds: packageLocation.AdditionalFeeds);
+
+            try
+            {
+                _projectRestorer.Restore(
+                    tempProject,
+                    packageLocation,
+                    verbosity: verbosity);
+            }
+            finally
+            {
+                File.Delete(tempProject.Value);
+            }
+
+            const string AssetsFileName = "project.assets.json";
+            var lockFile = new LockFileFormat().Read(stageDirectory.WithFile(AssetsFileName).Value);
+            var packageDirectory =
+                        new DirectoryPath(lockFile.PackageFolders[0].Path);
+
+            return new ToolPackageInstance(packageId, version, packageDirectory);
+        }
+
         private FilePath CreateTempProject(PackageId packageId,
             VersionRange versionRange,
             string targetFramework,
-            DirectoryPath restoreDirectory,
+            DirectoryPath? restoreDirectory,
             DirectoryPath assetJsonOutputDirectory,
             DirectoryPath? rootConfigDirectory,
             string[] additionalFeeds)
@@ -141,7 +179,7 @@ namespace Microsoft.DotNet.ToolPackage
                         new XAttribute("Sdk", "Microsoft.NET.Sdk")),
                     new XElement("PropertyGroup",
                         new XElement("TargetFramework", targetFramework),
-                        new XElement("RestorePackagesPath", restoreDirectory.Value),
+                        restoreDirectory.HasValue ? new XElement("RestorePackagesPath", restoreDirectory.Value.Value) : null,
                         new XElement("RestoreProjectStyle", "DotnetToolReference"), // without it, project cannot reference tool package
                         new XElement("RestoreRootConfigDirectory", rootConfigDirectory?.Value ?? Directory.GetCurrentDirectory()), // config file probing start directory
                         new XElement("DisableImplicitFrameworkReferences", "true"), // no Microsoft.NETCore.App in tool folder

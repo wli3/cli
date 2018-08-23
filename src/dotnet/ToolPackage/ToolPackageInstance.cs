@@ -15,6 +15,14 @@ namespace Microsoft.DotNet.ToolPackage
     // This is named "ToolPackageInstance" because "ToolPackage" would conflict with the namespace
     internal class ToolPackageInstance : IToolPackage
     {
+        public static ToolPackageInstance CreateFromAssetFile(PackageId id, DirectoryPath assetJsonOutputDirectory)
+        {
+            var lockFile = new LockFileFormat().Read(assetJsonOutputDirectory.WithFile(AssetsFileName).Value);
+            var packageDirectory = new DirectoryPath(lockFile.PackageFolders[0].Path);
+            var library = FindLibraryInLockFile(lockFile, id);
+            var version = library.Version;
+            return new ToolPackageInstance(id, version, packageDirectory);
+        }
         private const string PackagedShimsDirectoryConvention = "shims";
 
         public IEnumerable<string> Warnings => _toolConfiguration.Value.Warnings;
@@ -194,12 +202,17 @@ namespace Microsoft.DotNet.ToolPackage
             return configuration;
         }
 
-        private LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile)
+        private static LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile, PackageId id)
         {
             return lockFile
                 ?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier != null)
                 ?.Libraries?.SingleOrDefault(l =>
-                    string.Compare(l.Name, Id.ToString(), StringComparison.CurrentCultureIgnoreCase) == 0);
+                    string.Compare(l.Name, id.ToString(), StringComparison.CurrentCultureIgnoreCase) == 0);
+        }
+
+        private LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile)
+        {
+            return FindLibraryInLockFile(lockFile, Id);
         }
 
         private static LockFileItem FindItemInTargetLibrary(LockFileTargetLibrary library, string targetRelativeFilePath)
