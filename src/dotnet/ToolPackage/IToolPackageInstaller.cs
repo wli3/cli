@@ -10,12 +10,12 @@ namespace Microsoft.DotNet.ToolPackage
 {
     internal interface IToolPackageInstaller
     {
-        IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        IToolPackage InstallPackage(PackageSourceLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null);
 
-        IToolPackage InstallPackageToNuGetCache(PackageLocation packageLocation, PackageId packageId,
+        IToolPackage InstallPackageToExternalManagedLocation(PackageSourceLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null);

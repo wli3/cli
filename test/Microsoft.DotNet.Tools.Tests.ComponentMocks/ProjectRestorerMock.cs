@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public void Restore(FilePath project,
-            PackageLocation packageLocation,
+            PackageSourceLocation packageLocation,
             string verbosity = null)
         {
             string packageId;

@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         public IToolPackage InstallPackage(
-            PackageLocation packageLocation,
+            PackageSourceLocation packageLocation,
             PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.ToolPackage
                 });
         }
 
-        public IToolPackage InstallPackageToNuGetCache(PackageLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackageToExternalManagedLocation(PackageSourceLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null)
