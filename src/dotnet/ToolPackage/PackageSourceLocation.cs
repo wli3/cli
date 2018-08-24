@@ -4,11 +4,11 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ToolPackage
 {
-    internal class PackageLocation
+    internal class PackageSourceLocation
     {
-        public PackageLocation(
+        public PackageSourceLocation(
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null, 
+            DirectoryPath? rootConfigDirectory = null,
             string[] additionalFeeds = null)
         {
             NugetConfig = nugetConfig;

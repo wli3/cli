@@ -16,7 +16,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
-    public class ToolPackageNugetCacheInstaller : TestBase
+    public class ToolPackageInstallToManagedLocationInstaller : TestBase
     {
         [Theory]
         [InlineData(false)]
@@ -32,10 +32,10 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             var nugetCacheLocation =
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
-            IToolPackage toolPackage = installer.InstallPackageToNuGetCache(
+            IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                packageLocation : new PackageLocation(nugetConfig: nugetConfigPath),
+                packageLocation : new PackageSourceLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
             var commands = toolPackage.Commands;
