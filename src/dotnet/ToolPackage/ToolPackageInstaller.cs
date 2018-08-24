@@ -113,7 +113,8 @@ namespace Microsoft.DotNet.ToolPackage
                 });
         }
 
-        public IToolPackage InstallPackageToExternalManagedLocation(PackageSourceLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackageToExternalManagedLocation(PackageSourceLocation packageLocation,
+            PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null)
@@ -148,7 +149,6 @@ namespace Microsoft.DotNet.ToolPackage
             }
 
             return ToolPackageInstance.CreateFromAssetFile(packageId, tempDirectoryForAssetJson);
-
         }
 
         private FilePath CreateTempProject(PackageId packageId,

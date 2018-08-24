@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             string verbosity = null)
         {
-            var packageDirectory = new DirectoryPath(NuGetCache.GetLocation()).WithSubDirectories(packageId.ToString());
+            var packageDirectory = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation()).WithSubDirectories(packageId.ToString());
             _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
             var executable = packageDirectory.WithFile("exe");
             _fileSystem.File.CreateEmptyFile(executable.Value);

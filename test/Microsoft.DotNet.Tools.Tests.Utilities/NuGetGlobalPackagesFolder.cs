@@ -6,7 +6,7 @@ using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {
-    public static class NuGetCache
+    public static class NuGetGlobalPackagesFolder
     {
         public static string GetLocation()
         {

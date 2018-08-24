@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 targetFramework: _testTargetframework);
 
             var commands = toolPackage.Commands;
-            commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
+            commands[0].Executable.Value.Should().StartWith(NuGetGlobalPackagesFolder.GetLocation());
 
             fileSystem.File
                 .Exists(commands[0].Executable.Value)
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 targetFramework: _testTargetframework);
 
             var commands = toolPackage.Commands;
-            commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
+            commands[0].Executable.Value.Should().StartWith(NuGetGlobalPackagesFolder.GetLocation());
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
         }
 
