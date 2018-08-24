@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         }
 
         public void Restore(FilePath project,
-            PackageSourceLocation packageLocation,
+            PackageLocation packageLocation,
             string verbosity = null)
         {
             var argsToPassToRestore = new List<string>();

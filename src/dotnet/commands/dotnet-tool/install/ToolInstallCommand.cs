@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     TimeSpan.Zero))
                 {
                     package = toolPackageInstaller.InstallPackage(
-                        new PackageSourceLocation(nugetConfig: configFile, additionalFeeds: _source),
+                        new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
                         versionRange: versionRange,
                         targetFramework: _framework, verbosity: _verbosity);

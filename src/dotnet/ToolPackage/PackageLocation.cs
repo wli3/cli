@@ -4,9 +4,9 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ToolPackage
 {
-    internal class PackageSourceLocation
+    internal class PackageLocation
     {
-        public PackageSourceLocation(
+        public PackageLocation(
             FilePath? nugetConfig = null,
             DirectoryPath? rootConfigDirectory = null,
             string[] additionalFeeds = null)

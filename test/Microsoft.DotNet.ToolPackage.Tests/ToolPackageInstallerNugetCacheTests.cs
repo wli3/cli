@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                packageLocation : new PackageSourceLocation(nugetConfig: nugetConfigPath),
+                packageLocation : new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
             var commands = toolPackage.Commands;
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse("1.0.0-*"),
-                packageLocation: new PackageSourceLocation(nugetConfig: nugetConfigPath),
+                packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
             var commands = toolPackage.Commands;
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             else
             {
                 fileSystem = new FileSystemWrapper();
-                store = new ToolPackageStore(root);
+                store = new ToolPackageStoreAndQuery(root);
                 installer = new ToolPackageInstaller(
                     store: store,
                     projectRestorer: new ProjectRestorer(reporter),

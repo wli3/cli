@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             _packagedShimsMap = packagedShimsMap ?? new Dictionary<PackageId, IReadOnlyList<FilePath>>();
         }
 
-        public IToolPackage InstallPackage(PackageSourceLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null)
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public IToolPackage InstallPackageToExternalManagedLocation(
-            PackageSourceLocation packageLocation,
+            PackageLocation packageLocation,
             PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
