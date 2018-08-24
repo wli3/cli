@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 offlineFeed: new DirectoryPath(GetTestLocalFeedPath()),
                 feeds: GetOfflineMockFeed());
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {emptySource}),
+            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -241,7 +241,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source));
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -285,7 +285,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 feeds: GetMockFeedsForSource(source));
 
             var package = installer.InstallPackage(
-                new PackageLocation(additionalFeeds: new[] {new Uri(source).AbsoluteUri}), packageId: TestPackageId,
+                new PackageLocation(additionalFeeds: new[] { new Uri(source).AbsoluteUri }), packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
 
@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 feeds: GetMockFeedsForSource(emptySource));
 
             var package = installer.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
-                    additionalFeeds: new[] {emptySource}),
+                    additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -362,7 +362,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+                    installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
@@ -394,14 +394,14 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    Action first = () => installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+                    Action first = () => installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
 
                     first.ShouldNotThrow();
 
-                    installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+                    installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
@@ -431,14 +431,14 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source));
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
-            Action secondCall = () => installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+            Action secondCall = () => installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -478,7 +478,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source));
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 feeds: GetMockFeedsForSource(source));
 
             var package = installer.InstallPackage(
-                new PackageLocation(additionalFeeds: new[] {source}),
+                new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -535,7 +535,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source));
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] {source}),
+            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
@@ -641,7 +641,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 feeds: GetMockFeedsForSource(emptySource));
 
             var package = installer.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
-                    additionalFeeds: new[] {emptySource}),
+                    additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse("1.0.0-rc*"),
                 targetFramework: _testTargetframework);
