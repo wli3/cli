@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.ToolPackage
                 });
         }
 
-        public IReadOnlyList<CommandSettings> InstallPackageToNuGetCache(PackageLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackageToNuGetCache(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null)
@@ -142,12 +142,8 @@ namespace Microsoft.DotNet.ToolPackage
                 File.Delete(tempProject.Value);
             }
 
-            const string AssetsFileName = "project.assets.json";
-            var lockFile = new LockFileFormat().Read(stageDirectory.WithFile(AssetsFileName).Value);
-            var packageDirectory =
-                        new DirectoryPath(lockFile.PackageFolders[0].Path);
+            return ToolPackageInstance.CreateFromAssetFile(packageId, stageDirectory);
 
-            return new ToolPackageInstance(packageId, version, packageDirectory);
         }
 
         private FilePath CreateTempProject(PackageId packageId,

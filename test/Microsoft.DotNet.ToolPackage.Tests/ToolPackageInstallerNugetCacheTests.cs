@@ -32,12 +32,13 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             var nugetCacheLocation =
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
-            IReadOnlyList<CommandSettings> commands = installer.InstallPackageToNuGetCache(
+            IToolPackage toolPackage = installer.InstallPackageToNuGetCache(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                nugetConfig: nugetConfigPath,
+                packageLocation : new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
+            var commands = toolPackage.Commands;
             commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
             fileSystem.File.Exists(commands[0].Executable.Value).Should().BeTrue($"{commands[0].Executable.Value} should exist");
         }
