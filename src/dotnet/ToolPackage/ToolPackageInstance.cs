@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.ToolPackage
     // This is named "ToolPackageInstance" because "ToolPackage" would conflict with the namespace
     internal class ToolPackageInstance : IToolPackage
     {
-        public static ToolPackageInstance CreateFromAssetFile(PackageId id, DirectoryPath assetJsonOutputDirectory)
+        public static ToolPackageInstance CreateFromAssetFile(PackageId id, DirectoryPath assetJsonsOutputDirectory)
         {
-            var lockFile = new LockFileFormat().Read(assetJsonOutputDirectory.WithFile(AssetsFileName).Value);
+            var lockFile = new LockFileFormat().Read(assetJsonsOutputDirectory.WithFile(AssetsFileName).Value);
             var packageDirectory = new DirectoryPath(lockFile.PackageFolders[0].Path);
             var library = FindLibraryInLockFile(lockFile, id);
             var version = library.Version;
@@ -54,11 +54,13 @@ namespace Microsoft.DotNet.ToolPackage
 
         private Lazy<IReadOnlyList<CommandSettings>> _commands;
         private Lazy<ToolConfiguration> _toolConfiguration;
+        private Lazy<LockFile> _lockFile;
         private Lazy<IReadOnlyList<FilePath>> _packagedShims;
 
         public ToolPackageInstance(PackageId id,
             NuGetVersion version,
-            DirectoryPath packageDirectory)
+            DirectoryPath packageDirectory,
+            DirectoryPath assetsJsonParentDirectory)
         {
             _commands = new Lazy<IReadOnlyList<CommandSettings>>(GetCommands);
             _packagedShims = new Lazy<IReadOnlyList<FilePath>>(GetPackagedShims);
@@ -67,6 +69,8 @@ namespace Microsoft.DotNet.ToolPackage
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageDirectory = packageDirectory;
             _toolConfiguration = new Lazy<ToolConfiguration>(GetToolConfiguration);
+            _lockFile = new Lazy<LockFile>(
+                () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
         }
 
         private IReadOnlyList<CommandSettings> GetCommands()
@@ -74,8 +78,7 @@ namespace Microsoft.DotNet.ToolPackage
             try
             {
                 var commands = new List<CommandSettings>();
-                LockFile lockFile = new LockFileFormat().Read(PackageDirectory.WithFile(AssetsFileName).Value);
-                LockFileTargetLibrary library = FindLibraryInLockFile(lockFile);
+                LockFileTargetLibrary library = FindLibraryInLockFile(_lockFile.Value);
 
                 ToolConfiguration configuration = _toolConfiguration.Value;
                 LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, configuration.ToolAssemblyEntryPoint);

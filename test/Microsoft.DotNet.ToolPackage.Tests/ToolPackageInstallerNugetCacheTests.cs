@@ -40,7 +40,17 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             var commands = toolPackage.Commands;
             commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
-            fileSystem.File.Exists(commands[0].Executable.Value).Should().BeTrue($"{commands[0].Executable.Value} should exist");
+
+            fileSystem.File
+                .Exists(commands[0].Executable.Value)
+                .Should().BeTrue($"{commands[0].Executable.Value} should exist");
+        }
+
+        [Theory(Skip ="pending")]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
+        {
         }
 
         private static FilePath GetUniqueTempProjectPathEachTest()

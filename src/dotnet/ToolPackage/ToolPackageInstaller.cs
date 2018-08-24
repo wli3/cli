@@ -121,11 +121,16 @@ namespace Microsoft.DotNet.ToolPackage
             var stageDirectory = _store.GetRandomStagingDirectory();
             Directory.CreateDirectory(stageDirectory.Value);
 
+            var tempDirectoryForAssetJson = new DirectoryPath(Path.GetTempPath())
+                .WithSubDirectories(Path.GetRandomFileName());
+
+            Directory.CreateDirectory(tempDirectoryForAssetJson.Value);
+
             var tempProject = CreateTempProject(
                 packageId: packageId,
                 versionRange: versionRange,
                 targetFramework: targetFramework ?? BundledTargetFramework.GetTargetFrameworkMoniker(),
-                assetJsonOutputDirectory: stageDirectory,
+                assetJsonOutputDirectory: tempDirectoryForAssetJson,
                 restoreDirectory: null,
                 rootConfigDirectory: packageLocation.RootConfigDirectory,
                 additionalFeeds: packageLocation.AdditionalFeeds);
