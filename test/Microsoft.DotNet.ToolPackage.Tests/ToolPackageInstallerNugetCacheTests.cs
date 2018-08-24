@@ -46,11 +46,29 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .Should().BeTrue($"{commands[0].Executable.Value} should exist");
         }
 
-        [Theory(Skip ="pending")]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed();
+
+            var (store, installer, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                feeds: GetMockFeedsForConfigFile(nugetConfigPath));
+
+            var nugetCacheLocation =
+                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
+
+            IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
+                packageId: TestPackageId,
+                versionRange: VersionRange.Parse("1.0.0-*"),
+                packageLocation: new PackageSourceLocation(nugetConfig: nugetConfigPath),
+                targetFramework: _testTargetframework);
+
+            var commands = toolPackage.Commands;
+            commands[0].Executable.Value.Should().StartWith(NuGetCache.GetLocation());
+            toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
         }
 
         private static FilePath GetUniqueTempProjectPathEachTest()
