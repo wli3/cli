@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.ToolPackage
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(stageDirectory.Value, packageDirectory.Value));
                         rollbackDirectory = packageDirectory.Value;
 
-                        return new ToolPackageInstance(packageId, version, packageDirectory);
+                        return new ToolPackageInstance(packageId, version, packageDirectory, packageDirectory);
                     }
                     catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                     {
@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.ToolPackage
                 File.Delete(tempProject.Value);
             }
 
-            return ToolPackageInstance.CreateFromAssetFile(packageId, stageDirectory);
+            return ToolPackageInstance.CreateFromAssetFile(packageId, tempDirectoryForAssetJson);
 
         }
 

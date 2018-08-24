@@ -21,7 +21,8 @@ namespace Microsoft.DotNet.ToolPackage
             var packageDirectory = new DirectoryPath(lockFile.PackageFolders[0].Path);
             var library = FindLibraryInLockFile(lockFile, id);
             var version = library.Version;
-            return new ToolPackageInstance(id, version, packageDirectory);
+
+            return new ToolPackageInstance(id, version, packageDirectory, assetJsonsOutputDirectory);
         }
         private const string PackagedShimsDirectoryConvention = "shims";
 
@@ -69,8 +70,9 @@ namespace Microsoft.DotNet.ToolPackage
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageDirectory = packageDirectory;
             _toolConfiguration = new Lazy<ToolConfiguration>(GetToolConfiguration);
-            _lockFile = new Lazy<LockFile>(
-                () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
+            _lockFile =
+                new Lazy<LockFile>(
+                    () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
         }
 
         private IReadOnlyList<CommandSettings> GetCommands()
@@ -79,7 +81,6 @@ namespace Microsoft.DotNet.ToolPackage
             {
                 var commands = new List<CommandSettings>();
                 LockFileTargetLibrary library = FindLibraryInLockFile(_lockFile.Value);
-
                 ToolConfiguration configuration = _toolConfiguration.Value;
                 LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, configuration.ToolAssemblyEntryPoint);
                 if (entryPointFromLockFile == null)
@@ -122,8 +123,7 @@ namespace Microsoft.DotNet.ToolPackage
         {
             try
             {
-                var lockFile = new LockFileFormat().Read(PackageDirectory.WithFile(AssetsFileName).Value);
-                var library = FindLibraryInLockFile(lockFile);
+                var library = FindLibraryInLockFile(_lockFile.Value);
                 return DeserializeToolConfiguration(ToolSettingsFileName, library);
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
@@ -141,8 +141,7 @@ namespace Microsoft.DotNet.ToolPackage
             LockFileTargetLibrary library;
             try
             {
-                LockFile lockFile = new LockFileFormat().Read(PackageDirectory.WithFile(AssetsFileName).Value);
-                library = FindLibraryInLockFile(lockFile);
+                library = FindLibraryInLockFile(_lockFile.Value);
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
             {

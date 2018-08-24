@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.ToolPackage
             {
                 yield return new ToolPackageInstance(packageId,
                     NuGetVersion.Parse(Path.GetFileName(subdirectory)),
-                    new DirectoryPath(subdirectory));
+                    new DirectoryPath(subdirectory), new DirectoryPath(subdirectory));
             }
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.ToolPackage
             {
                 return null;
             }
-            return new ToolPackageInstance(packageId, version, directory);
+            return new ToolPackageInstance(packageId, version, directory, directory);
         }
     }
 }
