@@ -265,23 +265,23 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     StringSplitOptions.RemoveEmptyEntries);
                 Volume = volume;
                 PathArray = pathArray;
-                IsRootded = isRooted;
+                IsRooted = isRooted;
             }
 
-            public PathModel(bool isRootded, string volume, string[] pathArray)
+            public PathModel(bool isRooted, string volume, string[] pathArray)
             {
-                IsRootded = isRootded;
+                IsRooted = isRooted;
                 Volume = volume ?? throw new ArgumentNullException(nameof(volume));
                 PathArray = pathArray ?? throw new ArgumentNullException(nameof(pathArray));
             }
 
-            public bool IsRootded { get; }
+            public bool IsRooted { get; }
             public string Volume { get; }
             public string[] PathArray { get; }
 
             public override string ToString()
             {
-                return $"{nameof(IsRootded)}: {IsRootded}" +
+                return $"{nameof(IsRooted)}: {IsRooted}" +
                        $", {nameof(Volume)}: {Volume}" +
                        $", {nameof(PathArray)}: {string.Join("-", PathArray)}";
             }
