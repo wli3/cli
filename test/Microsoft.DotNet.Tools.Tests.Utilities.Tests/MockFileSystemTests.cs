@@ -547,7 +547,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [InlineData(false, true)]
         [InlineData(true, true)]
         [InlineData(true, false)]
-        public void WhenDirectoryDoesNotExistsItThrows(bool testMockBehaviorIsInSync, bool recursive)
+        public void WhenDirectoryDoesNotExistsDirectoryDeleteThrows(bool testMockBehaviorIsInSync, bool recursive)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
@@ -563,7 +563,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [InlineData(false, true)]
         [InlineData(true, true)]
         [InlineData(true, false)]
-        public void WhenDirectoryPathIsAFileItThrows(bool testMockBehaviorIsInSync, bool recursive)
+        public void WhenDirectoryPathIsAFileDirectoryDeleteThrows(bool testMockBehaviorIsInSync, bool recursive)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
@@ -577,7 +577,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void WhenDirectoryPathHasAFileAndNonRecursiveItThrows(bool testMockBehaviorIsInSync)
+        public void WhenDirectoryPathHasAFileAndNonRecursiveDirectoryDeleteThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
@@ -605,7 +605,75 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fileSystem.Directory.Delete(testDirectoryPath, true);
             fileSystem.Directory.Exists(testDirectoryPath).Should().BeFalse();
         }
+        
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenItMovesDirectory(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            string nestedFilePath = Path.GetRandomFileName();
+            string testDirectorysFilePath = Path.Combine(testSourceDirectoryPath, nestedFilePath);
+            fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
+            fileSystem.File.CreateEmptyFile(testDirectorysFilePath);
+            
+            string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
 
+            fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
+            fileSystem.Directory.Exists(testSourceDirectoryPath).Should().BeFalse();
+            fileSystem.Directory.Exists(testDirectorysFilePath).Should().BeFalse();
+            fileSystem.Directory.Exists(testDestinationDirectoryPath).Should().BeFalse();
+            fileSystem.Directory.Exists(Path.Combine(testDestinationDirectoryPath, nestedFilePath)).Should().BeFalse();
+        }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenSourcePathDoesNotExistsDirectoryMoveThrows(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            
+            string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            
+            Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
+            a.ShouldThrow<DirectoryNotFoundException>().And.Message.Should().Contain("Could not find a part of the path");
+        }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenDestinationDirectoryPathExistsDirectoryMoveThrows(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
+            
+            string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testDestinationDirectoryPath);
+            
+            Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
+            a.ShouldThrow<IOException>().And.Message.Should().Contain("because a file or directory with the same name already exists");
+        }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenSourceAndDestinationPathIsTheSameDirectoryMoveThrows(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
+            
+            Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testSourceDirectoryPath);
+            a.ShouldThrow<IOException>().And.Message.Should().Contain("Source and destination path must be different");
+        }
 
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {
