@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
                 }
 
-                PathModel pathModule = new PathModel(path);
+                PathModel pathModule = CreateFullPathModule(path);
 
                 if (!current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
                 {
