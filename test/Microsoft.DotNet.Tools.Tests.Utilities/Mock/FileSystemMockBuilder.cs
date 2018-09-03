@@ -77,17 +77,17 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool TryGetNodeParent(string path, out DirectoryNode current)
             {
-                PathModel pathModule = CreateFullPathModule(path);
-                current = Files.Volume[pathModule.Volume];
+                PathModel pathModel = CreateFullPathModel(path);
+                current = Files.Volume[pathModel.Volume];
 
-                if (!Files.Volume.ContainsKey(pathModule.Volume))
+                if (!Files.Volume.ContainsKey(pathModel.Volume))
                 {
                     return false;
                 }
 
-                for (int i = 0; i < pathModule.PathArray.Length - 1; i++)
+                for (int i = 0; i < pathModel.PathArray.Length - 1; i++)
                 {
-                    string p = pathModule.PathArray[i];
+                    string p = pathModel.PathArray[i];
                     if (!current.Subs.ContainsKey(p))
                     {
                         return false;
@@ -108,20 +108,20 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
-                PathModel pathModule = CreateFullPathModule(path);
+                PathModel pathModel = CreateFullPathModel(path);
 
                 DirectoryNode current;
-                if (!Files.Volume.ContainsKey(pathModule.Volume))
+                if (!Files.Volume.ContainsKey(pathModel.Volume))
                 {
                     current = new DirectoryNode();
-                    Files.Volume[pathModule.Volume] = current;
+                    Files.Volume[pathModel.Volume] = current;
                 }
                 else
                 {
-                    current = Files.Volume[pathModule.Volume];
+                    current = Files.Volume[pathModel.Volume];
                 }
 
-                foreach (string p in pathModule.PathArray)
+                foreach (string p in pathModel.PathArray)
                 {
                     if (!current.Subs.ContainsKey(p))
                     {
@@ -136,34 +136,34 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     else if (current.Subs[p] is FileNode)
                     {
                         throw new IOException(
-                            $"Cannot create '{pathModule}' because a file or directory with the same name already exists.");
+                            $"Cannot create '{pathModel}' because a file or directory with the same name already exists.");
                     }
                 }
             }
 
-            private PathModel CreateFullPathModule(string path)
+            private PathModel CreateFullPathModel(string path)
             {
                 if (!Path.IsPathRooted(path))
                 {
                     path = Path.Combine(WorkingDirectory, path);
                 }
 
-                PathModel pathModule = new PathModel(path);
+                PathModel pathModel = new PathModel(path);
 
-                return pathModule;
+                return pathModel;
             }
 
             public void CreateFile(string path, string content)
             {
-                PathModel pathModule = CreateFullPathModule(path);
+                PathModel pathModel = CreateFullPathModel(path);
 
                 if (TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
-                        if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
+                        if (current.Subs.ContainsKey(pathModel.FileOrDirectoryName()))
                         {
-                            IFileSystemTreeNode possibleConflict = current.Subs[pathModule.FileOrDirectoryName()];
+                            IFileSystemTreeNode possibleConflict = current.Subs[pathModel.FileOrDirectoryName()];
                             if (possibleConflict is DirectoryNode)
                             {
                                 throw new IOException($"{path} is a directory");
@@ -171,7 +171,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         }
                         else
                         {
-                            current.Subs[pathModule.FileOrDirectoryName()] = new FileNode(content);
+                            current.Subs[pathModel.FileOrDirectoryName()] = new FileNode(content);
                         }
                     }
                 }
@@ -185,10 +185,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 if (TryGetNodeParent(path, out DirectoryNode current) && current != null)
                 {
-                    PathModel pathModule = new PathModel(path);
-                    if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
+                    PathModel pathModel = new PathModel(path);
+                    if (current.Subs.ContainsKey(pathModel.FileOrDirectoryName()))
                     {
-                        if (!(current.Subs[pathModule.FileOrDirectoryName()] is FileNode fileNode))
+                        if (!(current.Subs[pathModel.FileOrDirectoryName()] is FileNode fileNode))
                         {
                             onNotAFile();
                         }
@@ -208,8 +208,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 DirectoryNode current = GetParentOfDirectoryNode(path);
 
-                PathModel pathModule = new PathModel(path);
-                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
+                PathModel pathModel = new PathModel(path);
+                DirectoryNode directoryNode = current.Subs[pathModel.FileOrDirectoryName()] as DirectoryNode;
 
                 Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
 
@@ -223,14 +223,14 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
                 }
 
-                PathModel pathModule = CreateFullPathModule(path);
+                PathModel pathModel = CreateFullPathModel(path);
 
-                if (!current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
+                if (!current.Subs.ContainsKey(pathModel.FileOrDirectoryName()))
                 {
                     throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
                 }
 
-                if (current.Subs[pathModule.FileOrDirectoryName()] is FileNode)
+                if (current.Subs[pathModel.FileOrDirectoryName()] is FileNode)
                 {
                     throw new IOException("Not a directory");
                 }
