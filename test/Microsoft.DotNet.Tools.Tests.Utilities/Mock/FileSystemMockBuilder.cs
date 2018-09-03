@@ -610,7 +610,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 Content = content ?? throw new ArgumentNullException(nameof(content));
             }
 
-            public string Content { get; } = "";
+            public string Content { get; }
 
             public IEnumerable<string> DebugShowTreeLines()
             {
