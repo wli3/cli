@@ -310,7 +310,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public IDirectory Directory { get; }
         }
 
-        // fasade
+        // facade
         private class FileMock : IFile
         {
             private readonly MockFileSystemModel _files;
@@ -490,7 +490,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             }
         }
 
-        // fasade
+        // facade
         private class DirectoryMock : IDirectory
         {
             private readonly MockFileSystemModel _files;
