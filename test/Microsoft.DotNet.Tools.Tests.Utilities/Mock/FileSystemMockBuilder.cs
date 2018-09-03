@@ -28,14 +28,16 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFile(string name, string content = "")
         {
-            // _files.Add(name, content); TODO wul add files
+            _mockFileSystemModel.CreateFile(name, content);
             return this;
         }
 
         public FileSystemMockBuilder AddFiles(string basePath, params string[] files)
         {
-            // TODO WUL this is wrong, just call model
-            foreach (string file in files) AddFile(Path.Combine(basePath, file));
+            foreach (string file in files)
+            {
+                _mockFileSystemModel.CreateFile(Path.Combine(basePath, file), "");
+            }
             return this;
         }
 
