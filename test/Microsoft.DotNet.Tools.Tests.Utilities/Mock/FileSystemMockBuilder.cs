@@ -436,11 +436,10 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         source,
                         () => throw new FileNotFoundException($"Could not find file '{source}'"));
 
-                sourceParent.Subs.Remove(new PathModel(source).FileOrDirectoryName());
-
                 if (_files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
                 {
                     current.Subs.Add(new PathModel(destination).FileOrDirectoryName(), sourceFileNode);
+                    sourceParent.Subs.Remove(new PathModel(source).FileOrDirectoryName());
                 }
                 else
                 {
@@ -513,6 +512,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
+                if (path == null) throw new ArgumentNullException(nameof(path));
+
                 if (_files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
@@ -536,6 +537,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateAllFiles(string path)
             {
+                if (path == null) throw new ArgumentNullException(nameof(path));
+
                 return _files.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is FileNode)
                         .Select(s => Path.Combine(path, s.Key)));
@@ -543,6 +546,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
+                if (path == null) throw new ArgumentNullException(nameof(path));
+
                 return _files.EnumerateDirectory(path,
                     subs => subs.Select(s => Path.Combine(path, s.Key)));
             }
@@ -554,11 +559,15 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void CreateDirectory(string path)
             {
+                if (path == null) throw new ArgumentNullException(nameof(path));
+
                 _files.CreateDirectory(path);
             }
 
             public void Delete(string path, bool recursive)
             {
+                if (path == null) throw new ArgumentNullException(nameof(path));
+
                 DirectoryNode parentOfPath = _files.GetParentOfDirectoryNode(path);
                 PathModel pathModel = new PathModel(path);
                 if (recursive)
@@ -578,7 +587,44 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Move(string source, string destination)
             {
-                throw new NotImplementedException();
+                if (source == null)
+                {
+                    throw new ArgumentNullException(nameof(source));
+                }
+
+                if (destination == null)
+                {
+                    throw new ArgumentNullException(nameof(destination));
+                }
+
+                DirectoryNode sourceParent
+                    = _files.GetParentOfDirectoryNode(source);
+
+                PathModel parentPathModel = new PathModel(source);
+
+                IFileSystemTreeNode sourceNode = sourceParent.Subs[parentPathModel.FileOrDirectoryName()];
+
+                if (_files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
+                {
+                    PathModel destinationPathModel = new PathModel(destination);
+                    if (current.Subs.ContainsKey(destinationPathModel.FileOrDirectoryName()))
+                    {
+                        if (current.Subs[destinationPathModel.FileOrDirectoryName()] == sourceNode)
+                        {
+                            throw new IOException("Source and destination path must be different");
+                        }
+
+                        throw new IOException($"Cannot create {destination} because a file or" +
+                                              " directory with the same name already exists");
+                    }
+
+                    current.Subs.Add(destinationPathModel.FileOrDirectoryName(), sourceNode);
+                    sourceParent.Subs.Remove(parentPathModel.FileOrDirectoryName());
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"Could not find a part of the path {destination}");
+                }
             }
         }
 

@@ -605,8 +605,8 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fileSystem.Directory.Delete(testDirectoryPath, true);
             fileSystem.Directory.Exists(testDirectoryPath).Should().BeFalse();
         }
-        
-        
+
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -619,16 +619,16 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             string testDirectorysFilePath = Path.Combine(testSourceDirectoryPath, nestedFilePath);
             fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
             fileSystem.File.CreateEmptyFile(testDirectorysFilePath);
-            
+
             string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
 
             fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
             fileSystem.Directory.Exists(testSourceDirectoryPath).Should().BeFalse();
             fileSystem.Directory.Exists(testDirectorysFilePath).Should().BeFalse();
-            fileSystem.Directory.Exists(testDestinationDirectoryPath).Should().BeFalse();
-            fileSystem.Directory.Exists(Path.Combine(testDestinationDirectoryPath, nestedFilePath)).Should().BeFalse();
+            fileSystem.Directory.Exists(testDestinationDirectoryPath).Should().BeTrue();
+            fileSystem.File.Exists(Path.Combine(testDestinationDirectoryPath, nestedFilePath)).Should().BeTrue();
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -637,13 +637,14 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
-            
+
             string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
-            
+
             Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
-            a.ShouldThrow<DirectoryNotFoundException>().And.Message.Should().Contain("Could not find a part of the path");
+            a.ShouldThrow<DirectoryNotFoundException>().And.Message.Should()
+                .Contain("Could not find a part of the path");
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -653,14 +654,31 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
             fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
-            
+
             string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
             fileSystem.Directory.CreateDirectory(testDestinationDirectoryPath);
-            
+
             Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
-            a.ShouldThrow<IOException>().And.Message.Should().Contain("because a file or directory with the same name already exists");
+            a.ShouldThrow<IOException>();
         }
-        
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenDestinationDirectoryPathIsAFileDirectoryMoveThrows(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
+
+            string testDestinationDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(testDestinationDirectoryPath);
+
+            Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testDestinationDirectoryPath);
+            a.ShouldThrow<IOException>();
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -670,7 +688,7 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             string testSourceDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
             fileSystem.Directory.CreateDirectory(testSourceDirectoryPath);
-            
+
             Action a = () => fileSystem.Directory.Move(testSourceDirectoryPath, testSourceDirectoryPath);
             a.ShouldThrow<IOException>().And.Message.Should().Contain("Source and destination path must be different");
         }
