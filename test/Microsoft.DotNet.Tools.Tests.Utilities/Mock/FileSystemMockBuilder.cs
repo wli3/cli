@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public string TemporaryFolder { get; }
             public FileSystemRoot Files { get; }
 
-            public bool TryGetLastNodeParent(string path, out DirectoryNode current)
+            public bool TryGetNodeParent(string path, out DirectoryNode current)
             {
                 PathModel pathModule = CreateFullPathModule(path);
                 current = Files.Volume[pathModule.Volume];
@@ -157,7 +157,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 PathModel pathModule = CreateFullPathModule(path);
 
-                if (TryGetLastNodeParent(path, out DirectoryNode current))
+                if (TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public (DirectoryNode, FileNode) GetParentDirectoryAndFileNode(string path, Action onNotAFile)
             {
-                if (TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
+                if (TryGetNodeParent(path, out DirectoryNode current) && current != null)
                 {
                     PathModel pathModule = new PathModel(path);
                     if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
@@ -206,7 +206,19 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 string path,
                 Func<Dictionary<string, IFileSystemTreeNode>, IEnumerable<string>> predicate)
             {
-                if (!TryGetLastNodeParent(path, out DirectoryNode current) || current == null)
+                DirectoryNode current = GetParentOfDirectoryNode(path);
+
+                PathModel pathModule = new PathModel(path);
+                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
+
+                Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
+
+                return predicate(directoryNode.Subs);
+            }
+
+            public DirectoryNode GetParentOfDirectoryNode(string path)
+            {
+                if (!TryGetNodeParent(path, out DirectoryNode current) || current == null)
                 {
                     throw new DirectoryNotFoundException($"Could not find a part of the path {path}");
                 }
@@ -223,11 +235,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new IOException("Not a directory");
                 }
 
-                DirectoryNode directoryNode = current.Subs[pathModule.FileOrDirectoryName()] as DirectoryNode;
-
-                Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
-
-                return predicate(directoryNode.Subs);
+                return current;
             }
         }
 
@@ -327,7 +335,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                if (_files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
@@ -347,7 +355,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new ArgumentNullException(nameof(path));
                 }
 
-                if (_files.TryGetLastNodeParent(path, out DirectoryNode current) && current != null)
+                if (_files.TryGetNodeParent(path, out DirectoryNode current) && current != null)
                 {
                     PathModel pathModule = new PathModel(path);
                     if (current.Subs.ContainsKey(pathModule.FileOrDirectoryName()))
@@ -430,7 +438,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
                 sourceParent.Subs.Remove(new PathModel(source).FileOrDirectoryName());
 
-                if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
+                if (_files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
                 {
                     current.Subs.Add(new PathModel(destination).FileOrDirectoryName(), sourceFileNode);
                 }
@@ -456,7 +464,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     () => throw new UnauthorizedAccessException($"Access to the path {source} is denied")
                 );
 
-                if (_files.TryGetLastNodeParent(destination, out DirectoryNode current) && current != null)
+                if (_files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
                 {
                     if (current.Subs.ContainsKey(new PathModel(destination).FileOrDirectoryName()))
                     {
@@ -479,7 +487,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     return;
                 }
 
-                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                if (_files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
@@ -505,7 +513,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public bool Exists(string path)
             {
-                if (_files.TryGetLastNodeParent(path, out DirectoryNode current))
+                if (_files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     if (current != null)
                     {
@@ -551,7 +559,21 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public void Delete(string path, bool recursive)
             {
-                throw new NotImplementedException();
+                DirectoryNode parentOfPath = _files.GetParentOfDirectoryNode(path);
+                PathModel pathModel = new PathModel(path);
+                if (recursive)
+                {
+                    parentOfPath.Subs.Remove(pathModel.FileOrDirectoryName());
+                }
+                else
+                {
+                    if (EnumerateAllFiles(path).Any())
+                    {
+                        throw new IOException("Directory not empty");
+                    }
+
+                    parentOfPath.Subs.Remove(pathModel.FileOrDirectoryName());
+                }
             }
 
             public void Move(string source, string destination)

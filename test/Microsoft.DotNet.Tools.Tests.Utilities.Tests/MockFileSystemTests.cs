@@ -526,6 +526,87 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
             fileSystem.Directory.EnumerateFileSystemEntries(testDirectory).Should().Contain(nestedDirectoryPath);
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        public void WhenDirectoryExistsItDeleteDirectory(bool testMockBehaviorIsInSync, bool recursive)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testDirectory = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testDirectory);
+
+            fileSystem.Directory.Delete(testDirectory, recursive);
+            fileSystem.Directory.Exists(testDirectory).Should().BeFalse();
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        public void WhenDirectoryDoesNotExistsItThrows(bool testMockBehaviorIsInSync, bool recursive)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string nonExistsTestDirectory = Path.Combine(tempDirectory, Path.GetRandomFileName());
+
+            Action action = () => fileSystem.Directory.Delete(nonExistsTestDirectory, recursive);
+            action.ShouldThrow<DirectoryNotFoundException>().And.Message.Should()
+                .Contain("Could not find a part of the path");
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        public void WhenDirectoryPathIsAFileItThrows(bool testMockBehaviorIsInSync, bool recursive)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string actuallyAFilePath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            fileSystem.File.CreateEmptyFile(actuallyAFilePath);
+
+            Action action = () => fileSystem.Directory.Delete(actuallyAFilePath, recursive);
+            action.ShouldThrow<IOException>();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenDirectoryPathHasAFileAndNonRecursiveItThrows(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            string testDirectorysFilePath = Path.Combine(testDirectoryPath, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testDirectoryPath);
+            fileSystem.File.CreateEmptyFile(testDirectorysFilePath);
+
+            Action action = () => fileSystem.Directory.Delete(testDirectoryPath, false);
+            action.ShouldThrow<IOException>().And.Message.Should().Contain("Directory not empty");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WhenDirectoryPathHasAFileAndRecursiveItDeletes(bool testMockBehaviorIsInSync)
+        {
+            IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
+            string tempDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            string testDirectoryPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            string testDirectorysFilePath = Path.Combine(testDirectoryPath, Path.GetRandomFileName());
+            fileSystem.Directory.CreateDirectory(testDirectoryPath);
+            fileSystem.File.CreateEmptyFile(testDirectorysFilePath);
+
+            fileSystem.Directory.Delete(testDirectoryPath, true);
+            fileSystem.Directory.Exists(testDirectoryPath).Should().BeFalse();
+        }
+
+
         private static IFileSystem SetupSubjectFileSystem(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem;
