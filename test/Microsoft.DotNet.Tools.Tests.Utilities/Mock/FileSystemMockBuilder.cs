@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 {
     internal class FileSystemMockBuilder
     {
+        private readonly List<Action> _actions = new List<Action>();
         private MockFileSystemModel _mockFileSystemModel;
         public string TemporaryFolder { get; set; }
         public string WorkingDirectory { get; set; }
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFile(string name, string content = "")
         {
-            _mockFileSystemModel.CreateFile(name, content);
+            _actions.Add(() => _mockFileSystemModel.CreateFile(name, content));
             return this;
         }
 
@@ -36,8 +37,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         {
             foreach (string file in files)
             {
-                _mockFileSystemModel.CreateFile(Path.Combine(basePath, file), "");
+                _actions.Add(() => _mockFileSystemModel.CreateFile(Path.Combine(basePath, file), ""));
             }
+
             return this;
         }
 
@@ -45,6 +47,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         {
             _mockFileSystemModel =
                 new MockFileSystemModel(TemporaryFolder, fileSystemMockWorkingDirectory: WorkingDirectory);
+
+            foreach (Action action in _actions)
+            {
+                action();
+            }
 
             return new FileSystemMock(_mockFileSystemModel);
         }
@@ -68,7 +75,8 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 }
 
                 WorkingDirectory = fileSystemMockWorkingDirectory;
-                TemporaryFolder = temporaryFolder ?? throw new ArgumentNullException(nameof(temporaryFolder));
+                TemporaryFolder =
+                    temporaryFolder ?? Path.Combine(fileSystemMockWorkingDirectory, "mockTemporaryFolder");
                 Files = files ?? new FileSystemRoot();
                 CreateDirectory(WorkingDirectory);
             }
