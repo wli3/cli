@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -139,6 +140,58 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             loadedResolverCache.Should().ContainSingle(c =>
                 c.Name == "tool2" && c.Runner == "dotnet" &&
                 c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool2.dll").ToString());
+        }
+        
+        [Fact]
+        public void GivenExecutableIdentifierItCanSaveMultipleSameAndLoadTheHighestFromVersionRange()
+        {
+            (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
+
+            NuGetFramework targetFramework = NuGetFramework.Parse("netcoreapp2.1");
+            string runtimeIdentifier = "any";
+            PackageId packageId = new PackageId("my.toolBundle");
+            
+            NuGetVersion previewNuGetVersion = NuGetVersion.Parse("0.0.2");
+            IReadOnlyList<CommandSettings> listOfCommandSettings0 = new[]
+            {
+                new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1preview.dll")),
+            };
+            
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("1.0.2");
+            IReadOnlyList<CommandSettings> listOfCommandSettings1 = new[]
+            {
+                new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1.dll")),
+            };
+
+            NuGetVersion newerNuGetVersion = NuGetVersion.Parse("2.0.2");
+            IReadOnlyList<CommandSettings> listOfCommandSettings2 = new[]
+            {
+                new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1new.dll")),
+            };
+
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, previewNuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings0, nuGetGlobalPackagesFolder);
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings1, nuGetGlobalPackagesFolder);
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, newerNuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings2, nuGetGlobalPackagesFolder);
+
+            bool loadSuccess = 
+                localToolsResolverCache.TryLoad(
+                    new CommandSettingsListIdVersionRange(
+                        packageId, 
+                        VersionRange.Parse("1.0.2", allowFloating: true), 
+                        targetFramework, runtimeIdentifier),
+                    nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> loadedResolverCache);
+
+            loadSuccess.Should().BeTrue();
+
+            loadedResolverCache.Should().ContainSingle(c =>
+                c.Name == "tool1" && c.Runner == "dotnet" &&
+                c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool1.dll").ToString());
         }
 
         [Fact]

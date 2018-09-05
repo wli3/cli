@@ -169,6 +169,43 @@ namespace Microsoft.DotNet.ToolPackage
             return false;
         }
 
+        public bool TryLoad(
+            CommandSettingsListIdVersionRange query,
+            DirectoryPath nuGetGlobalPackagesFolder,
+            out IReadOnlyList<CommandSettings> commandSettingsList)
+        {
+            commandSettingsList = null;
+            string packageCacheFile = GetCacheFile(query.PackageId);
+            if (!_fileSystem.File.Exists(packageCacheFile))
+            {
+                throw new Exception("nofile");
+            }
+
+            if (_fileSystem.File.Exists(packageCacheFile))
+            {
+                CacheRow[] cacheTable =
+                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
+
+                IReadOnlyList<CommandSettings> list = cacheTable
+                    .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
+//                    .Where(strongTypeStored =>
+//                        query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
+//                    .Where(onlyVersionSatisfies =>
+//                        onlyVersionSatisfies.commandSettingsListId ==
+//                        query.WithVersion(onlyVersionSatisfies.commandSettingsListId.Version))
+                    .OrderByDescending(allMatched => allMatched.commandSettingsListId.Version)
+                    .FirstOrDefault().commandSettingsList;
+
+                if (!list.Equals(default(IReadOnlyList<CommandSettings>)))
+                {
+                    commandSettingsList = list;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private class CacheRow
         {
             public string Version { get; set; }
