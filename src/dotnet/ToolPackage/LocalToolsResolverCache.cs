@@ -61,7 +61,8 @@ namespace Microsoft.DotNet.ToolPackage
             }
         }
 
-        public IReadOnlyList<CommandSettings> Load(CommandSettingsListId commandSettingsListId,
+        public IReadOnlyList<CommandSettings> Load(
+            CommandSettingsListId commandSettingsListId,
             DirectoryPath nuGetGlobalPackagesFolder)
         {
             string packageCacheFile = GetCacheFile(commandSettingsListId.PackageId);
@@ -83,6 +84,37 @@ namespace Microsoft.DotNet.ToolPackage
             return Array.Empty<CommandSettings>();
         }
 
+        public bool TryLoadHighestVersion(
+            CommandSettingsListIdVersionRange query,
+            DirectoryPath nuGetGlobalPackagesFolder,
+            out IReadOnlyList<CommandSettings> commandSettingsList)
+        {
+            commandSettingsList = null;
+            string packageCacheFile = GetCacheFile(query.PackageId);
+            if (_fileSystem.File.Exists(packageCacheFile))
+            {
+                CacheRow[] cacheTable =
+                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
+
+                var list = cacheTable
+                    .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
+                    .Where(strongTypeStored =>
+                        query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
+                    .Where(onlyVersionSatisfies =>
+                        onlyVersionSatisfies.commandSettingsListId ==
+                        query.WithVersion(onlyVersionSatisfies.commandSettingsListId.Version))
+                    .OrderByDescending(allMatched => allMatched.commandSettingsListId.Version)
+                    .FirstOrDefault();
+
+                if (!list.commandSettingsList.Equals(default(IReadOnlyList<CommandSettings>)))
+                {
+                    commandSettingsList = list.commandSettingsList;
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private string GetCacheFile(PackageId packageId)
         {
@@ -169,37 +201,6 @@ namespace Microsoft.DotNet.ToolPackage
             return false;
         }
 
-        public bool TryLoadHighestVersion(
-            CommandSettingsListIdVersionRange query,
-            DirectoryPath nuGetGlobalPackagesFolder,
-            out IReadOnlyList<CommandSettings> commandSettingsList)
-        {
-            commandSettingsList = null;
-            string packageCacheFile = GetCacheFile(query.PackageId);
-            if (_fileSystem.File.Exists(packageCacheFile))
-            {
-                CacheRow[] cacheTable =
-                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
-
-                var list = cacheTable
-                    .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
-                    .Where(strongTypeStored =>
-                        query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
-                    .Where(onlyVersionSatisfies =>
-                        onlyVersionSatisfies.commandSettingsListId ==
-                        query.WithVersion(onlyVersionSatisfies.commandSettingsListId.Version))
-                    .OrderByDescending(allMatched => allMatched.commandSettingsListId.Version)
-                    .FirstOrDefault();
-
-                if (!list.commandSettingsList.Equals(default(IReadOnlyList<CommandSettings>)))
-                {
-                    commandSettingsList = list.commandSettingsList;
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
         private class CacheRow
         {
