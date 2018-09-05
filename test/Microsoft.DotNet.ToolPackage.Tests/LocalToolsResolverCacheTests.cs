@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
@@ -30,11 +33,6 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             LocalToolsResolverCache localToolsResolverCache =
                 new LocalToolsResolverCache(fileSystem, cacheDirectory, version);
             return (nuGetGlobalPackagesFolder, localToolsResolverCache);
-        }
-
-        [Fact(Skip = "Pending")]
-        public void GivenDifferentResolverCacheVersionItCannotSaveAndLoad()
-        {
         }
 
         [Fact]
@@ -140,7 +138,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 c.Name == "tool2" && c.Runner == "dotnet" &&
                 c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool2.dll").ToString());
         }
-        
+
         [Fact]
         public void ItCanSaveMultipleSameAndLoadTheHighestFromVersionRange()
         {
@@ -149,13 +147,13 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             NuGetFramework targetFramework = NuGetFramework.Parse("netcoreapp2.1");
             string runtimeIdentifier = "any";
             PackageId packageId = new PackageId("my.toolBundle");
-            
+
             NuGetVersion previewNuGetVersion = NuGetVersion.Parse("0.0.2");
             IReadOnlyList<CommandSettings> listOfCommandSettings0 = new[]
             {
                 new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1preview.dll")),
             };
-            
+
             NuGetVersion nuGetVersion = NuGetVersion.Parse("1.0.2");
             IReadOnlyList<CommandSettings> listOfCommandSettings1 = new[]
             {
@@ -178,11 +176,11 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 new CommandSettingsListId(packageId, newerNuGetVersion, targetFramework, runtimeIdentifier),
                 listOfCommandSettings2, nuGetGlobalPackagesFolder);
 
-            bool loadSuccess = 
+            bool loadSuccess =
                 localToolsResolverCache.TryLoadHighestVersion(
                     new CommandSettingsListIdVersionRange(
-                        packageId, 
-                        VersionRange.Parse("(0.0.0, 2.0.0)"), 
+                        packageId,
+                        VersionRange.Parse("(0.0.0, 2.0.0)"),
                         targetFramework, runtimeIdentifier),
                     nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> loadedResolverCache);
 
@@ -266,14 +264,131 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool3new.dll").ToString());
         }
 
-        [Fact(Skip = "Pending")]
-        public void GivenExecutableIdentifierRangeItCanSaveAndLoad()
+        [Fact]
+        public void WhenTheCacheIsCorruptedByAppendingLineItShouldLoadAsEmpty()
         {
+            WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
+                useRealFileSystem: false,
+                corruptCache: (fileSystem, cachePath, existingCache) =>
+                    fileSystem.File.WriteAllText(cachePath, existingCache + " !!!Corrupted")
+            );
         }
 
-        [Fact(Skip = "Pending")]
-        public void ItShouldHandlePotentialCorruption()
+        [Fact]
+        public void WhenTheCacheIsCorruptedByNotAJsonItShouldLoadAsEmpty()
         {
+            WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
+                useRealFileSystem: true,
+                corruptCache: (fileSystem, cachePath, existingCache) =>
+                {
+                    File.WriteAllBytes(cachePath, new byte[] {0x12, 0x23, 0x34, 0x45});
+                }
+            );
+        }
+
+        [Fact]
+        public void WhenTheCacheIsCorruptedItShouldNotAffectNextSaveAndLoad()
+        {
+            IFileSystem fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
+
+            DirectoryPath tempDirectory =
+                new DirectoryPath(fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath);
+            DirectoryPath cacheDirectory = tempDirectory.WithSubDirectories("cacheDirectory");
+            DirectoryPath nuGetGlobalPackagesFolder = tempDirectory.WithSubDirectories("nugetGlobalPackageLocation");
+            fileSystem.Directory.CreateDirectory(cacheDirectory.Value);
+            const int version = 1;
+
+            LocalToolsResolverCache localToolsResolverCache =
+                new LocalToolsResolverCache(fileSystem, cacheDirectory, version);
+
+            NuGetFramework targetFramework = NuGetFramework.Parse("netcoreapp2.1");
+            string runtimeIdentifier = "any";
+            PackageId packageId = new PackageId("my.toolBundle");
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("1.0.2");
+            IReadOnlyList<CommandSettings> listOfCommandSettings = new[]
+            {
+                new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1.dll")),
+            };
+
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings, nuGetGlobalPackagesFolder);
+
+            var cachePath = cacheDirectory
+                .WithSubDirectories(version.ToString())
+                .WithSubDirectories(packageId.ToString()).Value;
+            var existingCache =
+                fileSystem.File.ReadAllText(
+                    cachePath);
+            existingCache.Should().NotBeEmpty();
+
+            fileSystem.File.WriteAllText(cachePath, existingCache + " !!!Corrupted");
+
+            // Save after corruption
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings, nuGetGlobalPackagesFolder);
+
+            IReadOnlyList<CommandSettings> loadedResolverCache =
+                localToolsResolverCache.Load(
+                    new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                    nuGetGlobalPackagesFolder);
+
+            loadedResolverCache.Should().ContainSingle(c =>
+                c.Name == "tool1" && c.Runner == "dotnet" &&
+                c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool1.dll").ToString());
+        }
+
+        private static void WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
+            bool useRealFileSystem,
+            Action<IFileSystem, string, string> corruptCache)
+        {
+            IFileSystem fileSystem =
+                useRealFileSystem == false
+                    ? new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build()
+                    : new FileSystemWrapper();
+
+            DirectoryPath tempDirectory =
+                new DirectoryPath(fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath);
+            DirectoryPath cacheDirectory = tempDirectory.WithSubDirectories("cacheDirectory");
+            DirectoryPath nuGetGlobalPackagesFolder = tempDirectory.WithSubDirectories("nugetGlobalPackageLocation");
+            fileSystem.Directory.CreateDirectory(cacheDirectory.Value);
+            const int version = 1;
+
+            LocalToolsResolverCache localToolsResolverCache =
+                new LocalToolsResolverCache(fileSystem, cacheDirectory, version);
+
+            NuGetFramework targetFramework = NuGetFramework.Parse("netcoreapp2.1");
+            string runtimeIdentifier = "any";
+            PackageId packageId = new PackageId("my.toolBundle");
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("1.0.2");
+            IReadOnlyList<CommandSettings> listOfCommandSettings = new[]
+            {
+                new CommandSettings("tool1", "dotnet", nuGetGlobalPackagesFolder.WithFile("tool1.dll")),
+            };
+
+            localToolsResolverCache.Save(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                listOfCommandSettings, nuGetGlobalPackagesFolder);
+
+            var cachePath = cacheDirectory
+                .WithSubDirectories(version.ToString())
+                .WithSubDirectories(packageId.ToString()).Value;
+            var existingCache =
+                fileSystem.File.ReadAllText(
+                    cachePath);
+            existingCache.Should().NotBeEmpty();
+
+            corruptCache(fileSystem, cachePath, existingCache);
+
+            IReadOnlyList<CommandSettings> loadedResolverCache = null;
+            Action a = () => loadedResolverCache =
+                localToolsResolverCache.Load(
+                    new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
+                    nuGetGlobalPackagesFolder);
+
+            a.ShouldNotThrow("Cache file corruption is expected");
+            loadedResolverCache.Should().BeEmpty("Consider corrupted file cache miss");
         }
     }
 }

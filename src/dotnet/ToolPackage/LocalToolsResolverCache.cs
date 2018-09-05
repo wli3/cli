@@ -37,8 +37,7 @@ namespace Microsoft.DotNet.ToolPackage
 
             if (_fileSystem.File.Exists(packageCacheFile))
             {
-                CacheRow[] cacheTable =
-                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
+                var cacheTable = GetCacheTable(packageCacheFile);
 
                 if (!TryGetMatchingCommandSettingsList(
                     commandSettingsListId,
@@ -68,13 +67,10 @@ namespace Microsoft.DotNet.ToolPackage
             string packageCacheFile = GetCacheFile(commandSettingsListId.PackageId);
             if (_fileSystem.File.Exists(packageCacheFile))
             {
-                CacheRow[] cacheTable =
-                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
-
                 if (TryGetMatchingCommandSettingsList(
                     commandSettingsListId,
                     nuGetGlobalPackagesFolder,
-                    cacheTable,
+                    GetCacheTable(packageCacheFile),
                     out IReadOnlyList<CommandSettings> commandSettingsList))
                 {
                     return commandSettingsList;
@@ -82,6 +78,22 @@ namespace Microsoft.DotNet.ToolPackage
             }
 
             return Array.Empty<CommandSettings>();
+        }
+
+        private CacheRow[] GetCacheTable(string packageCacheFile)
+        {
+            CacheRow[] cacheTable = Array.Empty<CacheRow>();
+
+            try
+            {
+                cacheTable =
+                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
+            }
+            catch (Exception e) when (e is JsonReaderException)
+            {
+            }
+
+            return cacheTable;
         }
 
         public bool TryLoadHighestVersion(
@@ -93,10 +105,7 @@ namespace Microsoft.DotNet.ToolPackage
             string packageCacheFile = GetCacheFile(query.PackageId);
             if (_fileSystem.File.Exists(packageCacheFile))
             {
-                CacheRow[] cacheTable =
-                    JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
-
-                var list = cacheTable
+                var list =  GetCacheTable(packageCacheFile)
                     .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
                     .Where(strongTypeStored =>
                         query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
