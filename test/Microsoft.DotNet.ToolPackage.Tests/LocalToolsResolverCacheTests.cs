@@ -37,7 +37,6 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
         }
 
-
         [Fact]
         public void GivenExecutableIdentifierItCanSaveAndCannotLoadWithMismatches()
         {
@@ -143,7 +142,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
         
         [Fact]
-        public void GivenExecutableIdentifierItCanSaveMultipleSameAndLoadTheHighestFromVersionRange()
+        public void ItCanSaveMultipleSameAndLoadTheHighestFromVersionRange()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
 
@@ -180,18 +179,34 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 listOfCommandSettings2, nuGetGlobalPackagesFolder);
 
             bool loadSuccess = 
-                localToolsResolverCache.TryLoad(
+                localToolsResolverCache.TryLoadHighestVersion(
                     new CommandSettingsListIdVersionRange(
                         packageId, 
-                        VersionRange.Parse("1.0.2", allowFloating: true), 
+                        VersionRange.Parse("(0.0.0, 2.0.0)"), 
                         targetFramework, runtimeIdentifier),
                     nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> loadedResolverCache);
 
             loadSuccess.Should().BeTrue();
 
-            loadedResolverCache.Should().ContainSingle(c =>
+            loadedResolverCache.Should().Contain(c =>
                 c.Name == "tool1" && c.Runner == "dotnet" &&
                 c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool1.dll").ToString());
+        }
+
+        [Fact]
+        public void ItReturnsFalseWhenFailedToLoadVersionRange()
+        {
+            (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
+
+            bool loadSuccess =
+                localToolsResolverCache.TryLoadHighestVersion(
+                    new CommandSettingsListIdVersionRange(
+                        new PackageId("my.toolBundle"),
+                        VersionRange.Parse("(0.0.0, 2.0.0)"),
+                        NuGetFramework.Parse("netcoreapp2.1"), "any"),
+                    nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> _);
+
+            loadSuccess.Should().BeFalse();
         }
 
         [Fact]
