@@ -9,7 +9,7 @@ using NuGet.Versioning;
 namespace Microsoft.DotNet.ToolPackage
 {
     /// <summary>
-    ///     A range of CommandSettingsListId that is only different in the Version filed.
+    ///     A range of CommandSettingsListId that is only different in the Version field.
     /// </summary>
     internal class CommandSettingsListIdVersionRange
     {
