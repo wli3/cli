@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -355,6 +356,42 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 nuGetGlobalPackagesFolder, out RestoredCommand restoredCommand);
 
             restoredCommand.ShouldBeEquivalentTo(restoredCommands[0]);
+        }
+
+
+
+        [Fact]
+        public void Jsons()
+        {
+
+            JsonConvert.SerializeObject(
+                new LocalTools {
+                    version = "1", isRoot = true,
+                    localTools = new Dictionary<string, localtool> {
+                        { "t-rex",
+                        new localtool {
+                            version = "1.0.53", command = "t-rex", targetFramework = "netcoreapp2.1", runtimeIdentifier = "win-x64"}},
+                        { "dotnetsay",
+                        new localtool {
+                            version = "2.1.4", command = "dotnetsay"}}}}, Newtonsoft.Json.Formatting.None,
+                            new JsonSerializerSettings
+                            {
+                                NullValueHandling = NullValueHandling.Ignore
+                            }).Should().Be("3");
+        }
+        private class LocalTools
+        {
+            public string version { get; set; }
+            public bool isRoot { get; set; }
+            public Dictionary<string, localtool> localTools { get; set; }
+        }
+
+        private class localtool
+        {
+            public string version { get; set; }
+            public string command { get; set; }
+            public string targetFramework { get; set; }
+            public string runtimeIdentifier { get; set; }
         }
 
         private static void WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
