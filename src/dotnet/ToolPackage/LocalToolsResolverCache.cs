@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ToolPackage
         {
             EnsureFileStorageExists();
 
-            CacheRow serializableSchema =
+            CacheRow cacheRow =
                 ConvertToCacheRow(commandSettingsListId, commandSettingsList, nuGetGlobalPackagesFolder);
 
             string packageCacheFile = GetCacheFile(commandSettingsListId.PackageId);
@@ -48,15 +48,14 @@ namespace Microsoft.DotNet.ToolPackage
                     _fileSystem.File.WriteAllText(
                         packageCacheFile,
                         JsonConvert.SerializeObject(
-                            cacheTable.Concat(new[] {serializableSchema}).ToArray()));
+                            cacheTable.Concat(new[] {cacheRow}).ToArray()));
                 }
             }
             else
             {
-                string json = JsonConvert.SerializeObject(new[] {serializableSchema});
                 _fileSystem.File.WriteAllText(
                     packageCacheFile,
-                    json);
+                    JsonConvert.SerializeObject(new[] {cacheRow}));
             }
         }
 
@@ -89,8 +88,9 @@ namespace Microsoft.DotNet.ToolPackage
                 cacheTable =
                     JsonConvert.DeserializeObject<CacheRow[]>(_fileSystem.File.ReadAllText(packageCacheFile));
             }
-            catch (Exception e) when (e is JsonReaderException)
+            catch (JsonReaderException)
             {
+                // if file is corrupted, treat it as empty since it is not the source of truth
             }
 
             return cacheTable;
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.ToolPackage
             string packageCacheFile = GetCacheFile(query.PackageId);
             if (_fileSystem.File.Exists(packageCacheFile))
             {
-                var list =  GetCacheTable(packageCacheFile)
+                var list = GetCacheTable(packageCacheFile)
                     .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
                     .Where(strongTypeStored =>
                         query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
