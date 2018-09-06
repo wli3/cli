@@ -210,7 +210,6 @@ namespace Microsoft.DotNet.ToolPackage
             return false;
         }
 
-
         private class CacheRow
         {
             public string Version { get; set; }
@@ -224,13 +223,6 @@ namespace Microsoft.DotNet.ToolPackage
             public string Name { get; set; }
             public string Runner { get; set; }
             public string RelativeToNuGetGlobalPackagesFolderPathToDll { get; set; }
-        }
-    }
-
-    internal class ResolverCacheInconsistentException : Exception
-    {
-        public ResolverCacheInconsistentException(string message) : base(message)
-        {
         }
     }
 }

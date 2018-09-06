@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ToolPackage
 
         public CommandSettingsListId WithVersion(NuGetVersion version)
         {
-            return new CommandSettingsListId(PackageId, version,TargetFramework , RuntimeIdentifier);
+            return new CommandSettingsListId(PackageId, version, TargetFramework, RuntimeIdentifier);
         }
     }
 }
