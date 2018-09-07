@@ -372,7 +372,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                             "t-rex",
                             new localtool
                             {
-                                version = "1.0.53", command = "t-rex", targetFramework = "netcoreapp2.1",
+                                version = "1.0.53", commands = new string[] { "t-rex" }, targetFramework = "netcoreapp2.1",
                                 runtimeIdentifier = "win-x64"
                             }
                         },
@@ -380,7 +380,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                             "dotnetsay",
                             new localtool
                             {
-                                version = "2.1.4", command = "dotnetsay"
+                                version = "2.1.4", commands =  new string[] { "dotnetsay" }
                             }
                         }
                     }
@@ -402,7 +402,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private class localtool
         {
             public string version { get; set; }
-            public string command { get; set; }
+            public string[] commands { get; set; }
             public string targetFramework { get; set; }
             public string runtimeIdentifier { get; set; }
         }
