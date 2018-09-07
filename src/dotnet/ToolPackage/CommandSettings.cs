@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ToolPackage
             Executable = executable;
         }
 
-        public string Name { get; private set; }
+        public ToolCommandName Name { get; private set; }
 
         public string Runner { get; private set; }
 
