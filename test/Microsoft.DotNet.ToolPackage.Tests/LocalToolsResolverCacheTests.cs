@@ -367,7 +367,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             JsonConvert.SerializeObject(
                 new LocalTools {
                     version = "1", isRoot = true,
-                    localTools = new Dictionary<string, localtool> {
+                    tools = new Dictionary<string, localtool> {
                         { "t-rex",
                         new localtool {
                             version = "1.0.53", command = "t-rex", targetFramework = "netcoreapp2.1", runtimeIdentifier = "win-x64"}},
@@ -383,7 +383,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             public string version { get; set; }
             public bool isRoot { get; set; }
-            public Dictionary<string, localtool> localTools { get; set; }
+            public Dictionary<string, localtool> tools { get; set; }
         }
 
         private class localtool
