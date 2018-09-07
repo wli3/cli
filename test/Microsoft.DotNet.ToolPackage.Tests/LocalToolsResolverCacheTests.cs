@@ -358,27 +358,40 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             restoredCommand.ShouldBeEquivalentTo(restoredCommands[0]);
         }
 
-
-
         [Fact]
         public void Jsons()
         {
-
             JsonConvert.SerializeObject(
-                new LocalTools {
-                    version = "1", isRoot = true,
-                    tools = new Dictionary<string, localtool> {
-                        { "t-rex",
-                        new localtool {
-                            version = "1.0.53", command = "t-rex", targetFramework = "netcoreapp2.1", runtimeIdentifier = "win-x64"}},
-                        { "dotnetsay",
-                        new localtool {
-                            version = "2.1.4", command = "dotnetsay"}}}}, Newtonsoft.Json.Formatting.None,
-                            new JsonSerializerSettings
+                new LocalTools
+                {
+                    version = "1",
+                    isRoot = true,
+                    tools = new Dictionary<string, localtool>
+                    {
+                        {
+                            "t-rex",
+                            new localtool
                             {
-                                NullValueHandling = NullValueHandling.Ignore
-                            }).Should().Be("3");
+                                version = "1.0.53", command = "t-rex", targetFramework = "netcoreapp2.1",
+                                runtimeIdentifier = "win-x64"
+                            }
+                        },
+                        {
+                            "dotnetsay",
+                            new localtool
+                            {
+                                version = "2.1.4", command = "dotnetsay"
+                            }
+                        }
+                    }
+                },
+                Formatting.None,
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                }).Should().Be("3");
         }
+
         private class LocalTools
         {
             public string version { get; set; }
