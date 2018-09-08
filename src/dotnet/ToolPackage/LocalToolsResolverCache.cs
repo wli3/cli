@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ToolPackage
                     var existingCacheTable = GetCacheTable(packageCacheFile);
 
                     var diffedRow = distinctPackageIdAndRestoredCommandMap
-                        .Where(pair => !TryGetMatchingCommandSettingsList(
+                        .Where(pair => !TryGetMatchingRestoredCommand(
                             pair.Key,
                             nuGetGlobalPackagesFolder,
                             existingCacheTable, out _))
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.ToolPackage
             string packageCacheFile = GetCacheFile(restoreCommandIdentifier.PackageId);
             if (_fileSystem.File.Exists(packageCacheFile))
             {
-                if (TryGetMatchingCommandSettingsList(
+                if (TryGetMatchingRestoredCommand(
                     restoreCommandIdentifier,
                     nuGetGlobalPackagesFolder,
                     GetCacheTable(packageCacheFile),
@@ -116,16 +116,16 @@ namespace Microsoft.DotNet.ToolPackage
                 var list = GetCacheTable(packageCacheFile)
                     .Select(c => Convert(query.PackageId, c, nuGetGlobalPackagesFolder))
                     .Where(strongTypeStored =>
-                        query.VersionRange.Satisfies(strongTypeStored.commandSettingsListId.Version))
+                        query.VersionRange.Satisfies(strongTypeStored.restoreCommandIdentifier.Version))
                     .Where(onlyVersionSatisfies =>
-                        onlyVersionSatisfies.commandSettingsListId ==
-                        query.WithVersion(onlyVersionSatisfies.commandSettingsListId.Version))
-                    .OrderByDescending(allMatched => allMatched.commandSettingsListId.Version)
+                        onlyVersionSatisfies.restoreCommandIdentifier ==
+                        query.WithVersion(onlyVersionSatisfies.restoreCommandIdentifier.Version))
+                    .OrderByDescending(allMatched => allMatched.restoreCommandIdentifier.Version)
                     .FirstOrDefault();
 
-                if (!list.commandSettingsList.Equals(default(RestoredCommand)))
+                if (!list.restoredCommand.Equals(default(RestoredCommand)))
                 {
-                    restoredCommandList = list.commandSettingsList;
+                    restoredCommandList = list.restoredCommand;
                     return true;
                 }
             }
@@ -161,8 +161,8 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         private static
-            (RestoreCommandIdentifier commandSettingsListId,
-            RestoredCommand commandSettingsList)
+            (RestoreCommandIdentifier restoreCommandIdentifier,
+            RestoredCommand restoredCommand)
             Convert(
                 PackageId packageId,
                 CacheRow cacheRow,
@@ -182,16 +182,16 @@ namespace Microsoft.DotNet.ToolPackage
             return (restoreCommandIdentifier, restoredCommand);
         }
 
-        private static bool TryGetMatchingCommandSettingsList(
+        private static bool TryGetMatchingRestoredCommand(
             RestoreCommandIdentifier restoreCommandIdentifier,
             DirectoryPath nuGetGlobalPackagesFolder,
             CacheRow[] cacheTable,
             out RestoredCommand restoredCommandList)
         {
-            (RestoreCommandIdentifier commandSettingsListId, RestoredCommand commandSettingsList)[]
+            (RestoreCommandIdentifier restoreCommandIdentifier, RestoredCommand restoredCommand)[]
                 matchingRow = cacheTable
                     .Select(c => Convert(restoreCommandIdentifier.PackageId, c, nuGetGlobalPackagesFolder))
-                    .Where(candidate => candidate.commandSettingsListId == restoreCommandIdentifier).ToArray();
+                    .Where(candidate => candidate.restoreCommandIdentifier == restoreCommandIdentifier).ToArray();
 
             if (matchingRow.Length >= 2)
             {
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.ToolPackage
 
             if (matchingRow.Length == 1)
             {
-                restoredCommandList = matchingRow[0].commandSettingsList;
+                restoredCommandList = matchingRow[0].restoredCommand;
                 return true;
             }
 
