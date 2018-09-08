@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             bool loadSuccess =
                 localToolsResolverCache.TryLoadHighestVersion(
-                    new CommandSettingsListIdVersionRange(
+                    new RestoreCommandIdentifierVersionRange(
                         packageId,
                         VersionRange.Parse("(0.0.0, 2.0.0)"),
                         targetFramework, runtimeIdentifier, "tool1"),
@@ -221,7 +221,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             bool loadSuccess =
                 localToolsResolverCache.TryLoadHighestVersion(
-                    new CommandSettingsListIdVersionRange(
+                    new RestoreCommandIdentifierVersionRange(
                         new PackageId("my.toolBundle"),
                         VersionRange.Parse("(0.0.0, 2.0.0)"),
                         NuGetFramework.Parse("netcoreapp2.1"), "any", "tool1"),

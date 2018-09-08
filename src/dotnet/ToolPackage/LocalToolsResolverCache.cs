@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         public bool TryLoadHighestVersion(
-            CommandSettingsListIdVersionRange query,
+            RestoreCommandIdentifierVersionRange query,
             DirectoryPath nuGetGlobalPackagesFolder,
             out RestoredCommand restoredCommandList)
         {

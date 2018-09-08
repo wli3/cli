@@ -11,9 +11,9 @@ namespace Microsoft.DotNet.ToolPackage
     /// <summary>
     ///     A range of RestoreCommandIdentifier that is only different in the Version field.
     /// </summary>
-    internal class CommandSettingsListIdVersionRange
+    internal class RestoreCommandIdentifierVersionRange
     {
-        public CommandSettingsListIdVersionRange(
+        public RestoreCommandIdentifierVersionRange(
             PackageId packageId,
             VersionRange versionRange,
             NuGetFramework targetFramework,
