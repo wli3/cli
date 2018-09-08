@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.ToolPackage
         public NuGetVersion Version { get; }
         public NuGetFramework TargetFramework { get; }
         public string RuntimeIdentifier { get; }
-        public string CommandName { get; }
+        public string CommandName { get; }  
 
         public bool Equals(CommandSettingsListId other)
         {

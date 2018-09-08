@@ -24,43 +24,48 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         public void Save(
-            IDictionary<CommandSettingsListId, CommandSettings> CommandSettingsMap,
+            IDictionary<CommandSettingsListId, CommandSettings> commandSettingsMap,
             DirectoryPath nuGetGlobalPackagesFolder)
         {
             EnsureFileStorageExists();
 
-            CacheRow cacheRow =
-                ConvertToCacheRow(commandSettingsListId, commandSettingsList, nuGetGlobalPackagesFolder);
-
-            string packageCacheFile = GetCacheFile(commandSettingsListId.PackageId);
-
-            if (_fileSystem.File.Exists(packageCacheFile))
+            foreach (var distinctPackageIdAndPair in commandSettingsMap.GroupBy(x => x.Key.PackageId))
             {
-                var cacheTable = GetCacheTable(packageCacheFile);
+                PackageId distinctPackageId = distinctPackageIdAndPair.Key;
 
-                if (!TryGetMatchingCommandSettingsList(
-                    commandSettingsListId,
-                    nuGetGlobalPackagesFolder,
-                    cacheTable,
-                    out IReadOnlyList<CommandSettings> _))
+                string packageCacheFile = GetCacheFile(distinctPackageId);
+                if (_fileSystem.File.Exists(packageCacheFile))
                 {
+                    var existingCacheTable = GetCacheTable(packageCacheFile);
+
+                    var diffedRow = distinctPackageIdAndPair
+                        .Where(pair => !TryGetMatchingCommandSettingsList(
+                            pair.Key,
+                            nuGetGlobalPackagesFolder,
+                            existingCacheTable, out _))
+                        .Select(pair => ConvertToCacheRow(pair.Key, pair.Value, nuGetGlobalPackagesFolder));
+
                     _fileSystem.File.WriteAllText(
                         packageCacheFile,
-                        JsonConvert.SerializeObject(
-                            cacheTable.Concat(new[] {cacheRow}).ToArray()));
+                        JsonConvert.SerializeObject(existingCacheTable.Concat(diffedRow)));
                 }
-            }
-            else
-            {
-                _fileSystem.File.WriteAllText(
-                    packageCacheFile,
-                    JsonConvert.SerializeObject(new[] {cacheRow}));
+                else
+                {
+                    var rowsToAdd =
+                        distinctPackageIdAndPair
+                            .Select(x => ConvertToCacheRow(x.Key, x.Value, nuGetGlobalPackagesFolder));
+
+                    _fileSystem.File.WriteAllText(
+                        packageCacheFile,
+                        JsonConvert.SerializeObject(rowsToAdd));
+                }
             }
         }
 
-        public IReadOnlyList<CommandSettings> Load(
+        public bool TryLoad(
             CommandSettingsListId commandSettingsListId,
-            DirectoryPath nuGetGlobalPackagesFolder)
+            DirectoryPath nuGetGlobalPackagesFolder,
+            out CommandSettings commandSettings)
         {
             string packageCacheFile = GetCacheFile(commandSettingsListId.PackageId);
             if (_fileSystem.File.Exists(packageCacheFile))
@@ -69,13 +74,14 @@ namespace Microsoft.DotNet.ToolPackage
                     commandSettingsListId,
                     nuGetGlobalPackagesFolder,
                     GetCacheTable(packageCacheFile),
-                    out IReadOnlyList<CommandSettings> commandSettingsList))
+                    out commandSettings))
                 {
-                    return commandSettingsList;
+                    return true;
                 }
             }
 
-            return Array.Empty<CommandSettings>();
+            commandSettings = null;
+            return false;
         }
 
         private CacheRow[] GetCacheTable(string packageCacheFile)
@@ -98,7 +104,7 @@ namespace Microsoft.DotNet.ToolPackage
         public bool TryLoadHighestVersion(
             CommandSettingsListIdVersionRange query,
             DirectoryPath nuGetGlobalPackagesFolder,
-            out IReadOnlyList<CommandSettings> commandSettingsList)
+            out CommandSettings commandSettingsList)
         {
             commandSettingsList = null;
             string packageCacheFile = GetCacheFile(query.PackageId);
@@ -114,7 +120,7 @@ namespace Microsoft.DotNet.ToolPackage
                     .OrderByDescending(allMatched => allMatched.commandSettingsListId.Version)
                     .FirstOrDefault();
 
-                if (!list.commandSettingsList.Equals(default(IReadOnlyList<CommandSettings>)))
+                if (!list.commandSettingsList.Equals(default(CommandSettings)))
                 {
                     commandSettingsList = list.commandSettingsList;
                     return true;
@@ -166,26 +172,20 @@ namespace Microsoft.DotNet.ToolPackage
                 cacheRow.RuntimeIdentifier,
                 cacheRow.Name);
 
-            IReadOnlyList<CommandSettings> commandSettingsList =
-                cacheRow.SerializableCommandSettingsArray
-                    .Select(
-                        c => new CommandSettings(
-                            c.Name,
-                            c.Runner,
-                            nuGetGlobalPackagesFolder
-                                .WithFile(c.RelativeToNuGetGlobalPackagesFolderPathToDll))).ToArray();
+            CommandSettings commandSettings = new CommandSettings(cacheRow.Name, cacheRow.Runner,
+                nuGetGlobalPackagesFolder
+                    .WithFile(cacheRow.RelativeToNuGetGlobalPackagesFolderPathToDll));
 
-            return (commandSettingsListId, commandSettingsList);
+            return (commandSettingsListId, commandSettings);
         }
 
         private static bool TryGetMatchingCommandSettingsList(
             CommandSettingsListId commandSettingsListId,
             DirectoryPath nuGetGlobalPackagesFolder,
             CacheRow[] cacheTable,
-            out IReadOnlyList<CommandSettings> commandSettingsList)
+            out CommandSettings commandSettingsList)
         {
-            (CommandSettingsListId commandSettingsListId,
-                IReadOnlyList<CommandSettings> commandSettingsList)[]
+            (CommandSettingsListId commandSettingsListId, CommandSettings commandSettingsList)[]
                 matchingRow = cacheTable
                     .Select(c => Convert(commandSettingsListId.PackageId, c, nuGetGlobalPackagesFolder))
                     .Where(candidate => candidate.commandSettingsListId == commandSettingsListId).ToArray();
