@@ -24,21 +24,20 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         public void Save(
-            IDictionary<RestoreCommandIdentifier, RestoredCommand> commandSettingsMap,
+            IDictionary<RestoreCommandIdentifier, RestoredCommand> restoredCommandMap,
             DirectoryPath nuGetGlobalPackagesFolder)
         {
             EnsureFileStorageExists();
 
-            foreach (var distinctPackageIdAndPair in commandSettingsMap.GroupBy(x => x.Key.PackageId))
+            foreach (var distinctPackageIdAndRestoredCommandMap in restoredCommandMap.GroupBy(x => x.Key.PackageId))
             {
-                PackageId distinctPackageId = distinctPackageIdAndPair.Key;
-
+                PackageId distinctPackageId = distinctPackageIdAndRestoredCommandMap.Key;
                 string packageCacheFile = GetCacheFile(distinctPackageId);
                 if (_fileSystem.File.Exists(packageCacheFile))
                 {
                     var existingCacheTable = GetCacheTable(packageCacheFile);
 
-                    var diffedRow = distinctPackageIdAndPair
+                    var diffedRow = distinctPackageIdAndRestoredCommandMap
                         .Where(pair => !TryGetMatchingCommandSettingsList(
                             pair.Key,
                             nuGetGlobalPackagesFolder,
@@ -52,8 +51,12 @@ namespace Microsoft.DotNet.ToolPackage
                 else
                 {
                     var rowsToAdd =
-                        distinctPackageIdAndPair
-                            .Select(x => ConvertToCacheRow(x.Key, x.Value, nuGetGlobalPackagesFolder));
+                        distinctPackageIdAndRestoredCommandMap
+                            .Select(mapWithSamePackageId
+                                => ConvertToCacheRow(
+                                    mapWithSamePackageId.Key,
+                                    mapWithSamePackageId.Value,
+                                    nuGetGlobalPackagesFolder));
 
                     _fileSystem.File.WriteAllText(
                         packageCacheFile,
