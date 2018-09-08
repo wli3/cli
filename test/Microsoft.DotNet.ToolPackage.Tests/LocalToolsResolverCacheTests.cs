@@ -183,28 +183,35 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             };
 
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, previewNuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings0, nuGetGlobalPackagesFolder);
+                listOfCommandSettings0.ToDictionary(
+                    c => new CommandSettingsListId(packageId, previewNuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
+
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings1, nuGetGlobalPackagesFolder);
+                listOfCommandSettings1.ToDictionary(
+                    c => new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
+
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, newerNuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings2, nuGetGlobalPackagesFolder);
+                listOfCommandSettings2.ToDictionary(
+                    c => new CommandSettingsListId(packageId, newerNuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
+
 
             bool loadSuccess =
                 localToolsResolverCache.TryLoadHighestVersion(
                     new CommandSettingsListIdVersionRange(
                         packageId,
                         VersionRange.Parse("(0.0.0, 2.0.0)"),
-                        targetFramework, runtimeIdentifier),
-                    nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> loadedResolverCache);
+                        targetFramework, runtimeIdentifier, "tool1"),
+                    nuGetGlobalPackagesFolder, out CommandSettings loadedResolverCache);
 
             loadSuccess.Should().BeTrue();
 
-            loadedResolverCache.Should().Contain(c =>
-                c.Name == "tool1" && c.Runner == "dotnet" &&
-                c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool1.dll").ToString());
+            loadedResolverCache.ShouldBeEquivalentTo(listOfCommandSettings1[0]);
         }
 
         [Fact]
@@ -217,8 +224,8 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                     new CommandSettingsListIdVersionRange(
                         new PackageId("my.toolBundle"),
                         VersionRange.Parse("(0.0.0, 2.0.0)"),
-                        NuGetFramework.Parse("netcoreapp2.1"), "any"),
-                    nuGetGlobalPackagesFolder, out IReadOnlyList<CommandSettings> _);
+                        NuGetFramework.Parse("netcoreapp2.1"), "any", "tool1"),
+                    nuGetGlobalPackagesFolder, out _);
 
             loadSuccess.Should().BeFalse();
         }
