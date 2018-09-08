@@ -168,16 +168,20 @@ namespace Microsoft.DotNet.ToolPackage
                 CacheRow cacheRow,
                 DirectoryPath nuGetGlobalPackagesFolder)
         {
-            RestoreCommandIdentifier restoreCommandIdentifier = new RestoreCommandIdentifier(
-                packageId,
-                NuGetVersion.Parse(cacheRow.Version),
-                NuGetFramework.Parse(cacheRow.TargetFramework),
-                cacheRow.RuntimeIdentifier,
-                cacheRow.Name);
+            RestoreCommandIdentifier restoreCommandIdentifier =
+                new RestoreCommandIdentifier(
+                    packageId,
+                    NuGetVersion.Parse(cacheRow.Version),
+                    NuGetFramework.Parse(cacheRow.TargetFramework),
+                    cacheRow.RuntimeIdentifier,
+                    cacheRow.Name);
 
-            RestoredCommand restoredCommand = new RestoredCommand(cacheRow.Name, cacheRow.Runner,
-                nuGetGlobalPackagesFolder
-                    .WithFile(cacheRow.RelativeToNuGetGlobalPackagesFolderPathToDll));
+            RestoredCommand restoredCommand =
+                new RestoredCommand(
+                    cacheRow.Name,
+                    cacheRow.Runner,
+                    nuGetGlobalPackagesFolder
+                        .WithFile(cacheRow.RelativeToNuGetGlobalPackagesFolderPathToDll));
 
             return (restoreCommandIdentifier, restoredCommand);
         }
