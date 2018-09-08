@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -51,25 +52,29 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             };
 
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings, nuGetGlobalPackagesFolder);
+                listOfCommandSettings.ToDictionary(
+                    c => new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
 
             localToolsResolverCache
-                .Load(
+                .TryLoad(
                     new CommandSettingsListId(packageId, NuGetVersion.Parse("1.0.0-wrong-version"), targetFramework,
-                        runtimeIdentifier), nuGetGlobalPackagesFolder)
-                .Should().BeEmpty();
+                        runtimeIdentifier, listOfCommandSettings[0].Name), nuGetGlobalPackagesFolder, out _)
+                .Should().BeFalse();
 
             localToolsResolverCache
-                .Load(
+                .TryLoad(
                     new CommandSettingsListId(packageId, nuGetVersion, NuGetFramework.Parse("wrongFramework"),
-                        runtimeIdentifier), nuGetGlobalPackagesFolder)
-                .Should().BeEmpty();
+                        runtimeIdentifier, listOfCommandSettings[0].Name), nuGetGlobalPackagesFolder, out _)
+                .Should().BeFalse();
 
             localToolsResolverCache
-                .Load(new CommandSettingsListId(packageId, nuGetVersion, targetFramework, "wrongRuntimeIdentifier"),
-                    nuGetGlobalPackagesFolder)
-                .Should().BeEmpty();
+                .TryLoad(
+                    new CommandSettingsListId(packageId, nuGetVersion, targetFramework,
+                        "wrongRuntimeIdentifier", listOfCommandSettings[0].Name),
+                    nuGetGlobalPackagesFolder, out _)
+                .Should().BeFalse();
         }
 
         [Fact]
