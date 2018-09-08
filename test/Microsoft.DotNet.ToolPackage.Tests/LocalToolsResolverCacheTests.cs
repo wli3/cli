@@ -329,8 +329,10 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             };
 
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings, nuGetGlobalPackagesFolder);
+                listOfCommandSettings.ToDictionary(
+                    c => new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
 
             var cachePath = cacheDirectory
                 .WithSubDirectories(version.ToString())
@@ -344,17 +346,17 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             // Save after corruption
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings, nuGetGlobalPackagesFolder);
+                listOfCommandSettings.ToDictionary(
+                    c => new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
 
-            IReadOnlyList<CommandSettings> loadedResolverCache =
-                localToolsResolverCache.Load(
-                    new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                    nuGetGlobalPackagesFolder);
+            localToolsResolverCache.TryLoad(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                    listOfCommandSettings[0].Name),
+                nuGetGlobalPackagesFolder, out CommandSettings commandSettings);
 
-            loadedResolverCache.Should().ContainSingle(c =>
-                c.Name == "tool1" && c.Runner == "dotnet" &&
-                c.Executable.ToString() == nuGetGlobalPackagesFolder.WithFile("tool1.dll").ToString());
+            commandSettings.ShouldBeEquivalentTo(listOfCommandSettings[0]);
         }
 
         private static void WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
@@ -386,8 +388,10 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             };
 
             localToolsResolverCache.Save(
-                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                listOfCommandSettings, nuGetGlobalPackagesFolder);
+                listOfCommandSettings.ToDictionary(
+                    c => new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                        c.Name)),
+                nuGetGlobalPackagesFolder);
 
             var cachePath = cacheDirectory
                 .WithSubDirectories(version.ToString())
@@ -399,14 +403,10 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             corruptCache(fileSystem, cachePath, existingCache);
 
-            IReadOnlyList<CommandSettings> loadedResolverCache = null;
-            Action a = () => loadedResolverCache =
-                localToolsResolverCache.Load(
-                    new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier),
-                    nuGetGlobalPackagesFolder);
-
-            a.ShouldNotThrow("Cache file corruption is expected");
-            loadedResolverCache.Should().BeEmpty("Consider corrupted file cache miss");
+            localToolsResolverCache.TryLoad(
+                new CommandSettingsListId(packageId, nuGetVersion, targetFramework, runtimeIdentifier,
+                    listOfCommandSettings[0].Name),
+                nuGetGlobalPackagesFolder, out _).Should().BeFalse("Consider corrupted file cache miss");
         }
     }
 }
