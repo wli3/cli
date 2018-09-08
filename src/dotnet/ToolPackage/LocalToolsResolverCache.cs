@@ -24,8 +24,7 @@ namespace Microsoft.DotNet.ToolPackage
         }
 
         public void Save(
-            CommandSettingsListId commandSettingsListId,
-            IReadOnlyList<CommandSettings> commandSettingsList,
+            IDictionary<CommandSettingsListId, CommandSettings> CommandSettingsMap,
             DirectoryPath nuGetGlobalPackagesFolder)
         {
             EnsureFileStorageExists();
@@ -137,7 +136,7 @@ namespace Microsoft.DotNet.ToolPackage
 
         private static CacheRow ConvertToCacheRow(
             CommandSettingsListId commandSettingsListId,
-            IReadOnlyList<CommandSettings> commandSettingsList,
+            CommandSettings commandSettingsList,
             DirectoryPath nuGetGlobalPackagesFolder)
         {
             return new CacheRow
@@ -145,20 +144,16 @@ namespace Microsoft.DotNet.ToolPackage
                 Version = commandSettingsListId.Version.ToNormalizedString(),
                 TargetFramework = commandSettingsListId.TargetFramework.GetShortFolderName(),
                 RuntimeIdentifier = commandSettingsListId.RuntimeIdentifier.ToLowerInvariant(),
-                SerializableCommandSettingsArray =
-                    commandSettingsList.Select(s => new SerializableCommandSettings
-                    {
-                        Name = s.Name,
-                        Runner = s.Runner,
-                        RelativeToNuGetGlobalPackagesFolderPathToDll =
-                            Path.GetRelativePath(nuGetGlobalPackagesFolder.Value, s.Executable.Value)
-                    }).ToArray()
+                Name = commandSettingsListId.CommandName,
+                Runner = commandSettingsList.Runner,
+                RelativeToNuGetGlobalPackagesFolderPathToDll =
+                    Path.GetRelativePath(nuGetGlobalPackagesFolder.Value, commandSettingsList.Executable.Value)
             };
         }
 
         private static
             (CommandSettingsListId commandSettingsListId,
-            IReadOnlyList<CommandSettings> commandSettingsList)
+            CommandSettings commandSettingsList)
             Convert(
                 PackageId packageId,
                 CacheRow cacheRow,
@@ -168,7 +163,8 @@ namespace Microsoft.DotNet.ToolPackage
                 packageId,
                 NuGetVersion.Parse(cacheRow.Version),
                 NuGetFramework.Parse(cacheRow.TargetFramework),
-                cacheRow.RuntimeIdentifier);
+                cacheRow.RuntimeIdentifier,
+                cacheRow.Name);
 
             IReadOnlyList<CommandSettings> commandSettingsList =
                 cacheRow.SerializableCommandSettingsArray
@@ -215,11 +211,6 @@ namespace Microsoft.DotNet.ToolPackage
             public string Version { get; set; }
             public string TargetFramework { get; set; }
             public string RuntimeIdentifier { get; set; }
-            public SerializableCommandSettings[] SerializableCommandSettingsArray { get; set; }
-        }
-
-        private class SerializableCommandSettings
-        {
             public string Name { get; set; }
             public string Runner { get; set; }
             public string RelativeToNuGetGlobalPackagesFolderPathToDll { get; set; }
