@@ -358,55 +358,6 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             restoredCommand.ShouldBeEquivalentTo(restoredCommands[0]);
         }
 
-        [Fact]
-        public void Jsons()
-        {
-            JsonConvert.SerializeObject(
-                new LocalTools
-                {
-                    version = "1",
-                    isRoot = true,
-                    tools = new Dictionary<string, localtool>
-                    {
-                        {
-                            "t-rex",
-                            new localtool
-                            {
-                                version = "1.0.53", commands = new string[] { "t-rex" }, targetFramework = "netcoreapp2.1",
-                                runtimeIdentifier = "win-x64"
-                            }
-                        },
-                        {
-                            "dotnetsay",
-                            new localtool
-                            {
-                                version = "2.1.4", commands =  new string[] { "dotnetsay" }
-                            }
-                        }
-                    }
-                },
-                Formatting.None,
-                new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                }).Should().Be("3");
-        }
-
-        private class LocalTools
-        {
-            public string version { get; set; }
-            public bool isRoot { get; set; }
-            public Dictionary<string, localtool> tools { get; set; }
-        }
-
-        private class localtool
-        {
-            public string version { get; set; }
-            public string[] commands { get; set; }
-            public string targetFramework { get; set; }
-            public string runtimeIdentifier { get; set; }
-        }
-
         private static void WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
             bool useRealFileSystem,
             Action<IFileSystem, string, string> corruptCache)
