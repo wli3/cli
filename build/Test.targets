@@ -127,6 +127,7 @@
                 ProjectPath="%(TestPackageProject.ProjectPath)"
                 ToolPath="$(OutputDirectory)"
                 VersionSuffix="%(TestPackageProject.VersionSuffix)"
+                ReleaseSuffix="%(TestPackageProject.ReleaseSuffix)"
                 MsbuildArgs="%(TestPackageProject.MsbuildArgs) /p:SdkNuGetVersion=$(SdkNugetVersion) /p:RestoreAdditionalProjectSources=$(TestOutputDir)/packages /p:PreviousStageProps=$(NextStagePropsPath)" />
   </Target>
 
