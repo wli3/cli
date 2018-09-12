@@ -92,10 +92,40 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             const string expectedVerbosityLevel = "diag";
 
-            var result = Parser.Instance.Parse($"dotnet tool restore --verbosity:{expectedVerbosityLevel}");
+            var result = Parser.Instance.Parse($"dotnet tool restore --verbosity {expectedVerbosityLevel}");
 
             var appliedOptions = result["dotnet"]["tool"]["restore"];
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
+        }
+
+        [Fact]
+        public void ToolRestoreParserCanParseNoCacheOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool restore --no-cache");
+
+            var appliedOptions = result["dotnet"]["tool"]["restore"];
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--no-cache");
+        }
+
+        [Fact]
+        public void ToolRestoreParserCanParseIgnoreFailedSourcesOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool restore --ignore-failed-sources");
+
+            var appliedOptions = result["dotnet"]["tool"]["restore"];
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--ignore-failed-sources");
+        }
+
+        [Fact]
+        public void ToolRestoreParserCanParseDisableParallelOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool restore --disable-parallel");
+
+            var appliedOptions = result["dotnet"]["tool"]["restore"];
+            appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
     }
 }
