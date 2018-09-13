@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
@@ -178,7 +179,7 @@ namespace Microsoft.DotNet.ToolPackage
 
             RestoredCommand restoredCommand =
                 new RestoredCommand(
-                    cacheRow.Name,
+                    new ToolCommandName(cacheRow.Name),
                     cacheRow.Runner,
                     nuGetGlobalPackagesFolder
                         .WithFile(cacheRow.RelativeToNuGetGlobalPackagesFolderPathToDll));
