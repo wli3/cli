@@ -21,6 +21,7 @@ using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.Tools.Tool.Restore;
 using Moq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -32,7 +33,6 @@ namespace Microsoft.DotNet.Tests.Commands
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
-        private readonly IToolPackageStoreQuery _toolPackageStoreQuery;
         private readonly ToolPackageInstallerMock _toolPackageInstallerMock;
         private readonly AppliedOption _appliedCommand;
         private readonly ParseResult _parseResult;
@@ -64,7 +64,6 @@ namespace Microsoft.DotNet.Tests.Commands
             _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             var toolPackageStoreMock = new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
-            _toolPackageStoreQuery = toolPackageStoreMock;
             _toolPackageInstallerMock = new ToolPackageInstallerMock(
                 fileSystem: _fileSystem,
                 store: _toolPackageStore,
@@ -139,6 +138,16 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenHasBothLocalAndGlobalAreTrueItThrows()
         {
         }
+        
+        [Fact(Skip = "pending")]
+        public void ItCanPartialRestore()
+        {
+        }
+        
+        [Fact(Skip = "pending")]
+        public void ThrowsWhenCommandWithSameName()
+        {
+        }
 
         private class MockManifestFileFinder : IManifestFileFinder
         {
@@ -149,7 +158,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toReturn = toReturn;
             }
 
-            public IEnumerable<(PackageId, NuGetVersion, NuGetFramework)> GetPackages(FilePath? manifestFilePath = null)
+            public IEnumerable<(PackageId packageId, NuGetVersion version, NuGetFramework targetframework)> GetPackages(FilePath? manifestFilePath = null)
             {
                 return _toReturn;
             }

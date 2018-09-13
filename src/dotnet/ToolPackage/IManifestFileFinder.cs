@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal interface IManifestFileFinder
     {
-        IEnumerable<(PackageId, NuGetVersion, NuGetFramework)> GetPackages(FilePath? manifestFilePath = null);
+        IEnumerable<(PackageId packageId, 
+            NuGetVersion version, 
+            NuGetFramework targetframework)> GetPackages(FilePath? manifestFilePath = null);
     }
 }
