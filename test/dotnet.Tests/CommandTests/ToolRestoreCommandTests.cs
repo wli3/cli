@@ -30,13 +30,13 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageStoreQuery _toolPackageStoreQuery;
         private readonly ToolPackageInstallerMock _toolPackageInstallerMock;
-        private readonly CreateShellShimRepository _createShellShimRepository;
         private readonly AppliedOption _appliedCommand;
         private readonly ParseResult _parseResult;
         private readonly ManifestFileFinder _manifestFileFinder;
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
         private readonly string _pathToPlacePackages;
+        private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
 
@@ -45,6 +45,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             var toolPackageStoreMock = new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
             _toolPackageStoreQuery = toolPackageStoreMock;
@@ -56,12 +57,45 @@ namespace Microsoft.DotNet.Tests.Commands
                     reporter: _reporter));
 
             ParseResult result = Parser.Instance.Parse($"dotnet tool restore {PackageId}");
-            _appliedCommand = result["dotnet"]["tool"]["install"];
+            _appliedCommand = result["dotnet"]["tool"]["restore"];
             var parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
-
+            _parseResult = parser.ParseFrom("dotnet tool", new[] { "restore", PackageId });
 
             _manifestFileFinder = new ManifestFileFinder(_fileSystem);
+            
+            _localToolsResolverCache
+                = new LocalToolsResolverCache(
+                    _fileSystem, 
+                    new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")), 
+                    version: 1);
+        }
+        
+        [Fact]
+        public void WhenRunItCanSaveCommandsToCache()
+        {
+            
+            
+            var installToolCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                _manifestFileFinder,
+                _localToolsResolverCache,
+                _reporter
+                );
+
+            installToolCommand.Execute().Should().Be(0);
+
+            // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
+            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
+            var deserializedFakeShim = JsonConvert.DeserializeObject<AppHostShellShimMakerMock.FakeShim>(
+                _fileSystem.File.ReadAllText(ExpectedCommandPath()));
+
+            _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
+        }
+        
+        [Fact(Skip = "pending")]
+        public void WhenHasBothLocalAndGlobalAreTrueItThrows()
+        {
         }
     }
 }

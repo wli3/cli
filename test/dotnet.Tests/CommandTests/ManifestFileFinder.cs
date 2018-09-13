@@ -14,5 +14,10 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _fileSystem = fileSystem;
         }
+        
+    }
+
+    internal interface IEmumerable
+    {
     }
 }
