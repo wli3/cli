@@ -127,5 +127,21 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["tool"]["restore"];
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
+        
+        [Fact(Skip = "pending")]
+        public void ToolRestoreParserHasOptionalLocal()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool restore --local");
+
+            var appliedOptions = result["dotnet"]["tool"]["restore"];
+            appliedOptions.ValueOrDefault<bool>("local").Should().Be(true);
+            
+            var result2 =
+                Parser.Instance.Parse(@"dotnet tool restore");
+
+            var appliedOptions2 = result2["dotnet"]["tool"]["restore"];
+            appliedOptions2.ValueOrDefault<bool>("local").Should().Be(true);
+        }
     }
 }
