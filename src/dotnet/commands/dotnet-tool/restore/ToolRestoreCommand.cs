@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
         public override int Execute()
         {
-            string customFile = _options.Arguments.Single();
+            string customFile = _options.Arguments.SingleOrDefault();
             FilePath? customManifestFileLocation;
             if (customFile != null)
             {
@@ -83,12 +83,13 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 var targetFramework = p.targetframework?.GetShortFolderName() ?? BundledTargetFramework
                                           .GetTargetFrameworkMoniker();
 
-                IToolPackage toolPackage = _toolPackageInstaller.InstallPackageToExternalManagedLocation(
-                    new PackageLocation(
-                        nugetConfig: configFile,
-                        additionalFeeds: _source),
-                    p.packageId, ToVersionRangeWithOnlyOneVersion(p.version), targetFramework,
-                    verbosity: _verbosity);
+                IToolPackage toolPackage =
+                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
+                        new PackageLocation(
+                            nugetConfig: configFile,
+                            additionalFeeds: _source),
+                        p.packageId, ToVersionRangeWithOnlyOneVersion(p.version), targetFramework,
+                        verbosity: _verbosity);
 
                 foreach (var command in toolPackage.Commands)
                 {
@@ -96,7 +97,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                         new RestoredCommandIdentifier(
                             toolPackage.Id,
                             toolPackage.Version,
-                            NuGetFramework.Parse(targetFramework), "any", command.Name),
+                            NuGetFramework.Parse(targetFramework),
+                            "any",
+                            command.Name),
                         command);
                 }
             }
