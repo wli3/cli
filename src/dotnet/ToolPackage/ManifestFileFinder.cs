@@ -4,13 +4,14 @@
 using System.Collections.Generic;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Packaging.Core;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 
 // TODO wul no checkin move it to tools
-namespace Microsoft.DotNet.Tests.Commands
+// TODO remove dummy impl
+namespace Microsoft.DotNet.Cli.ToolPackage
 {
-    internal class ManifestFileFinder
+    internal class ManifestFileFinder : IManifestFileFinder
     {
         private IFileSystem _fileSystem;
 
@@ -18,8 +19,10 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _fileSystem = fileSystem;
         }
-        
-        public IEnumerable<(PackageId, NuGetVersion, Targetframwork)>
-        
+
+        public IEnumerable<(PackageId, NuGetVersion, NuGetFramework)> GetPackages(FilePath? manifestFilePath = null)
+        {
+            return new (PackageId, NuGetVersion, NuGetFramework)[0];
+        }
     }
 }
