@@ -42,7 +42,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
-        private readonly NuGetFramework _targetFrameworkA;
 
         private readonly PackageId _packageIdB = new PackageId("local.tool.console.B");
         private readonly NuGetVersion _packageVersionB;
@@ -52,7 +51,6 @@ namespace Microsoft.DotNet.Tests.Commands
         public ToolRestoreCommandTests()
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
-            _targetFrameworkA = NuGetFramework.Parse("netcoreapp2.1");
 
             _packageVersionB = NuGetVersion.Parse("1.0.4");
             _targetFrameworkB = NuGetFramework.Parse("netcoreapp2.1");
@@ -113,7 +111,6 @@ namespace Microsoft.DotNet.Tests.Commands
                     (_packageIdB, _packageVersionB, _targetFrameworkB),
                 });
 
-
             var toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
                 _parseResult,
                 _toolPackageInstallerMock,
@@ -126,7 +123,11 @@ namespace Microsoft.DotNet.Tests.Commands
             toolRestoreCommand.Execute().Should().Be(0);
 
             _localToolsResolverCache.TryLoad(
-                    new RestoredCommandIdentifier(_packageIdA, _packageVersionA, _targetFrameworkA, "any",
+                    new RestoredCommandIdentifier(
+                        _packageIdA,
+                        _packageVersionA,
+                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                        "any",
                         new ToolCommandName("SimulatorCommand")), _nugetGlobalPackagesFolder, out var restoredCommand)
                 .Should().BeTrue();
 
