@@ -47,6 +47,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly PackageId _packageIdB = new PackageId("local.tool.console.B");
         private readonly NuGetVersion _packageVersionB;
         private readonly NuGetFramework _targetFrameworkB;
+        private DirectoryPath _nugetGlobalPackagesFolder;
 
         public ToolRestoreCommandTests()
         {
@@ -58,6 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
+            _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             var toolPackageStoreMock = new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
@@ -106,25 +108,31 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenRunItCanSaveCommandsToCache()
         {
             IManifestFileFinder manifestFileFinder =
-                new MockManifestFileFinder(new (PackageId, NuGetVersion, NuGetFramework)[]
+                new MockManifestFileFinder(new[]
                 {
                     (_packageIdA, _packageVersionA, null),
                     (_packageIdB, _packageVersionB, _targetFrameworkB),
                 });
+
 
             var toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
                 _parseResult,
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _nugetGlobalPackagesFolder,
                 _reporter
             );
 
             toolRestoreCommand.Execute().Should().Be(0);
 
-            _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(_packageIdA, _packageVersionA, _targetFrameworkA, "any", new ToolCommandName("SimulatorCommand")), )
-                
-                
+            _localToolsResolverCache.TryLoad(
+                    new RestoredCommandIdentifier(_packageIdA, _packageVersionA, _targetFrameworkA, "any",
+                        new ToolCommandName("SimulatorCommand")), _nugetGlobalPackagesFolder, out var restoredCommand)
+                .Should().BeTrue();
+
+            _fileSystem.File.Exists(restoredCommand.Executable.Value)
+                .Should().BeTrue($"Cached command should be found at {restoredCommand.Executable.Value}");
         }
 
         [Fact(Skip = "pending")]
