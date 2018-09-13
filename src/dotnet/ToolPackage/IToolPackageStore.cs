@@ -18,6 +18,6 @@ namespace Microsoft.DotNet.ToolPackage
 
         DirectoryPath GetRootPackageDirectory(PackageId packageId);
 
-        DirectoryPath GetPackageDirectory(PackageId packageId, NuGetVersion version);
+        DirectoryPath packageLocation(PackageId packageId, NuGetVersion version);
     }
 }

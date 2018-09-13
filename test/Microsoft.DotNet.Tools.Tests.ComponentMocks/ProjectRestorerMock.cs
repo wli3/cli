@@ -111,6 +111,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 assetJsonOutput.WithFile("project.assets.json").Value,
                 fakeExecutablePath);
         }
+        
+        public FilePath Get
 
         public MockFeedPackage GetPackage(
             string packageId,
