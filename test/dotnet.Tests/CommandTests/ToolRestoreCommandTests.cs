@@ -41,19 +41,21 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly string _pathToPlacePackages;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
+        private readonly PackageId _packageIdWithCommandNameCollisionWithA = new PackageId("command.name.collision.with.package.a");
+        private readonly NuGetVersion _packageVersionWithCommandNameCollisionWithA;
         private readonly NuGetVersion _packageVersionA;
-        private const string ToolCommandNameA = "a";
+        private ToolCommandName _toolCommandNameA = new ToolCommandName("a");
 
         private readonly PackageId _packageIdB = new PackageId("local.tool.console.B");
         private readonly NuGetVersion _packageVersionB;
         private readonly NuGetFramework _targetFrameworkB;
-        private const string ToolCommandNameB = "b";
+        private ToolCommandName _toolCommandNameB  = new ToolCommandName("b");
         private DirectoryPath _nugetGlobalPackagesFolder;
 
         public ToolRestoreCommandTests()
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
-
+            _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");
             _packageVersionB = NuGetVersion.Parse("1.0.4");
             _targetFrameworkB = NuGetFramework.Parse("netcoreapp2.1");
 
@@ -81,14 +83,20 @@ namespace Microsoft.DotNet.Tests.Commands
                                 {
                                     PackageId = _packageIdA.ToString(),
                                     Version = _packageVersionA.ToNormalizedString(),
-                                    ToolCommandName = ToolCommandNameA
+                                    ToolCommandName = _toolCommandNameA.ToString()
                                 },
                                 new MockFeedPackage
                                 {
                                     PackageId = _packageIdB.ToString(),
                                     Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = ToolCommandNameB
-                                }
+                                    ToolCommandName = _toolCommandNameB.ToString()
+                                },
+                                new MockFeedPackage
+                                {
+                                    PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
+                                    Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
+                                    ToolCommandName = _toolCommandNameA.ToString()
+                                },
                             }
                         }
                     }));
@@ -132,7 +140,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         "any",
-                        new ToolCommandName(ToolCommandNameA)), _nugetGlobalPackagesFolder, out var restoredCommand)
+                        _toolCommandNameA), _nugetGlobalPackagesFolder, out var restoredCommand)
                 .Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value)
