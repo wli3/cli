@@ -149,6 +149,10 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public void SetEnvironmentVariable(string variable, string value, EnvironmentVariableTarget target)
         {
+            if (value.EndsWith("tools"))
+            {
+                throw new Exception("call real in tests" + variable + " " + value);
+            }
             Environment.SetEnvironmentVariable(variable, value, target);
         }
     }
