@@ -42,10 +42,12 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
+        private const string ToolCommandNameA = "a";
 
         private readonly PackageId _packageIdB = new PackageId("local.tool.console.B");
         private readonly NuGetVersion _packageVersionB;
         private readonly NuGetFramework _targetFrameworkB;
+        private const string ToolCommandNameB = "b";
         private DirectoryPath _nugetGlobalPackagesFolder;
 
         public ToolRestoreCommandTests()
@@ -79,13 +81,13 @@ namespace Microsoft.DotNet.Tests.Commands
                                 {
                                     PackageId = _packageIdA.ToString(),
                                     Version = _packageVersionA.ToNormalizedString(),
-                                    ToolCommandName = "a"
+                                    ToolCommandName = ToolCommandNameA
                                 },
                                 new MockFeedPackage
                                 {
                                     PackageId = _packageIdB.ToString(),
                                     Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = "b"
+                                    ToolCommandName = ToolCommandNameB
                                 }
                             }
                         }
@@ -94,7 +96,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse($"dotnet tool restore");
             _appliedCommand = result["dotnet"]["tool"]["restore"];
             var parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] {"restore"});
+            _parseResult = parser.ParseFrom("dotnet tool", new[] { "restore" });
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -130,7 +132,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         "any",
-                        new ToolCommandName("SimulatorCommand")), _nugetGlobalPackagesFolder, out var restoredCommand)
+                        new ToolCommandName(ToolCommandNameA)), _nugetGlobalPackagesFolder, out var restoredCommand)
                 .Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value)
@@ -141,12 +143,12 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenHasBothLocalAndGlobalAreTrueItThrows()
         {
         }
-        
+
         [Fact(Skip = "pending")]
         public void ItCanPartialRestore()
         {
         }
-        
+
         [Fact(Skip = "pending")]
         public void ThrowsWhenCommandWithSameName()
         {
