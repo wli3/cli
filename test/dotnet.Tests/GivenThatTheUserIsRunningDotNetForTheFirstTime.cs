@@ -48,6 +48,13 @@ namespace Microsoft.DotNet.Tests
 
             _nugetFallbackFolder = new DirectoryInfo(cliTestFallbackFolder);
             _dotDotnetFolder = new DirectoryInfo(Path.Combine(testNuGetHome, ".dotnet"));
+            CreateToolPathSentinelToAvoidSettingRegisteryDuringTest();
+        }
+
+        private static void CreateToolPathSentinelToAvoidSettingRegisteryDuringTest()
+        {
+            _dotDotnetFolder.Create();
+            File.WriteAllText(Path.Combine(_dotDotnetFolder.FullName, Program.ToolPathSentinelFileName), string.Empty);
         }
 
         [Fact]
