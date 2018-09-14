@@ -78,12 +78,14 @@ namespace Microsoft.DotNet.Tests.Commands
                                 new MockFeedPackage
                                 {
                                     PackageId = _packageIdA.ToString(),
-                                    Version = _packageVersionA.ToNormalizedString()
+                                    Version = _packageVersionA.ToNormalizedString(),
+                                    ToolCommandName = "a"
                                 },
                                 new MockFeedPackage
                                 {
                                     PackageId = _packageIdB.ToString(),
-                                    Version = _packageVersionB.ToNormalizedString()
+                                    Version = _packageVersionB.ToNormalizedString(),
+                                    ToolCommandName = "b"
                                 }
                             }
                         }
