@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Tests.Commands
                                 {
                                     PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
                                     Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameA.ToString()
+                                    ToolCommandName = "A"
                                 },
                             }
                         }
@@ -147,9 +147,29 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Should().BeTrue($"Cached command should be found at {restoredCommand.Executable.Value}");
         }
 
-        [Fact(Skip = "pending")]
-        public void WhenHasBothLocalAndGlobalAreTrueItThrows()
+        [Fact]
+        public void WhenRestoredCommandHasTheSameCommandNameItThrows()
         {
+            IManifestFileFinder manifestFileFinder =
+               new MockManifestFileFinder(new (PackageId, NuGetVersion, NuGetFramework)[]
+               {
+                    (_packageIdA, _packageVersionA, null),
+                    (_packageIdWithCommandNameCollisionWithA, _packageVersionWithCommandNameCollisionWithA, null),
+               });
+
+            var toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                manifestFileFinder,
+                _localToolsResolverCache,
+                _nugetGlobalPackagesFolder,
+                _reporter
+            );
+
+            Action a = () => toolRestoreCommand.Execute();
+            a.ShouldThrow<ToolPackageException>()
+                .And.Message
+                .Should().Be("\"Package local.tool.console.a\" and \"command.name.collision.with.package.a\" have a command with the same name \"a\" and \"A\" regardless of the casing.");
         }
 
         [Fact(Skip = "pending")]
