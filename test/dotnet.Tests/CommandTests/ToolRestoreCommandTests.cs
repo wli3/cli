@@ -169,18 +169,45 @@ namespace Microsoft.DotNet.Tests.Commands
                 .And.Message
                 .Should().Be("Packages \"local.tool.console.a\", \"command.name.collision.with.package.a\" " +
                              "have a command with the same name \"a\", \"A\" regardless of the casing.");
-            
+
             // TODO WUL NO CHECKIN loc
         }
 
-        [Fact(Skip = "pending")]
-        public void ItCanPartialRestore()
+        // TODO WUL NO CHECKIN loc
+        [Fact]
+        public void WhenSomePackageFailedToRestoreItCanRestorePartiallySuccessful()
         {
-        }
+            IManifestFileFinder manifestFileFinder =
+                new MockManifestFileFinder(new (PackageId, NuGetVersion, NuGetFramework)[]
+                {
+                    (_packageIdA, _packageVersionA, null),
+                    (new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"), null)
+                });
 
-        [Fact(Skip = "pending")]
-        public void ThrowsWhenCommandWithSameName()
-        {
+            ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                manifestFileFinder,
+                _localToolsResolverCache,
+                _nugetGlobalPackagesFolder,
+                _reporter
+            );
+
+            int executeResult = toolRestoreCommand.Execute();
+            _reporter.Lines.Should()
+                .Contain(l => l.Contains("Restore Partially Successful." + Environment.NewLine +
+                                         "Package \"non-exists\" failed to restore, due to"));
+
+            executeResult.Should().Be(1);
+
+            _localToolsResolverCache.TryLoad(
+                    new RestoredCommandIdentifier(
+                        _packageIdA,
+                        _packageVersionA,
+                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                        "any",
+                        _toolCommandNameA), _nugetGlobalPackagesFolder, out _)
+                .Should().BeTrue("Existing package will succeed despite other package failed");
         }
 
         private class MockManifestFileFinder : IManifestFileFinder
