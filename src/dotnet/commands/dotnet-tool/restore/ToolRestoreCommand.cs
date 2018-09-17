@@ -108,12 +108,12 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             if (toolPackageExceptions.Any())
             {
-                _errorReporter.WriteLine("Restore Partially Successful." +
+                _errorReporter.WriteLine(LocalizableStrings.RestorePartiallySuccessful +
                                          Environment.NewLine +
                                          string.Join(
                                              Environment.NewLine,
                                              toolPackageExceptions.Select(p =>
-                                                 string.Format("Package \"{0}\" failed to restore, due to {1}",
+                                                 string.Format(LocalizableStrings.PackageFailedToRestore,
                                                      p.Key.ToString(), p.Value.ToString()))));
 
                 return 1;
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
                 .Where(grouped => grouped.Count() > 1)
                 .Select(nonUniquePackageIdAndCommandNames =>
-                    string.Format("Packages {0} have a command with the same name {1} regardless of the casing.",
+                    string.Format(LocalizableStrings.PackagesCommandNameCollision,
                         JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.PackageId.ToString())),
                         JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.CommandName.ToString()))))
                 .ToArray();

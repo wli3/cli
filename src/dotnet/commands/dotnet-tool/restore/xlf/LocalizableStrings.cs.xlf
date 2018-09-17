@@ -82,6 +82,21 @@
         <target state="new">VERSION</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageFailedToRestore">
+        <source>Package "{0}" failed to restore, due to {1}</source>
+        <target state="new">Package "{0}" failed to restore, due to {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackagesCommandNameCollision">
+        <source>Packages {0} have a command with the same name {1} regardless of the casing.</source>
+        <target state="new">Packages {0} have a command with the same name {1} regardless of the casing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RestorePartiallySuccessful">
+        <source>Restore Partially Successful.</source>
+        <target state="new">Restore Partially Successful.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
