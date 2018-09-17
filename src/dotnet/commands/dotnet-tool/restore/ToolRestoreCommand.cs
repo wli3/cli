@@ -136,13 +136,16 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         {
             string[] errors = dictionary
                 .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
-                .GroupBy(t => t.CommandName)
-                .Where(g => g.Count() > 1)
-                .Select(aa =>
-                    $"Packages {JoinBySpaceWithQuote(aa.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(aa.Select(a => a.CommandName.ToString()))} regardless of the casing.")
+                .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
+                .Where(grouped => grouped.Count() > 1)
+                .Select(nonUniquePackageIdAndCommandNames =>
+                    $"Packages {JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.CommandName.ToString()))} regardless of the casing.")
                 .ToArray();
 
-            if (errors.Any()) throw new ToolPackageException(string.Join(Environment.NewLine, errors));
+            if (errors.Any())
+            {
+                throw new ToolPackageException(string.Join(Environment.NewLine, errors));
+            }
         }
 
         private string JoinBySpaceWithQuote(IEnumerable<object> objects)
