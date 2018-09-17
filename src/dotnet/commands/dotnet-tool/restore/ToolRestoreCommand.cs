@@ -68,6 +68,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             Dictionary<PackageId, ToolPackageException> toolPackageExceptions =
                 new Dictionary<PackageId, ToolPackageException>();
+
             foreach ((PackageId packageId, NuGetVersion version, NuGetFramework targetframework) p in packagesToRestore)
             {
                 string targetFramework =
@@ -112,7 +113,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                                          string.Join(
                                              Environment.NewLine,
                                              toolPackageExceptions.Select(p =>
-                                                 $"Package \"{p.Key.ToString()}\" failed to restore, due to {p.Value.ToString()}")));
+                                                 string.Format("Package \"{0}\" failed to restore, due to {1}",
+                                                     p.Key.ToString(), p.Value.ToString()))));
 
                 return 1;
             }
@@ -139,7 +141,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
                 .Where(grouped => grouped.Count() > 1)
                 .Select(nonUniquePackageIdAndCommandNames =>
-                    $"Packages {JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.CommandName.ToString()))} regardless of the casing.")
+                    string.Format("Packages {0} have a command with the same name {1} regardless of the casing.",
+                        JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.PackageId.ToString())),
+                        JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.CommandName.ToString()))))
                 .ToArray();
 
             if (errors.Any())
