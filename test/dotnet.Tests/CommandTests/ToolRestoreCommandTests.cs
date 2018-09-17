@@ -169,7 +169,8 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolRestoreCommand.Execute();
             a.ShouldThrow<ToolPackageException>()
                 .And.Message
-                .Should().Be("\"Package local.tool.console.a\", \"command.name.collision.with.package.a\" have a command with the same name \"a\", \"A\" regardless of the casing.");
+                .Should().Be("Packages \"local.tool.console.a\", \"command.name.collision.with.package.a\" " +
+                             "have a command with the same name \"a\", \"A\" regardless of the casing.");
         }
 
         [Fact(Skip = "pending")]

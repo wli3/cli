@@ -108,11 +108,11 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
                 .GroupBy(t => t.CommandName)
                 .Where(g => g.Count() > 1)
-                .Select(aa => $"{JoinBySpaceWithQuote(aa.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(aa.Select(a => a.CommandName.ToString()))}  regardless of the casing.").ToArray();
+                .Select(aa => $"Packages {JoinBySpaceWithQuote(aa.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(aa.Select(a => a.CommandName.ToString()))} regardless of the casing.").ToArray();
 
             if (errors.Any())
             {
-                throw new ToolPackageException("ADD IN MESSAGE");
+                throw new ToolPackageException(string.Join(Environment.NewLine, errors));
             }
 
             return 0;
