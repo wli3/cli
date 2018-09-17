@@ -169,6 +169,8 @@ namespace Microsoft.DotNet.Tests.Commands
                 .And.Message
                 .Should().Be("Packages \"local.tool.console.a\", \"command.name.collision.with.package.a\" " +
                              "have a command with the same name \"a\", \"A\" regardless of the casing.");
+            
+            // TODO WUL NO CHECKIN loc
         }
 
         [Fact(Skip = "pending")]
