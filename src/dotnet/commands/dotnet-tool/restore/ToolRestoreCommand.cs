@@ -3,32 +3,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Restore
 {
     internal class ToolRestoreCommand : CommandBase
     {
-        private readonly AppliedOption _options;
-        private readonly IToolPackageInstaller _toolPackageInstaller;
-        private readonly IManifestFileFinder _manifestFileFinder;
-        private readonly ILocalToolsResolverCache _localToolsResolverCache;
-        private readonly DirectoryPath _nugetGlobalPackagesFolder;
-        private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
         private readonly string _configFilePath;
+        private readonly IReporter _errorReporter;
+        private readonly ILocalToolsResolverCache _localToolsResolverCache;
+        private readonly IManifestFileFinder _manifestFileFinder;
+        private readonly DirectoryPath _nugetGlobalPackagesFolder;
+        private readonly AppliedOption _options;
+        private readonly IReporter _reporter;
         private readonly string[] _source;
+        private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
 
         public ToolRestoreCommand(
@@ -61,27 +58,22 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             string customFile = _options.Arguments.SingleOrDefault();
             FilePath? customManifestFileLocation;
             if (customFile != null)
-            {
                 customManifestFileLocation = new FilePath(customFile);
-            }
             else
-            {
                 customManifestFileLocation = null;
-            }
 
             FilePath? configFile = null;
-            if (_configFilePath != null)
-            {
-                configFile = new FilePath(_configFilePath);
-            }
+            if (_configFilePath != null) configFile = new FilePath(_configFilePath);
 
-            var packagesToRestore = _manifestFileFinder.GetPackages(customManifestFileLocation);
+            IEnumerable<(PackageId packageId, NuGetVersion version, NuGetFramework targetframework)> packagesToRestore =
+                _manifestFileFinder.GetPackages(customManifestFileLocation);
 
-            var dictionary = new Dictionary<RestoredCommandIdentifier, RestoredCommand>();
-            foreach (var p in packagesToRestore)
+            Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary =
+                new Dictionary<RestoredCommandIdentifier, RestoredCommand>();
+            foreach ((PackageId packageId, NuGetVersion version, NuGetFramework targetframework) p in packagesToRestore)
             {
-                var targetFramework = p.targetframework?.GetShortFolderName() ?? BundledTargetFramework
-                                          .GetTargetFrameworkMoniker();
+                string targetFramework = p.targetframework?.GetShortFolderName() ?? BundledTargetFramework
+                                             .GetTargetFrameworkMoniker();
 
                 IToolPackage toolPackage =
                     _toolPackageInstaller.InstallPackageToExternalManagedLocation(
@@ -91,8 +83,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                         p.packageId, ToVersionRangeWithOnlyOneVersion(p.version), targetFramework,
                         verbosity: _verbosity);
 
-                foreach (var command in toolPackage.Commands)
-                {
+                foreach (RestoredCommand command in toolPackage.Commands)
                     dictionary.Add(
                         new RestoredCommandIdentifier(
                             toolPackage.Id,
@@ -101,19 +92,19 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                             "any",
                             command.Name),
                         command);
-                }
             }
 
-            var errors = dictionary
+            string[] errors = dictionary
                 .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
                 .GroupBy(t => t.CommandName)
                 .Where(g => g.Count() > 1)
-                .Select(aa => $"Packages {JoinBySpaceWithQuote(aa.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(aa.Select(a => a.CommandName.ToString()))} regardless of the casing.").ToArray();
+                .Select(aa =>
+                    $"Packages {JoinBySpaceWithQuote(aa.Select(a => a.PackageId.ToString()))} have a command with the same name {JoinBySpaceWithQuote(aa.Select(a => a.CommandName.ToString()))} regardless of the casing.")
+                .ToArray();
 
-            if (errors.Any())
-            {
-                throw new ToolPackageException(string.Join(Environment.NewLine, errors));
-            }
+            if (errors.Any()) throw new ToolPackageException(string.Join(Environment.NewLine, errors));
+
+            _localToolsResolverCache.Save(dictionary, _nugetGlobalPackagesFolder);
 
             return 0;
         }
