@@ -167,13 +167,11 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolRestoreCommand.Execute();
             a.ShouldThrow<ToolPackageException>()
                 .And.Message
-                .Should().Be("Packages \"local.tool.console.a\", \"command.name.collision.with.package.a\" " +
-                             "have a command with the same name \"a\", \"A\" regardless of the casing.");
-
-            // TODO WUL NO CHECKIN loc
+                .Should().Be(string.Format(LocalizableStrings.PackagesCommandNameCollision,
+                        "\"local.tool.console.a\", \"command.name.collision.with.package.a\"",
+                        "\"a\", \"A\""));
         }
 
-        // TODO WUL NO CHECKIN loc
         [Fact]
         public void WhenSomePackageFailedToRestoreItCanRestorePartiallySuccessful()
         {
@@ -195,8 +193,12 @@ namespace Microsoft.DotNet.Tests.Commands
 
             int executeResult = toolRestoreCommand.Execute();
             _reporter.Lines.Should()
-                .Contain(l => l.Contains("Restore Partially Successful." + Environment.NewLine +
-                                         "Package \"non-exists\" failed to restore, due to"));
+                .Contain(l => l.Contains(LocalizableStrings.RestorePartiallySuccessful +
+                                         Environment.NewLine +
+                                         string.Join(
+                                             Environment.NewLine,
+                                                 string.Format(LocalizableStrings.PackageFailedToRestore,
+                                                     "non-exists", ""))));
 
             executeResult.Should().Be(1);
 

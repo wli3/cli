@@ -165,4 +165,13 @@
   <data name="VersionOptionName" xml:space="preserve">
     <value>VERSION</value>
   </data>
+  <data name="PackageFailedToRestore" xml:space="preserve">
+    <value>Package "{0}" failed to restore, due to {1}</value>
+  </data>
+  <data name="PackagesCommandNameCollision" xml:space="preserve">
+    <value>Packages {0} have a command with the same name {1} regardless of the casing.</value>
+  </data>
+  <data name="RestorePartiallySuccessful" xml:space="preserve">
+    <value>Restore Partially Successful.</value>
+  </data>
 </root>
