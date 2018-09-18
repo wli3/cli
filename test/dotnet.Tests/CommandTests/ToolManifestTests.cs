@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void GivenManifestFileOnSameDirectoryItGetContent()
         {
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), jsonContent);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
             var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             ToolManifestFindingResult manifestResult = toolManifest.Find();
             manifestResult.Errors.Should().BeEmpty();
@@ -67,10 +68,21 @@ namespace Microsoft.DotNet.Tests.Commands
 
         }
 
-        [Fact(Skip = "")]
-        public void GivenManifestWithDuplicatedPackageIdItReturnError()
+        [Fact]
+        // https://github.com/JamesNK/Newtonsoft.Json/issues/931#issuecomment-224104005
+        // Due to a limitation of newtonsoft json
+        public void GivenManifestWithDuplicatedPackageIdItReturnsTheLastValue()
         {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithDuplicatedPackagedId);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            ToolManifestFindingResult manifestResult = toolManifest.Find();
 
+            manifestResult.Result.Should()
+                .Contain(
+                new ToolManifestFindingResultIndividualTool(
+                    new PackageId("t-rex"),
+                    NuGetVersion.Parse("2.1.4"),
+                    new[] { new ToolCommandName("t-rex") }));
         }
 
         [Fact(Skip = "")]
@@ -103,8 +115,12 @@ namespace Microsoft.DotNet.Tests.Commands
 
         }
 
-        private string jsonContent =
+        private string _jsonContent =
             "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"dotnetsay\":{\"version\":\"2.1.4\",\"commands\":[\"dotnetsay\"]}}}";
+
+        private string _jsonWithDuplicatedPackagedId=
+            "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
+
         private readonly string _testDirectoryRoot;
         private readonly string _manifestFilename = "localtool.manifest.json";
     }
@@ -143,7 +159,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public IReadOnlyCollection<ToolManifestFindingResultIndividualTool> Result { get; set; }
     }
 
-    internal struct ToolManifestFindingResultIndividualTool
+    internal struct ToolManifestFindingResultIndividualTool : IEquatable<ToolManifestFindingResultIndividualTool>
     {
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
@@ -160,6 +176,34 @@ namespace Microsoft.DotNet.Tests.Commands
             Version = version;
             CommandName = toolCommandName;
             OptionalNuGetFramework = optionalNuGetFramework;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ToolManifestFindingResultIndividualTool && Equals((ToolManifestFindingResultIndividualTool)obj);
+        }
+
+        public bool Equals(ToolManifestFindingResultIndividualTool other)
+        {
+            return PackageId.Equals(other.PackageId) &&
+                   EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
+                   Enumerable.SequenceEqual(CommandName, other.CommandName) &&
+                   EqualityComparer<NuGetFramework>.Default.Equals(OptionalNuGetFramework, other.OptionalNuGetFramework);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(PackageId, Version, CommandName, OptionalNuGetFramework);
+        }
+
+        public static bool operator ==(ToolManifestFindingResultIndividualTool tool1, ToolManifestFindingResultIndividualTool tool2)
+        {
+            return tool1.Equals(tool2);
+        }
+
+        public static bool operator !=(ToolManifestFindingResultIndividualTool tool1, ToolManifestFindingResultIndividualTool tool2)
+        {
+            return !(tool1 == tool2);
         }
     }
 
