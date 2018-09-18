@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly string[] _source;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
-
+    
         public ToolRestoreCommand(
             AppliedOption appliedCommand,
             ParseResult result,
