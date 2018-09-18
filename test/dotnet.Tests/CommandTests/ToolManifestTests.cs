@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands
     public class ToolManifestTests
     {
         private readonly IFileSystem _fileSystem;
-    
+
 
         public ToolManifestTests()
         {
@@ -37,10 +37,10 @@ namespace Microsoft.DotNet.Tests.Commands
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
         }
 
-        [Fact(Skip ="")]
+        [Fact(Skip = "")]
         public void GivenManifestFileOnSameDirectoryItGetContent()
         {
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot,_manifestFilename), jsonContent);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), jsonContent);
             var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             ToolManifestFindingResult manifestResult = toolManifest.Find();
             manifestResult.Errors.Should().BeEmpty();
@@ -60,47 +60,47 @@ namespace Microsoft.DotNet.Tests.Commands
 
             manifestResult.Result.ShouldBeEquivalentTo(expectedResult);
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void GivenManifestFileOnParentDirectoryItGetContent()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void GivenManifestWithDuplicatedPackageIdItReturnError()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void WhenCalledWithFilePathItGetContent()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void WhenCalledWithNonExistsFilePathItReturnError()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void GivenMissingFieldManifestFileItReturnError()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void GivenConflictedManifestFileInDifferentFieldsItReturnMergedContent()
         {
-            
+
         }
-        
-        [Fact(Skip ="")]
+
+        [Fact(Skip = "")]
         public void DifferentVersionOfManifestFileItShouldHaveWarnings()
         {
-            
+
         }
 
         private string jsonContent =
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
     internal struct ToolManifestFindingResult
     {
-        private ToolManifestFindingResult(IReadOnlyCollection<string> errors, 
+        private ToolManifestFindingResult(IReadOnlyCollection<string> errors,
             IReadOnlyCollection<ToolManifestFindingResultIndividualTool> result)
         {
             Errors = errors;
@@ -151,8 +151,8 @@ namespace Microsoft.DotNet.Tests.Commands
         public NuGetFramework OptionalNuGetFramework { get; }
 
         public ToolManifestFindingResultIndividualTool(
-            PackageId packagePackageId, 
-            NuGetVersion version, 
+            PackageId packagePackageId,
+            NuGetVersion version,
             ToolCommandName toolCommandName,
             NuGetFramework optionalNuGetFramework = null)
         {
@@ -188,28 +188,28 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     var packageIdString = tools.ToObject<JProperty>().Name;
                     NuGet.Packaging.PackageIdValidator.IsValidPackageId(packageIdString);
-                    
+
                     errors.Add($"Package Id {packageIdString} is not valid");
-                    
+
                     var packageId = new PackageId(packageIdString);
 
                     // TODO WUL NULL CHECK for all field
                     var versionParseResult = NuGetVersion.TryParse(tools.Value<string>("version"), out var version);
 
                     NuGetFramework targetframework = null;
-                    if (! (tools.Value<string>("targetFramework") is null))
+                    if (!(tools.Value<string>("targetFramework") is null))
                     {
                         targetframework = NuGetFramework.Parse(
                             tools["targetFramework"].Value<string>());
                     }
 
-                    var toolCommandName = 
+                    var toolCommandName =
                         new ToolCommandName(tools["commands"].ToObject<JProperty>().Name);
-                    
+
                     result.Add(new ToolManifestFindingResultIndividualTool(packageId, version, toolCommandName, targetframework));
                 }
             }
-            
+
             // Just use throw
             return ToolManifestFindingResult.ToolManifestFindingResultWithResult(result);
         }
