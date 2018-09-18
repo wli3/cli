@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 JObject manifest = JObject.Parse(_fileSystem.File.ReadAllText(manifestFilePath));
                 foreach (var tools in manifest["tools"])
                 {
-                    var packageIdString = tools.Root.Value<string>();
+                    var packageIdString = tools.ToObject<JProperty>().Name;
                     NuGet.Packaging.PackageIdValidator.IsValidPackageId(packageIdString);
                     
                     errors.Add($"Package Id {packageIdString} is not valid");
@@ -194,17 +194,17 @@ namespace Microsoft.DotNet.Tests.Commands
                     var packageId = new PackageId(packageIdString);
 
                     // TODO WUL NULL CHECK for all field
-                    var versionParseResult = NuGetVersion.TryParse(tools["version"].Value<string>(), out var version);
+                    var versionParseResult = NuGetVersion.TryParse(tools.Value<string>("version"), out var version);
 
                     NuGetFramework targetframework = null;
-                    if (! (tools["version"] is null))
+                    if (! (tools.Value<string>("targetFramework") is null))
                     {
                         targetframework = NuGetFramework.Parse(
-                            tools["version"].Value<string>());
+                            tools["targetFramework"].Value<string>());
                     }
 
                     var toolCommandName = 
-                        new ToolCommandName(tools["commands"].Value<string>());
+                        new ToolCommandName(tools["commands"].ToObject<JProperty>().Name);
                     
                     result.Add(new ToolManifestFindingResultIndividualTool(packageId, version, toolCommandName, targetframework));
                 }
