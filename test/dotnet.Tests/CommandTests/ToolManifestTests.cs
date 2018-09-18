@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
         }
 
-        [Fact(Skip = "")]
+        [Fact]
         public void GivenManifestFileOnSameDirectoryItGetContent()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), jsonContent);
@@ -50,12 +50,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 new ToolManifestFindingResultIndividualTool(
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
-                    new ToolCommandName("t-rex"),
+                    new [] {new ToolCommandName("t-rex") },
                     NuGetFramework.Parse("netcoreapp2.1")),
                 new ToolManifestFindingResultIndividualTool(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
-                    new ToolCommandName("dotnetsay"))
+                    new [] {new ToolCommandName("dotnetsay") })
             };
 
             manifestResult.Result.ShouldBeEquivalentTo(expectedResult);
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 throw new ArgumentNullException(nameof(result));
             }
 
-            return new ToolManifestFindingResult(null, result);
+            return new ToolManifestFindingResult(Array.Empty<string>(), result);
         }
 
         public static ToolManifestFindingResult ToolManifestFindingResultWithError(IReadOnlyCollection<string> errors)
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 throw new ArgumentNullException(nameof(errors));
             }
 
-            return new ToolManifestFindingResult(errors, null);
+            return new ToolManifestFindingResult(errors, Array.Empty<ToolManifestFindingResultIndividualTool>());
         }
 
         public IReadOnlyCollection<string> Errors { get; set; }
@@ -147,13 +147,13 @@ namespace Microsoft.DotNet.Tests.Commands
     {
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
-        public ToolCommandName CommandName { get; }
+        public ToolCommandName[] CommandName { get; }
         public NuGetFramework OptionalNuGetFramework { get; }
 
         public ToolManifestFindingResultIndividualTool(
             PackageId packagePackageId,
             NuGetVersion version,
-            ToolCommandName toolCommandName,
+            ToolCommandName[] toolCommandName,
             NuGetFramework optionalNuGetFramework = null)
         {
             PackageId = packagePackageId;
@@ -168,6 +168,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly DirectoryPath _probStart;
         private readonly IFileSystem _fileSystem;
         private readonly string _manifestFilenameConvention = "localtool.manifest.json";
+        private const string ToolsJsonNodeName = "tools";
 
         public ToolManifest(DirectoryPath probStart, IFileSystem fileSystem = null)
         {
@@ -184,7 +185,7 @@ namespace Microsoft.DotNet.Tests.Commands
             if (_fileSystem.File.Exists(manifestFilePath))
             {
                 JObject manifest = JObject.Parse(_fileSystem.File.ReadAllText(manifestFilePath));
-                foreach (var tools in manifest["tools"])
+                foreach (var tools in manifest[ToolsJsonNodeName])
                 {
                     var packageIdString = tools.ToObject<JProperty>().Name;
                     NuGet.Packaging.PackageIdValidator.IsValidPackageId(packageIdString);
@@ -194,24 +195,30 @@ namespace Microsoft.DotNet.Tests.Commands
                     var packageId = new PackageId(packageIdString);
 
                     // TODO WUL NULL CHECK for all field
-                    var versionParseResult = NuGetVersion.TryParse(tools.Value<string>("version"), out var version);
+                    var versionParseResult = NuGetVersion.TryParse(manifest[ToolsJsonNodeName][packageIdString].Value<string>("version"), out var version);
 
                     NuGetFramework targetframework = null;
-                    if (!(tools.Value<string>("targetFramework") is null))
+                    var targetFrameworkString = manifest[ToolsJsonNodeName][packageIdString].Value<string>("targetFramework");
+                    if (!(targetFrameworkString is null))
                     {
                         targetframework = NuGetFramework.Parse(
-                            tools["targetFramework"].Value<string>());
+                            targetFrameworkString);
                     }
 
-                    var toolCommandName =
-                        new ToolCommandName(tools["commands"].ToObject<JProperty>().Name);
+                    var toolCommandNameStringArray =
+                        manifest[ToolsJsonNodeName][packageIdString]["commands"].ToObject<string[]>();
 
-                    result.Add(new ToolManifestFindingResultIndividualTool(packageId, version, toolCommandName, targetframework));
+                    result.Add(new ToolManifestFindingResultIndividualTool(
+                        packageId,
+                        version,
+                        ToolCommandName.Convert(toolCommandNameStringArray),
+                        targetframework));
                 }
             }
 
             // Just use throw
             return ToolManifestFindingResult.ToolManifestFindingResultWithResult(result);
         }
+
     }
 }
