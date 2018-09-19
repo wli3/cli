@@ -55,7 +55,10 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
 
         public DirectoryPath GetParentPath()
         {
-            return new DirectoryPath(Path.GetDirectoryName(Value));
+            // new DirectoryInfo and directoryInfo.Parent does not have side effects
+
+            var directoryInfo = new DirectoryInfo(Value);
+            return new DirectoryPath(directoryInfo.Parent.FullName);
         }
     }
 }
