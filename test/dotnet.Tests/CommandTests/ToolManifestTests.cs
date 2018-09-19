@@ -36,17 +36,8 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-        }
 
-        [Fact]
-        public void GivenManifestFileOnSameDirectoryItGetContent()
-        {
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
-            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-            ToolManifestFindingResult manifestResult = toolManifest.Find();
-            manifestResult.Errors.Should().BeEmpty();
-
-            var expectedResult = new List<ToolManifestFindingResultIndividualTool>
+            _defaultExpectedResult = new List<ToolManifestFindingResultIndividualTool>
             {
                 new ToolManifestFindingResultIndividualTool(
                     new PackageId("t-rex"),
@@ -58,8 +49,17 @@ namespace Microsoft.DotNet.Tests.Commands
                     NuGetVersion.Parse("2.1.4"),
                     new [] {new ToolCommandName("dotnetsay") })
             };
+        }
 
-            manifestResult.Result.ShouldBeEquivalentTo(expectedResult);
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryItGetContent()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            ToolManifestFindingResult manifestResult = toolManifest.Find();
+            manifestResult.Errors.Should().BeEmpty();
+
+            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
         [Fact]
@@ -71,20 +71,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ToolManifestFindingResult manifestResult = toolManifest.Find();
             manifestResult.Errors.Should().BeEmpty();
 
-            var expectedResult = new List<ToolManifestFindingResultIndividualTool>
-            {
-                new ToolManifestFindingResultIndividualTool(
-                    new PackageId("t-rex"),
-                    NuGetVersion.Parse("1.0.53"),
-                    new [] {new ToolCommandName("t-rex") },
-                    NuGetFramework.Parse("netcoreapp2.1")),
-                new ToolManifestFindingResultIndividualTool(
-                    new PackageId("dotnetsay"),
-                    NuGetVersion.Parse("2.1.4"),
-                    new [] {new ToolCommandName("dotnetsay") })
-            };
-
-            manifestResult.Result.ShouldBeEquivalentTo(expectedResult);
+            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
         [Fact]
@@ -104,10 +91,16 @@ namespace Microsoft.DotNet.Tests.Commands
                     new[] { new ToolCommandName("t-rex") }));
         }
 
-        [Fact(Skip = "pending")]
+        [Fact]
         public void WhenCalledWithFilePathItGetContent()
         {
+            string customFileName = "customname.file";
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, customFileName), _jsonContent);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            ToolManifestFindingResult manifestResult = toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, customFileName)));
+            manifestResult.Errors.Should().BeEmpty();
 
+            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
         [Fact(Skip = "pending")]
@@ -139,7 +132,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private string _jsonWithDuplicatedPackagedId=
             "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
-
+        private List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
         private readonly string _manifestFilename = "localtool.manifest.json";
     }
@@ -254,12 +247,22 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }
 
-        public ToolManifestFindingResult Find()
+        public ToolManifestFindingResult Find(FilePath? filePath = null)
         {
             var errors = new List<string>();
             var result = new List<ToolManifestFindingResultIndividualTool>();
 
-            foreach (FilePath possibleManifest in EnumerateAllPossibleManifests())
+            IEnumerable<FilePath> allPossibleManifests;
+            if (filePath != null)
+            {
+                allPossibleManifests = new FilePath[] { filePath.Value };
+            }
+            else
+            {
+                allPossibleManifests = EnumerateDefaultAllPossibleManifests();
+            }
+
+            foreach (FilePath possibleManifest in allPossibleManifests)
             {
                 if (_fileSystem.File.Exists(possibleManifest.Value))
                 {
@@ -298,10 +301,10 @@ namespace Microsoft.DotNet.Tests.Commands
                 }
             }
 
-            throw new ToolManifestException($"Cannot find any manifests file. Searched {string.Join("; ", EnumerateAllPossibleManifests().Select(f => f.Value))}");
+            throw new ToolManifestException($"Cannot find any manifests file. Searched {string.Join("; ", allPossibleManifests.Select(f => f.Value))}");
         }
 
-        private IEnumerable<FilePath> EnumerateAllPossibleManifests()
+        private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
         {
             DirectoryPath? currentSearchDirectory = _probStart;
             while (currentSearchDirectory != null)
