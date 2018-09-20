@@ -109,6 +109,14 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exits")));
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
         }
+        
+        [Fact]
+        public void GivenNoManifestFileItThrows()
+        {
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.Find();
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
+        }
 
         [Fact(Skip = "pending")]
         public void GivenMissingFieldManifestFileItReturnError()
