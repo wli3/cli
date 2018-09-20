@@ -17,11 +17,13 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
+using Xunit.Sdk;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -118,9 +120,26 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
         }
 
-        [Fact(Skip = "pending")]
+        [Fact]
         public void GivenMissingFieldManifestFileItReturnError()
         {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithMissingField);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.Find();
+
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
+                "Invalid manifest file. In package t-rex: field version is missing, field commands is missing.");
+        }
+
+        [Fact]
+        public void GivenInvalidFieldsManifestFileItReturnError()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithInvalidField);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.Find();
+
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
+                "Invalid manifest file. In package t-rex: version 1.* is invalid, TargetFramework abc is unsupported.");
         }
 
         [Fact(Skip = "pending")]
@@ -133,11 +152,22 @@ namespace Microsoft.DotNet.Tests.Commands
         {
         }
 
+        [Fact(Skip = "pending")]
+        public void DifferentVersionOfManifestFileItShouldNotThrow()
+        {
+        }
+
         private string _jsonContent =
-            "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"dotnetsay\":{\"version\":\"2.1.4\",\"commands\":[\"dotnetsay\"]}}}";
+            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"dotnetsay\":{\"version\":\"2.1.4\",\"commands\":[\"dotnetsay\"]}}}";
 
         private string _jsonWithDuplicatedPackagedId =
-            "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
+            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
+
+        private string _jsonWithMissingField =
+            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"extra\":1}}}";
+
+        private string _jsonWithInvalidField =
+            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.*\",\"commands\":[\"t-rex\"],\"targetFramework\":\"abc\"}}}";
 
         private readonly List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
@@ -226,7 +256,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
         public IReadOnlyCollection<ToolManifestFindingResultIndividualTool> Find(FilePath? filePath = null)
         {
-            var errors = new List<string>();
+            var fieldErrors = new Dictionary<string, List<string>>();
             var result = new List<ToolManifestFindingResultIndividualTool>();
 
             IEnumerable<FilePath> allPossibleManifests =
@@ -238,37 +268,84 @@ namespace Microsoft.DotNet.Tests.Commands
             {
                 if (_fileSystem.File.Exists(possibleManifest.Value))
                 {
-                    JObject manifest = JObject.Parse(_fileSystem.File.ReadAllText(possibleManifest.Value));
-                    foreach (var tools in manifest[ToolsJsonNodeName])
-                    {
-                        var packageIdString = tools.ToObject<JProperty>().Name;
-                        NuGet.Packaging.PackageIdValidator.IsValidPackageId(packageIdString);
+                    var jsonResult = JsonConvert.DeserializeObject<LocalTools>(
+                        _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
+                        {
+                            MissingMemberHandling = MissingMemberHandling.Ignore
+                        });
 
-                        errors.Add($"Package Id {packageIdString} is not valid");
+                    var errors = new List<string>();
+                    foreach (var tools in jsonResult.tools)
+                    {
+                        var packageLevelErrors = new List<string>();
+                        var packageIdString = tools.Key;
 
                         var packageId = new PackageId(packageIdString);
 
-                        // TODO WUL NULL CHECK for all field
-                        var versionParseResult = NuGetVersion.TryParse(
-                            manifest[ToolsJsonNodeName][packageIdString].Value<string>("version"), out var version);
+                        string versionString = tools.Value.version;
+
+                        NuGetVersion version = null;
+                        if (versionString is null)
+                        {
+                            packageLevelErrors.Add("field version is missing"); // TODO wul no check in loc
+                        }
+                        else
+                        {
+                            var versionParseResult = NuGetVersion.TryParse(
+                                versionString, out version);
+
+                            if (!versionParseResult)
+                            {
+                                packageLevelErrors.Add($"version {versionString} is invalid");
+                            }
+                        }
 
                         NuGetFramework targetFramework = null;
-                        var targetFrameworkString = manifest[ToolsJsonNodeName][packageIdString]
-                            .Value<string>("targetFramework");
+                        var targetFrameworkString = tools.Value.targetFramework;
+
                         if (!(targetFrameworkString is null))
                         {
                             targetFramework = NuGetFramework.Parse(
                                 targetFrameworkString);
+
+                            if (targetFramework.IsUnsupported)
+                            {
+                                packageLevelErrors.Add(
+                                    $"TargetFramework {targetFrameworkString} is unsupported"); // TODO wul no check in loc
+                            }
                         }
 
-                        var toolCommandNameStringArray =
-                            manifest[ToolsJsonNodeName][packageIdString]["commands"].ToObject<string[]>();
+                        if (tools.Value.commands != null)
+                        {
+                            if (tools.Value.commands.Length == 0)
+                            {
+                                packageLevelErrors.Add($"field commands is missing"); // TODO wul no check in loc
+                            }
+                        }
+                        else
+                        {
+                            packageLevelErrors.Add($"field commands is missing"); // TODO wul no check in loc
+                        }
 
-                        result.Add(new ToolManifestFindingResultIndividualTool(
-                            packageId,
-                            version,
-                            ToolCommandName.Convert(toolCommandNameStringArray),
-                            targetFramework));
+                        if (packageLevelErrors.Any())
+                        {
+                            var joined = string.Join(", ", packageLevelErrors);
+                            errors.Add($"In package {packageId.ToString()}: {joined}.");
+                        }
+                        else
+                        {
+                            result.Add(new ToolManifestFindingResultIndividualTool(
+                                packageId,
+                                version,
+                                ToolCommandName.Convert(tools.Value.commands),
+                                targetFramework));
+                        }
+                    }
+
+                    if (errors.Any())
+                    {
+                        throw new ToolManifestException("Invalid manifest file. " +
+                                                        string.Join(" ", errors)); // TODO wul no check in loc
                     }
 
                     return result;
@@ -276,7 +353,26 @@ namespace Microsoft.DotNet.Tests.Commands
             }
 
             throw new ToolManifestException(
-                $"Cannot find any manifests file. Searched {string.Join("; ", allPossibleManifests.Select(f => f.Value))}");
+                $"Cannot find any manifests file. Searched {string.Join("; ", allPossibleManifests.Select(f => f.Value))}"); // TODO wul no check in loc
+        }
+
+        private class LocalTools
+        {
+            [JsonProperty(Required = Required.Always)]
+            public string version { get; set; }
+
+            [JsonProperty(Required = Required.AllowNull)]
+            public bool isRoot { get; set; }
+
+            [JsonProperty(Required = Required.Always)]
+            public Dictionary<string, localtool> tools { get; set; }
+        }
+
+        private class localtool
+        {
+            public string version { get; set; }
+            public string[] commands { get; set; }
+            public string targetFramework { get; set; }
         }
 
         private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
