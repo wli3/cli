@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exits")));
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
         }
-        
+
         [Fact]
         public void GivenNoManifestFileItThrows()
         {
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private string _jsonWithDuplicatedPackagedId =
             "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
 
-        private List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
+        private readonly List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
         private readonly string _manifestFilename = "localtool.manifest.json";
     }
@@ -165,15 +165,15 @@ namespace Microsoft.DotNet.Tests.Commands
 
         public override bool Equals(object obj)
         {
-            return obj is ToolManifestFindingResultIndividualTool &&
-                   Equals((ToolManifestFindingResultIndividualTool)obj);
+            return obj is ToolManifestFindingResultIndividualTool tool &&
+                   Equals(tool);
         }
 
         public bool Equals(ToolManifestFindingResultIndividualTool other)
         {
             return PackageId.Equals(other.PackageId) &&
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
-                   Enumerable.SequenceEqual(CommandName, other.CommandName) &&
+                   CommandName.SequenceEqual(other.CommandName) &&
                    EqualityComparer<NuGetFramework>.Default.Equals(OptionalNuGetFramework,
                        other.OptionalNuGetFramework);
         }
@@ -230,8 +230,8 @@ namespace Microsoft.DotNet.Tests.Commands
             var result = new List<ToolManifestFindingResultIndividualTool>();
 
             IEnumerable<FilePath> allPossibleManifests =
-                filePath != null 
-                    ? new[] {filePath.Value} 
+                filePath != null
+                    ? new[] {filePath.Value}
                     : EnumerateDefaultAllPossibleManifests();
 
             foreach (FilePath possibleManifest in allPossibleManifests)
