@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         {
             _options = appliedCommand ?? throw new ArgumentNullException(nameof(appliedCommand));
 
-            if (_toolPackageInstaller == null)
+            if (toolPackageInstaller == null)
             {
                 (IToolPackageStore,
                     IToolPackageStoreQuery,
@@ -52,6 +52,10 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                         = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
                             additionalRestoreArguments: appliedCommand.OptionValuesToBeForwarded());
                 _toolPackageInstaller = toolPackageStoresAndInstaller.installer;
+            }
+            else
+            {
+                _toolPackageInstaller = toolPackageInstaller;
             }
 
             _toolManifestFinder = toolManifestFinder
