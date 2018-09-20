@@ -24,7 +24,6 @@ using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
 using Xunit.Sdk;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands
@@ -32,7 +31,6 @@ namespace Microsoft.DotNet.Tests.Commands
     public class ToolManifestTests
     {
         private readonly IFileSystem _fileSystem;
-
 
         public ToolManifestTests()
         {
@@ -142,17 +140,29 @@ namespace Microsoft.DotNet.Tests.Commands
                 "Invalid manifest file. In package t-rex: version 1.* is invalid, TargetFramework abc is unsupported.");
         }
 
-        [Fact(Skip = "pending")]
+        // Remove this test when the follow pending test is enabled and feature is implemented.
+        [Fact]
+        public void RequireRootAndVersionIs1()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithNonRoot);
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.Find();
+
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
+                "Invalid manifest file. isRoot is false is not supported. version that is not 1 is not supported.");
+        }
+
+        [Fact(Skip = "pending implementation")]
         public void GivenConflictedManifestFileInDifferentFieldsItReturnMergedContent()
         {
         }
 
-        [Fact(Skip = "pending")]
+        [Fact(Skip = "pending implementation")]
         public void DifferentVersionOfManifestFileItShouldHaveWarnings()
         {
         }
 
-        [Fact(Skip = "pending")]
+        [Fact(Skip = "pending implementation")]
         public void DifferentVersionOfManifestFileItShouldNotThrow()
         {
         }
@@ -169,9 +179,12 @@ namespace Microsoft.DotNet.Tests.Commands
         private string _jsonWithInvalidField =
             "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.*\",\"commands\":[\"t-rex\"],\"targetFramework\":\"abc\"}}}";
 
+        private string _jsonWithNonRoot =
+            "{\"version\":2,\"isRoot\":false,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"]}}}";
+
         private readonly List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
-        private readonly string _manifestFilename = "localtool.manifest.json";
+        private const string _manifestFilename = "localtool.manifest.json";
     }
 
     internal struct ToolManifestFindingResultIndividualTool : IEquatable<ToolManifestFindingResultIndividualTool>
@@ -246,7 +259,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly DirectoryPath _probStart;
         private readonly IFileSystem _fileSystem;
         private readonly string _manifestFilenameConvention = "localtool.manifest.json";
-        private const string ToolsJsonNodeName = "tools";
 
         public ToolManifest(DirectoryPath probStart, IFileSystem fileSystem = null)
         {
@@ -275,6 +287,17 @@ namespace Microsoft.DotNet.Tests.Commands
                         });
 
                     var errors = new List<string>();
+
+                    if (!jsonResult.isRoot)
+                    {
+                        errors.Add("isRoot is false is not supported."); // TODO wul no check in loc
+                    }
+
+                    if (jsonResult.version != 1)
+                    {
+                        errors.Add("version that is not 1 is not supported."); // TODO wul no check in loc
+                    }
+
                     foreach (var tools in jsonResult.tools)
                     {
                         var packageLevelErrors = new List<string>();
@@ -359,7 +382,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private class LocalTools
         {
             [JsonProperty(Required = Required.Always)]
-            public string version { get; set; }
+            public int version { get; set; }
 
             [JsonProperty(Required = Required.AllowNull)]
             public bool isRoot { get; set; }
