@@ -42,12 +42,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 new ToolManifestFindingResultIndividualTool(
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
-                    new [] {new ToolCommandName("t-rex") },
+                    new[] {new ToolCommandName("t-rex")},
                     NuGetFramework.Parse("netcoreapp2.1")),
                 new ToolManifestFindingResultIndividualTool(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
-                    new [] {new ToolCommandName("dotnetsay") })
+                    new[] {new ToolCommandName("dotnetsay")})
             };
         }
 
@@ -56,10 +56,9 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
             var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-            ToolManifestFindingResult manifestResult = toolManifest.Find();
-            manifestResult.Errors.Should().BeEmpty();
+            var manifestResult = toolManifest.Find();
 
-            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
+            manifestResult.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
         [Fact]
@@ -68,10 +67,9 @@ namespace Microsoft.DotNet.Tests.Commands
             var subdirectoryOfTestRoot = Path.Combine(_testDirectoryRoot, "sub");
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
             var toolManifest = new ToolManifest(new DirectoryPath(subdirectoryOfTestRoot), _fileSystem);
-            ToolManifestFindingResult manifestResult = toolManifest.Find();
-            manifestResult.Errors.Should().BeEmpty();
+            var manifestResult = toolManifest.Find();
 
-            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
+            manifestResult.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
         [Fact]
@@ -79,16 +77,17 @@ namespace Microsoft.DotNet.Tests.Commands
         // Due to a limitation of newtonsoft json
         public void GivenManifestWithDuplicatedPackageIdItReturnsTheLastValue()
         {
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithDuplicatedPackagedId);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename),
+                _jsonWithDuplicatedPackagedId);
             var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-            ToolManifestFindingResult manifestResult = toolManifest.Find();
+            var manifestResult = toolManifest.Find();
 
-            manifestResult.Result.Should()
+            manifestResult.Should()
                 .Contain(
-                new ToolManifestFindingResultIndividualTool(
-                    new PackageId("t-rex"),
-                    NuGetVersion.Parse("2.1.4"),
-                    new[] { new ToolCommandName("t-rex") }));
+                    new ToolManifestFindingResultIndividualTool(
+                        new PackageId("t-rex"),
+                        NuGetVersion.Parse("2.1.4"),
+                        new[] {new ToolCommandName("t-rex")}));
         }
 
         [Fact]
@@ -97,78 +96,44 @@ namespace Microsoft.DotNet.Tests.Commands
             string customFileName = "customname.file";
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, customFileName), _jsonContent);
             var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-            ToolManifestFindingResult manifestResult = toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, customFileName)));
-            manifestResult.Errors.Should().BeEmpty();
+            var manifestResult =
+                toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, customFileName)));
 
-            manifestResult.Result.ShouldBeEquivalentTo(_defaultExpectedResult);
+            manifestResult.ShouldBeEquivalentTo(_defaultExpectedResult);
         }
 
-        [Fact(Skip = "pending")]
-        public void WhenCalledWithNonExistsFilePathItReturnError()
+        [Fact]
+        public void WhenCalledWithNonExistsFilePathItThrows()
         {
-
+            var toolManifest = new ToolManifest(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exits")));
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
         }
 
         [Fact(Skip = "pending")]
         public void GivenMissingFieldManifestFileItReturnError()
         {
-
         }
 
         [Fact(Skip = "pending")]
         public void GivenConflictedManifestFileInDifferentFieldsItReturnMergedContent()
         {
-
         }
 
         [Fact(Skip = "pending")]
         public void DifferentVersionOfManifestFileItShouldHaveWarnings()
         {
-
         }
 
         private string _jsonContent =
             "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"dotnetsay\":{\"version\":\"2.1.4\",\"commands\":[\"dotnetsay\"]}}}";
 
-        private string _jsonWithDuplicatedPackagedId=
+        private string _jsonWithDuplicatedPackagedId =
             "{\"version\":\"1\",\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
+
         private List<ToolManifestFindingResultIndividualTool> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
         private readonly string _manifestFilename = "localtool.manifest.json";
-    }
-
-    internal struct ToolManifestFindingResult
-    {
-        private ToolManifestFindingResult(IReadOnlyCollection<string> errors,
-            IReadOnlyCollection<ToolManifestFindingResultIndividualTool> result)
-        {
-            Errors = errors;
-            Result = result;
-        }
-
-        public static ToolManifestFindingResult ToolManifestFindingResultWithResult(
-            IReadOnlyCollection<ToolManifestFindingResultIndividualTool> result)
-        {
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
-
-            return new ToolManifestFindingResult(Array.Empty<string>(), result);
-        }
-
-        public static ToolManifestFindingResult ToolManifestFindingResultWithError(IReadOnlyCollection<string> errors)
-        {
-            if (errors == null)
-            {
-                throw new ArgumentNullException(nameof(errors));
-            }
-
-            return new ToolManifestFindingResult(errors, Array.Empty<ToolManifestFindingResultIndividualTool>());
-        }
-
-        public IReadOnlyCollection<string> Errors { get; set; }
-        public IReadOnlyCollection<ToolManifestFindingResultIndividualTool> Result { get; set; }
     }
 
     internal struct ToolManifestFindingResultIndividualTool : IEquatable<ToolManifestFindingResultIndividualTool>
@@ -192,7 +157,8 @@ namespace Microsoft.DotNet.Tests.Commands
 
         public override bool Equals(object obj)
         {
-            return obj is ToolManifestFindingResultIndividualTool && Equals((ToolManifestFindingResultIndividualTool)obj);
+            return obj is ToolManifestFindingResultIndividualTool &&
+                   Equals((ToolManifestFindingResultIndividualTool)obj);
         }
 
         public bool Equals(ToolManifestFindingResultIndividualTool other)
@@ -200,7 +166,8 @@ namespace Microsoft.DotNet.Tests.Commands
             return PackageId.Equals(other.PackageId) &&
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
                    Enumerable.SequenceEqual(CommandName, other.CommandName) &&
-                   EqualityComparer<NuGetFramework>.Default.Equals(OptionalNuGetFramework, other.OptionalNuGetFramework);
+                   EqualityComparer<NuGetFramework>.Default.Equals(OptionalNuGetFramework,
+                       other.OptionalNuGetFramework);
         }
 
         public override int GetHashCode()
@@ -208,12 +175,14 @@ namespace Microsoft.DotNet.Tests.Commands
             return HashCode.Combine(PackageId, Version, CommandName, OptionalNuGetFramework);
         }
 
-        public static bool operator ==(ToolManifestFindingResultIndividualTool tool1, ToolManifestFindingResultIndividualTool tool2)
+        public static bool operator ==(ToolManifestFindingResultIndividualTool tool1,
+            ToolManifestFindingResultIndividualTool tool2)
         {
             return tool1.Equals(tool2);
         }
 
-        public static bool operator !=(ToolManifestFindingResultIndividualTool tool1, ToolManifestFindingResultIndividualTool tool2)
+        public static bool operator !=(ToolManifestFindingResultIndividualTool tool1,
+            ToolManifestFindingResultIndividualTool tool2)
         {
             return !(tool1 == tool2);
         }
@@ -247,20 +216,15 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }
 
-        public ToolManifestFindingResult Find(FilePath? filePath = null)
+        public IReadOnlyCollection<ToolManifestFindingResultIndividualTool> Find(FilePath? filePath = null)
         {
             var errors = new List<string>();
             var result = new List<ToolManifestFindingResultIndividualTool>();
 
-            IEnumerable<FilePath> allPossibleManifests;
-            if (filePath != null)
-            {
-                allPossibleManifests = new FilePath[] { filePath.Value };
-            }
-            else
-            {
-                allPossibleManifests = EnumerateDefaultAllPossibleManifests();
-            }
+            IEnumerable<FilePath> allPossibleManifests =
+                filePath != null 
+                    ? new[] {filePath.Value} 
+                    : EnumerateDefaultAllPossibleManifests();
 
             foreach (FilePath possibleManifest in allPossibleManifests)
             {
@@ -277,13 +241,15 @@ namespace Microsoft.DotNet.Tests.Commands
                         var packageId = new PackageId(packageIdString);
 
                         // TODO WUL NULL CHECK for all field
-                        var versionParseResult = NuGetVersion.TryParse(manifest[ToolsJsonNodeName][packageIdString].Value<string>("version"), out var version);
+                        var versionParseResult = NuGetVersion.TryParse(
+                            manifest[ToolsJsonNodeName][packageIdString].Value<string>("version"), out var version);
 
-                        NuGetFramework targetframework = null;
-                        var targetFrameworkString = manifest[ToolsJsonNodeName][packageIdString].Value<string>("targetFramework");
+                        NuGetFramework targetFramework = null;
+                        var targetFrameworkString = manifest[ToolsJsonNodeName][packageIdString]
+                            .Value<string>("targetFramework");
                         if (!(targetFrameworkString is null))
                         {
-                            targetframework = NuGetFramework.Parse(
+                            targetFramework = NuGetFramework.Parse(
                                 targetFrameworkString);
                         }
 
@@ -294,14 +260,15 @@ namespace Microsoft.DotNet.Tests.Commands
                             packageId,
                             version,
                             ToolCommandName.Convert(toolCommandNameStringArray),
-                            targetframework));
+                            targetFramework));
                     }
 
-                    return ToolManifestFindingResult.ToolManifestFindingResultWithResult(result);
+                    return result;
                 }
             }
 
-            throw new ToolManifestException($"Cannot find any manifests file. Searched {string.Join("; ", allPossibleManifests.Select(f => f.Value))}");
+            throw new ToolManifestException(
+                $"Cannot find any manifests file. Searched {string.Join("; ", allPossibleManifests.Select(f => f.Value))}");
         }
 
         private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
