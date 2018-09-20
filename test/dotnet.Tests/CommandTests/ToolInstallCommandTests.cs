@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
 
             var toolToolPackageInstaller = CreateToolPackageInstaller(
-            feeds: new MockFeed[] {
+            feeds: new[] {
                     new MockFeed
                     {
                         Type = MockFeedType.ImplicitAdditionalFeed,

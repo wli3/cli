@@ -7,14 +7,15 @@ using System.IO;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Cli;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -114,11 +115,13 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunItCanSaveCommandsToCache()
         {
-            IManifestFileFinder manifestFileFinder =
+            IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    (_packageIdA, _packageVersionA, null),
-                    (_packageIdB, _packageVersionB, _targetFrameworkB)
+                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                        Array.Empty<ToolCommandName>(), null),
+                    new ToolManifestFindingResultSinglePackage(_packageIdB, _packageVersionB,
+                        Array.Empty<ToolCommandName>(), _targetFrameworkB)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -148,11 +151,13 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRestoredCommandHasTheSameCommandNameItThrows()
         {
-            IManifestFileFinder manifestFileFinder =
-                new MockManifestFileFinder(new (PackageId, NuGetVersion, NuGetFramework)[]
+            IToolManifestFinder manifestFileFinder =
+                new MockManifestFileFinder(new[]
                 {
-                    (_packageIdA, _packageVersionA, null),
-                    (_packageIdWithCommandNameCollisionWithA, _packageVersionWithCommandNameCollisionWithA, null)
+                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                        Array.Empty<ToolCommandName>()),
+                    new ToolManifestFindingResultSinglePackage(_packageIdWithCommandNameCollisionWithA,
+                        _packageVersionWithCommandNameCollisionWithA, Array.Empty<ToolCommandName>())
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -168,18 +173,20 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<ToolPackageException>()
                 .And.Message
                 .Should().Be(string.Format(LocalizableStrings.PackagesCommandNameCollision,
-                        "\"local.tool.console.a\", \"command.name.collision.with.package.a\"",
-                        "\"a\", \"A\""));
+                    "\"local.tool.console.a\", \"command.name.collision.with.package.a\"",
+                    "\"a\", \"A\""));
         }
 
         [Fact]
         public void WhenSomePackageFailedToRestoreItCanRestorePartiallySuccessful()
         {
-            IManifestFileFinder manifestFileFinder =
-                new MockManifestFileFinder(new (PackageId, NuGetVersion, NuGetFramework)[]
+            IToolManifestFinder manifestFileFinder =
+                new MockManifestFileFinder(new[]
                 {
-                    (_packageIdA, _packageVersionA, null),
-                    (new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"), null)
+                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                        Array.Empty<ToolCommandName>()),
+                    new ToolManifestFindingResultSinglePackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
+                        Array.Empty<ToolCommandName>())
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -197,8 +204,8 @@ namespace Microsoft.DotNet.Tests.Commands
                                          Environment.NewLine +
                                          string.Join(
                                              Environment.NewLine,
-                                                 string.Format(LocalizableStrings.PackageFailedToRestore,
-                                                     "non-exists", ""))));
+                                             string.Format(LocalizableStrings.PackageFailedToRestore,
+                                                 "non-exists", ""))));
 
             executeResult.Should().Be(1);
 
@@ -212,17 +219,16 @@ namespace Microsoft.DotNet.Tests.Commands
                 .Should().BeTrue("Existing package will succeed despite other package failed");
         }
 
-        private class MockManifestFileFinder : IManifestFileFinder
+        private class MockManifestFileFinder : IToolManifestFinder
         {
-            private readonly IEnumerable<(PackageId, NuGetVersion, NuGetFramework)> _toReturn;
+            private readonly IReadOnlyCollection<ToolManifestFindingResultSinglePackage> _toReturn;
 
-            public MockManifestFileFinder(IEnumerable<(PackageId, NuGetVersion, NuGetFramework)> toReturn)
+            public MockManifestFileFinder(IReadOnlyCollection<ToolManifestFindingResultSinglePackage> toReturn)
             {
                 _toReturn = toReturn;
             }
 
-            public IEnumerable<(PackageId packageId, NuGetVersion version, NuGetFramework targetframework)> GetPackages(
-                FilePath? manifestFilePath = null)
+            public IReadOnlyCollection<ToolManifestFindingResultSinglePackage> Find(FilePath? filePath = null)
             {
                 return _toReturn;
             }

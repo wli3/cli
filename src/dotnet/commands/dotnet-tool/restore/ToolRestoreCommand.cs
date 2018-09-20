@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -20,31 +22,50 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly string _configFilePath;
         private readonly IReporter _errorReporter;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
-        private readonly IManifestFileFinder _manifestFileFinder;
+        private readonly IToolManifestFinder _toolManifestFinder;
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private readonly AppliedOption _options;
         private readonly IReporter _reporter;
         private readonly string[] _source;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
-    
+        private const string _localToolResolverCacheFolderName = "localToolCache";
+        private const int _localToolResolverCacheVersion = 1;
+
         public ToolRestoreCommand(
             AppliedOption appliedCommand,
             ParseResult result,
-            IToolPackageInstaller toolPackageInstaller,
-            IManifestFileFinder manifestFileFinder,
-            ILocalToolsResolverCache localToolsResolverCache,
-            DirectoryPath nugetGlobalPackagesFolder,
-            IReporter reporter)
+            IToolPackageInstaller toolPackageInstaller = null,
+            IToolManifestFinder toolManifestFinder = null,
+            ILocalToolsResolverCache localToolsResolverCache = null,
+            DirectoryPath? nugetGlobalPackagesFolder = null,
+            IReporter reporter = null)
             : base(result)
         {
             _options = appliedCommand ?? throw new ArgumentNullException(nameof(appliedCommand));
-            _toolPackageInstaller =
-                toolPackageInstaller ?? throw new ArgumentNullException(nameof(toolPackageInstaller));
-            _manifestFileFinder = manifestFileFinder ?? throw new ArgumentNullException(nameof(manifestFileFinder));
+
+            if (_toolPackageInstaller == null)
+            {
+                (IToolPackageStore,
+                    IToolPackageStoreQuery,
+                    IToolPackageInstaller installer) toolPackageStoresAndInstaller
+                        = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
+                            additionalRestoreArguments: appliedCommand.OptionValuesToBeForwarded());
+                _toolPackageInstaller = toolPackageStoresAndInstaller.installer;
+            }
+
+            _toolManifestFinder = toolManifestFinder
+                                  ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
+
             _localToolsResolverCache = localToolsResolverCache ??
-                                       throw new ArgumentNullException(nameof(localToolsResolverCache));
-            _nugetGlobalPackagesFolder = nugetGlobalPackagesFolder;
+                                       new LocalToolsResolverCache(
+                                           new FileSystemWrapper(),
+                                           new DirectoryPath(Path.Combine(CliFolderPathCalculator.DotnetHomePath,
+                                               _localToolResolverCacheFolderName)),
+                                           _localToolResolverCacheVersion);
+
+            _nugetGlobalPackagesFolder =
+                nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             _reporter = reporter ?? Reporter.Output;
             _errorReporter = reporter ?? Reporter.Error;
 
@@ -60,8 +81,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             FilePath? configFile = null;
             if (_configFilePath != null) configFile = new FilePath(_configFilePath);
 
-            IEnumerable<(PackageId packageId, NuGetVersion version, NuGetFramework targetframework)> packagesToRestore =
-                _manifestFileFinder.GetPackages(customManifestFileLocation);
+            IReadOnlyCollection<ToolManifestFindingResultSinglePackage> packagesFromManifest =
+                _toolManifestFinder.Find(customManifestFileLocation);
 
             Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary =
                 new Dictionary<RestoredCommandIdentifier, RestoredCommand>();
@@ -69,10 +90,10 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             Dictionary<PackageId, ToolPackageException> toolPackageExceptions =
                 new Dictionary<PackageId, ToolPackageException>();
 
-            foreach ((PackageId packageId, NuGetVersion version, NuGetFramework targetframework) p in packagesToRestore)
+            foreach (var package in packagesFromManifest)
             {
                 string targetFramework =
-                    p.targetframework?.GetShortFolderName()
+                    package.OptionalNuGetFramework?.GetShortFolderName()
                     ?? BundledTargetFramework.GetTargetFrameworkMoniker();
 
                 try
@@ -82,7 +103,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                             new PackageLocation(
                                 nugetConfig: configFile,
                                 additionalFeeds: _source),
-                            p.packageId, ToVersionRangeWithOnlyOneVersion(p.version), targetFramework,
+                            package.PackageId, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework,
                             verbosity: _verbosity);
 
                     foreach (RestoredCommand command in toolPackage.Commands)
@@ -97,7 +118,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 }
                 catch (ToolPackageException e)
                 {
-                    toolPackageExceptions.Add(p.packageId, e);
+                    toolPackageExceptions.Add(package.PackageId, e);
                 }
             }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -13,13 +14,13 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolManifest
 {
-    internal class ToolManifestReader
+    internal class ToolManifestFinder : IToolManifestFinder
     {
         private readonly DirectoryPath _probStart;
         private readonly IFileSystem _fileSystem;
         private const string _manifestFilenameConvention = "localtool.manifest.json";
 
-        public ToolManifestReader(DirectoryPath probStart, IFileSystem fileSystem = null)
+        public ToolManifestFinder(DirectoryPath probStart, IFileSystem fileSystem = null)
         {
             _probStart = probStart;
             _fileSystem = fileSystem ?? new FileSystemWrapper();
@@ -92,7 +93,8 @@ namespace Microsoft.DotNet.ToolManifest
                             if (targetFramework.IsUnsupported)
                             {
                                 packageLevelErrors.Add(
-                                    string.Format("TargetFramework {0} is unsupported", targetFrameworkString)); // TODO wul no check in loc
+                                    string.Format("TargetFramework {0} is unsupported",
+                                        targetFrameworkString)); // TODO wul no check in loc
                             }
                         }
 
@@ -138,6 +140,19 @@ namespace Microsoft.DotNet.ToolManifest
                     string.Join("; ", allPossibleManifests.Select(f => f.Value)))); // TODO wul no check in loc
         }
 
+        private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
+        {
+            DirectoryPath? currentSearchDirectory = _probStart;
+            while (currentSearchDirectory != null)
+            {
+                var tryManifest = currentSearchDirectory.Value.WithFile(_manifestFilenameConvention);
+
+                yield return tryManifest;
+
+                currentSearchDirectory = currentSearchDirectory.Value.GetParentPathNullable();
+            }
+        }
+
         private class SerializableLocalToolsManifest
         {
             [JsonProperty(Required = Required.Always)]
@@ -155,19 +170,6 @@ namespace Microsoft.DotNet.ToolManifest
             public string version { get; set; }
             public string[] commands { get; set; }
             public string targetFramework { get; set; }
-        }
-
-        private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
-        {
-            DirectoryPath? currentSearchDirectory = _probStart;
-            while (currentSearchDirectory != null)
-            {
-                var tryManifest = currentSearchDirectory.Value.WithFile(_manifestFilenameConvention);
-
-                yield return tryManifest;
-
-                currentSearchDirectory = currentSearchDirectory.Value.GetParentPathNullable();
-            }
         }
     }
 }
