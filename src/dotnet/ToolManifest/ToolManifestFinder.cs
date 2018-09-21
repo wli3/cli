@@ -32,14 +32,14 @@ namespace Microsoft.DotNet.ToolManifest
 
             IEnumerable<FilePath> allPossibleManifests =
                 filePath != null
-                    ? new[] {filePath.Value}
+                    ? new[] { filePath.Value }
                     : EnumerateDefaultAllPossibleManifests();
 
             foreach (FilePath possibleManifest in allPossibleManifests)
             {
                 if (_fileSystem.File.Exists(possibleManifest.Value))
                 {
-                    var jsonResult = JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
+                    SerializableLocalToolsManifest deserializedManifest = JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
                         _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
                         {
                             MissingMemberHandling = MissingMemberHandling.Ignore
@@ -47,17 +47,17 @@ namespace Microsoft.DotNet.ToolManifest
 
                     var errors = new List<string>();
 
-                    if (!jsonResult.isRoot)
+                    if (!deserializedManifest.isRoot)
                     {
                         errors.Add(LocalizableStrings.IsRootFalseNotSupported);
                     }
 
-                    if (jsonResult.version != 1)
+                    if (deserializedManifest.version != 1)
                     {
                         errors.Add(LocalizableStrings.Version1NotSupported);
                     }
 
-                    foreach (var tools in jsonResult.tools)
+                    foreach (var tools in deserializedManifest.tools)
                     {
                         var packageLevelErrors = new List<string>();
                         var packageIdString = tools.Key;
@@ -133,8 +133,8 @@ namespace Microsoft.DotNet.ToolManifest
             }
 
             throw new ToolManifestException(
-                string.Format("Cannot find any manifests file. Searched {0}",
-                    string.Join("; ", allPossibleManifests.Select(f => f.Value)))); // TODO wul no check in loc
+                string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched,
+                    string.Join("; ", allPossibleManifests.Select(f => f.Value))));
         }
 
         private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()
