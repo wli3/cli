@@ -23,6 +23,7 @@ using NuGet.Versioning;
 using Xunit;
 using Xunit.Sdk;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using LocalizableStrings = Microsoft.DotNet.ToolManifest.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exits")));
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
         [Fact]
@@ -113,7 +114,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain("Cannot find any manifests file");
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
         [Fact]
@@ -124,7 +125,10 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Find();
 
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
-                "Invalid manifest file. In package t-rex: field version is missing, field commands is missing.");
+                string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                            string.Join(" ",
+                                string.Format(LocalizableStrings.PackageNameAndErrors, "t-rex",
+                                    LocalizableStrings.MissingVersion + ", " + LocalizableStrings.FieldCommandsIsMissing))));
         }
 
         [Fact]
@@ -134,8 +138,8 @@ namespace Microsoft.DotNet.Tests.Commands
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
-                "Invalid manifest file. In package t-rex: version 1.* is invalid, TargetFramework abc is unsupported.");
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.VersionIsInvalid, "1.*"));
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.TargetFrameworkIsUnsupported, "abc"));
         }
 
         // Remove this test when the follow pending test is enabled and feature is implemented.
