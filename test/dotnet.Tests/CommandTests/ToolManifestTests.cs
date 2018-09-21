@@ -4,25 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
-using Xunit.Sdk;
-using Parser = Microsoft.DotNet.Cli.Parser;
 using LocalizableStrings = Microsoft.DotNet.ToolManifest.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands
@@ -86,7 +77,7 @@ namespace Microsoft.DotNet.Tests.Commands
                     new ToolManifestFindingResultSinglePackage(
                         new PackageId("t-rex"),
                         NuGetVersion.Parse("2.1.4"),
-                        new[] {new ToolCommandName("t-rex")}));
+                        new[] { new ToolCommandName("t-rex") }));
         }
 
         [Fact]
@@ -150,8 +141,9 @@ namespace Microsoft.DotNet.Tests.Commands
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
-                "Invalid manifest file. isRoot is false is not supported. version that is not 1 is not supported.");
+            a.ShouldThrow<ToolManifestException>()
+                .And.Message.Should()
+                .Contain(LocalizableStrings.IsRootFalseNotSupported + " " + LocalizableStrings.Version1NotSupported);
         }
 
         [Fact(Skip = "pending implementation")]
