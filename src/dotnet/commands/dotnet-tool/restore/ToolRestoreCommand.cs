@@ -29,7 +29,6 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly string[] _source;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
-        private const string _localToolResolverCacheFolderName = "localToolCache";
         private const int _localToolResolverCacheVersion = 1;
 
         public ToolRestoreCommand(
@@ -64,8 +63,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             _localToolsResolverCache = localToolsResolverCache ??
                                        new LocalToolsResolverCache(
                                            new FileSystemWrapper(),
-                                           new DirectoryPath(Path.Combine(CliFolderPathCalculator.DotnetHomePath,
-                                               _localToolResolverCacheFolderName)),
+                                           new DirectoryPath(Path.Combine(CliFolderPathCalculator.ToolsResolverCachePath)),
                                            _localToolResolverCacheVersion);
 
             _nugetGlobalPackagesFolder =
