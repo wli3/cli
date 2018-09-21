@@ -49,12 +49,12 @@ namespace Microsoft.DotNet.ToolManifest
 
                     if (!jsonResult.isRoot)
                     {
-                        errors.Add("isRoot is false is not supported."); // TODO wul no check in loc
+                        errors.Add(LocalizableStrings.IsRootFalseNotSupported);
                     }
 
                     if (jsonResult.version != 1)
                     {
-                        errors.Add("version that is not 1 is not supported."); // TODO wul no check in loc
+                        errors.Add(LocalizableStrings.Version1NotSupported);
                     }
 
                     foreach (var tools in jsonResult.tools)
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ToolManifest
                         NuGetVersion version = null;
                         if (versionString is null)
                         {
-                            packageLevelErrors.Add("field version is missing"); // TODO wul no check in loc
+                            packageLevelErrors.Add(LocalizableStrings.MissingVersion);
                         }
                         else
                         {
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.ToolManifest
 
                             if (!versionParseResult)
                             {
-                                packageLevelErrors.Add(string.Format("version {0} is invalid", versionString));
+                                packageLevelErrors.Add(string.Format(LocalizableStrings.VersionIsInvalid, versionString));
                             }
                         }
 
@@ -93,8 +93,8 @@ namespace Microsoft.DotNet.ToolManifest
                             if (targetFramework.IsUnsupported)
                             {
                                 packageLevelErrors.Add(
-                                    string.Format("TargetFramework {0} is unsupported",
-                                        targetFrameworkString)); // TODO wul no check in loc
+                                    string.Format(LocalizableStrings.TargetFrameworkIsUnsupported,
+                                        targetFrameworkString));
                             }
                         }
 
@@ -102,18 +102,18 @@ namespace Microsoft.DotNet.ToolManifest
                         {
                             if (tools.Value.commands.Length == 0)
                             {
-                                packageLevelErrors.Add("field commands is missing"); // TODO wul no check in loc
+                                packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
                             }
                         }
                         else
                         {
-                            packageLevelErrors.Add("field commands is missing"); // TODO wul no check in loc
+                            packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
                         }
 
                         if (packageLevelErrors.Any())
                         {
                             var joined = string.Join(", ", packageLevelErrors);
-                            errors.Add(string.Format("In package {0}: {1}.", packageId.ToString(), joined));
+                            errors.Add(string.Format(LocalizableStrings.PackageNameAndErrors, packageId.ToString(), joined));
                         }
                         else
                         {
@@ -127,8 +127,8 @@ namespace Microsoft.DotNet.ToolManifest
 
                     if (errors.Any())
                     {
-                        throw new ToolManifestException(string.Format("Invalid manifest file. {0}",
-                            string.Join(" ", errors))); // TODO wul no check in loc
+                        throw new ToolManifestException(string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                            string.Join(" ", errors)));
                     }
 
                     return result;
