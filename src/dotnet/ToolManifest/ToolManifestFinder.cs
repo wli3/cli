@@ -61,11 +61,9 @@ namespace Microsoft.DotNet.ToolManifest
                     {
                         var packageLevelErrors = new List<string>();
                         var packageIdString = tools.Key;
-
                         var packageId = new PackageId(packageIdString);
 
                         string versionString = tools.Value.version;
-
                         NuGetVersion version = null;
                         if (versionString is null)
                         {
@@ -84,7 +82,6 @@ namespace Microsoft.DotNet.ToolManifest
 
                         NuGetFramework targetFramework = null;
                         var targetFrameworkString = tools.Value.targetFramework;
-
                         if (!(targetFrameworkString is null))
                         {
                             targetFramework = NuGetFramework.Parse(
@@ -146,9 +143,7 @@ namespace Microsoft.DotNet.ToolManifest
             while (currentSearchDirectory != null)
             {
                 var tryManifest = currentSearchDirectory.Value.WithFile(_manifestFilenameConvention);
-
                 yield return tryManifest;
-
                 currentSearchDirectory = currentSearchDirectory.Value.GetParentPathNullable();
             }
         }
