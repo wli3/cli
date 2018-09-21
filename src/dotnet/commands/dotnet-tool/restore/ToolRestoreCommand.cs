@@ -109,6 +109,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                             verbosity: _verbosity);
 
                     foreach (RestoredCommand command in toolPackage.Commands)
+                    {
                         dictionary.Add(
                             new RestoredCommandIdentifier(
                                 toolPackage.Id,
@@ -117,6 +118,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                                 "any",
                                 command.Name),
                             command);
+                    }
                 }
                 catch (ToolPackageException e)
                 {
@@ -127,7 +129,6 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             EnsureNoCommandNameCollision(dictionary);
 
             _localToolsResolverCache.Save(dictionary, _nugetGlobalPackagesFolder);
-
 
             if (toolPackageExceptions.Any())
             {
@@ -150,9 +151,13 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             string customFile = _options.Arguments.SingleOrDefault();
             FilePath? customManifestFileLocation;
             if (customFile != null)
+            {
                 customManifestFileLocation = new FilePath(customFile);
+            }
             else
+            {
                 customManifestFileLocation = null;
+            }
 
             return customManifestFileLocation;
         }
@@ -175,7 +180,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             }
         }
 
-        private string JoinBySpaceWithQuote(IEnumerable<object> objects)
+        private static string JoinBySpaceWithQuote(IEnumerable<object> objects)
         {
             return string.Join(", ", objects.Select(o => $"\"{o.ToString()}\""));
         }
