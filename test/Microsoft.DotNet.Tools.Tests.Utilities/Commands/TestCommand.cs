@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         public event DataReceivedEventHandler OutputDataReceived;
 
         public string WorkingDirectory { get; set; }
+        public object CliFolderPathCalculator { get; private set; }
 
         public TestCommand(string command)
         {
@@ -230,6 +231,26 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private void AddEnvironmentVariablesTo(ProcessStartInfo psi)
         {
+            string home = string.Empty;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                home = System.Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
+                if (string.IsNullOrEmpty(home))
+                {
+                    home = System.Environment.GetEnvironmentVariable("USERPROFILE");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(home))
+            {
+                if (Environment.ContainsKey("PATH"))
+                {
+                    Environment["PATH"] = Environment["PATH"] + ";" + Path.Combine(home, )
+                }
+            }
+
+            
+
             foreach (var item in Environment)
             {
 #if NET451

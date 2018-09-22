@@ -11,6 +11,7 @@ using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
 using FluentAssertions;
+using System.Runtime.InteropServices;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -41,20 +42,22 @@ namespace Microsoft.DotNet.Tests
             command.Environment["DOTNET_CLI_TEST_LINUX_PROFILED_PATH"] = profiled;
             command.Environment["DOTNET_CLI_TEST_OSX_PATHSD_PATH"] = pathsd;
             command.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "";
-            command.Environment["SkipInvalidConfigurations"] = "true";
-
-            _firstDotnetNonVerbUseCommandResult = command.ExecuteWithCapturedOutput("--info");
-            _firstDotnetVerbUseCommandResult = command.ExecuteWithCapturedOutput("new --debug:ephemeral-hive");
 
             _nugetFallbackFolder = new DirectoryInfo(cliTestFallbackFolder);
             _dotDotnetFolder = new DirectoryInfo(Path.Combine(testNuGetHome, ".dotnet"));
-            CreateToolPathSentinelToAvoidSettingRegisteryDuringTest();
+
+            AddToolPathToProcessEnvTopreventSettingActualEnv(_dotDotnetFolder, command);
+
+            _firstDotnetNonVerbUseCommandResult = command.ExecuteWithCapturedOutput("--info");
+            _firstDotnetVerbUseCommandResult = command.ExecuteWithCapturedOutput("new --debug:ephemeral-hive");
         }
 
-        private static void CreateToolPathSentinelToAvoidSettingRegisteryDuringTest()
+        private static void AddToolPathToProcessEnvTopreventSettingActualEnv(DirectoryInfo dotdotnetfolder, DotnetCommand command)
         {
-            _dotDotnetFolder.Create();
-            File.WriteAllText(Path.Combine(_dotDotnetFolder.FullName, Program.ToolPathSentinelFileName), string.Empty);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                command.Environment["PATH"] = Path.Combine(dotdotnetfolder.FullName, CliFolderPathCalculator.ToolsShimFolderName);
+            }
         }
 
         [Fact]
@@ -137,9 +140,10 @@ namespace Microsoft.DotNet.Tests
             command.Environment["DOTNET_DISABLE_MULTICOREJIT"] = "true";
             command.Environment["SkipInvalidConfigurations"] = "true";
 
+            var homeFolder = new DirectoryInfo(Path.Combine(emptyHome, ".dotnet"));
+            AddToolPathToProcessEnvTopreventSettingActualEnv(homeFolder, command);
             command.ExecuteWithCapturedOutput("internal-reportinstallsuccess test").Should().Pass();
 
-            var homeFolder = new DirectoryInfo(Path.Combine(emptyHome, ".dotnet"));
             string[] fileEntries = Directory.GetFiles(homeFolder.ToString());
             fileEntries.Should().OnlyContain(x => !x.Contains(".dotnetFirstUseSentinel"));
             fileEntries.Should().OnlyContain(x => !x.Contains(".aspNetCertificateSentinel"));
@@ -163,6 +167,8 @@ namespace Microsoft.DotNet.Tests
             command.Environment["DOTNET_CLI_TEST_OSX_PATHSD_PATH"] = pathsd;
             command.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "";
             command.Environment["SkipInvalidConfigurations"] = "true";
+
+            AddToolPathToProcessEnvTopreventSettingActualEnv(newHomeFolder, command);
 
             command.ExecuteWithCapturedOutput("internal-reportinstallsuccess test").Should().Pass();
 
@@ -191,6 +197,7 @@ namespace Microsoft.DotNet.Tests
             command.Environment["DOTNET_CLI_TEST_OSX_PATHSD_PATH"] = pathsd;
             command.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "";
             command.Environment["SkipInvalidConfigurations"] = "true";
+            AddToolPathToProcessEnvTopreventSettingActualEnv(newHomeFolder, command);
 
             command.ExecuteWithCapturedOutput("internal-reportinstallsuccess test").Should().Pass();
 

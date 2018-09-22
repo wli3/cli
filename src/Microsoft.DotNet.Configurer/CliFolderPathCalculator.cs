@@ -12,8 +12,8 @@ namespace Microsoft.DotNet.Configurer
     public static class CliFolderPathCalculator
     {
         public const string DotnetHomeVariableName = "DOTNET_CLI_HOME";
-        private const string DotnetProfileDirectoryName = ".dotnet";
-        private const string ToolsShimFolderName = "tools";
+        internal const string DotnetProfileDirectoryName = ".dotnet";
+        internal const string ToolsShimFolderName = "tools";
 
         public static string CliFallbackFolderPath =>
             Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
