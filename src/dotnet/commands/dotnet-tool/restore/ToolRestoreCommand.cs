@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly string[] _sources;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
-        private const int _localToolResolverCacheVersion = 1;
+        private const int LocalToolResolverCacheVersion = 1;
 
         public ToolRestoreCommand(
             AppliedOption appliedCommand,
@@ -65,8 +65,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             _localToolsResolverCache = localToolsResolverCache ??
                                        new LocalToolsResolverCache(
                                            new FileSystemWrapper(),
-                                           new DirectoryPath(Path.Combine(CliFolderPathCalculator.ToolsResolverCachePath)),
-                                           _localToolResolverCacheVersion);
+                                           new DirectoryPath(
+                                               Path.Combine(CliFolderPathCalculator.ToolsResolverCachePath)),
+                                           LocalToolResolverCacheVersion);
 
             _nugetGlobalPackagesFolder =
                 nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
@@ -100,6 +101,11 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 string targetFramework =
                     package.OptionalNuGetFramework?.GetShortFolderName()
                     ?? BundledTargetFramework.GetTargetFrameworkMoniker();
+
+                if (PackageHasBeenRestored(package, targetFramework))
+                {
+                    continue;
+                }
 
                 try
                 {
@@ -190,6 +196,28 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             }
 
             return true;
+        }
+        
+        private bool PackageHasBeenRestored(
+            ToolManifestFindingResultSinglePackage package,
+            string targetFramework)
+        {
+            var sampleRestoredCommandIdentifierOfThePackage = new RestoredCommandIdentifier(
+                package.PackageId,
+                package.Version,
+                NuGetFramework.Parse(targetFramework),
+                "any",
+                package.CommandName.First());
+
+            if (_localToolsResolverCache.TryLoad(
+                sampleRestoredCommandIdentifierOfThePackage,
+                _nugetGlobalPackagesFolder,
+                out _))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private FilePath? GetCustomManifestFileLocation()
