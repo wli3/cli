@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenCalledWithNonExistsFilePathItThrows()
         {
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-            Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exits")));
+            Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
@@ -134,6 +134,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         // Remove this test when the follow pending test is enabled and feature is implemented.
+        // https://github.com/dotnet/cli/issues/10032
         [Fact]
         public void RequireRootAndVersionIs1()
         {

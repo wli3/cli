@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private readonly AppliedOption _options;
         private readonly IReporter _reporter;
-        private readonly string[] _source;
+        private readonly string[] _sources;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly string _verbosity;
         private const int _localToolResolverCacheVersion = 1;
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             _errorReporter = reporter ?? Reporter.Error;
 
             _configFilePath = appliedCommand.ValueOrDefault<string>("configfile");
-            _source = appliedCommand.ValueOrDefault<string[]>("add-source");
+            _sources = appliedCommand.ValueOrDefault<string[]>("add-source");
             _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                         _toolPackageInstaller.InstallPackageToExternalManagedLocation(
                             new PackageLocation(
                                 nugetConfig: configFile,
-                                additionalFeeds: _source),
+                                additionalFeeds: _sources),
                             package.PackageId, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework,
                             verbosity: _verbosity);
 
