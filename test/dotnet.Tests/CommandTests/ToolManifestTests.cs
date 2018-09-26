@@ -162,19 +162,86 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         private string _jsonContent =
-            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"dotnetsay\":{\"version\":\"2.1.4\",\"commands\":[\"dotnetsay\"]}}}";
+            @"{  
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{  
+      ""t-rex"":{  
+         ""version"":""1.0.53"",
+         ""commands"":[  
+            ""t-rex""
+         ],
+         ""targetFramework"":""netcoreapp2.1""
+      },
+      ""dotnetsay"":{  
+         ""version"":""2.1.4"",
+         ""commands"":[  
+            ""dotnetsay""
+         ]
+      }
+   }
+}";
 
         private string _jsonWithDuplicatedPackagedId =
-            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"],\"targetFramework\":\"netcoreapp2.1\"},\"t-rex\":{\"version\":\"2.1.4\",\"commands\":[\"t-rex\"]}}}";
+            @"{  
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{  
+      ""t-rex"":{  
+         ""version"":""1.0.53"",
+         ""commands"":[  
+            ""t-rex""
+         ],
+         ""targetFramework"":""netcoreapp2.1""
+      },
+      ""t-rex"":{  
+         ""version"":""2.1.4"",
+         ""commands"":[  
+            ""t-rex""
+         ]
+      }
+   }
+}";
 
         private string _jsonWithMissingField =
-            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"extra\":1}}}";
+            @"{  
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{  
+      ""t-rex"":{  
+         ""extra"":1
+      }
+   }
+}";
 
         private string _jsonWithInvalidField =
-            "{\"version\":1,\"isRoot\":true,\"tools\":{\"t-rex\":{\"version\":\"1.*\",\"commands\":[\"t-rex\"],\"targetFramework\":\"abc\"}}}";
+            @"{  
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{  
+      ""t-rex"":{  
+         ""version"":""1.*"",
+         ""commands"":[  
+            ""t-rex""
+         ],
+         ""targetFramework"":""abc""
+      }
+   }
+}";
 
         private string _jsonWithNonRoot =
-            "{\"version\":2,\"isRoot\":false,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"]}}}";
+            @"{  
+   ""version"":2,
+   ""isRoot"":false,
+   ""tools"":{  
+      ""t-rex"":{  
+         ""version"":""1.0.53"",
+         ""commands"":[  
+            ""trex""
+         ]
+      }
+   }
+}";
 
         private readonly List<ToolManifestPackage> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
