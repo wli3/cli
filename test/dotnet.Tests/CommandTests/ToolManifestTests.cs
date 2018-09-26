@@ -27,14 +27,14 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
 
-            _defaultExpectedResult = new List<ToolManifestFindingResultSinglePackage>
+            _defaultExpectedResult = new List<ToolManifestPackage>
             {
-                new ToolManifestFindingResultSinglePackage(
+                new ToolManifestPackage(
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
                     new[] {new ToolCommandName("t-rex")},
                     NuGetFramework.Parse("netcoreapp2.1")),
-                new ToolManifestFindingResultSinglePackage(
+                new ToolManifestPackage(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
                     new[] {new ToolCommandName("dotnetsay")})
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             manifestResult.Should()
                 .Contain(
-                    new ToolManifestFindingResultSinglePackage(
+                    new ToolManifestPackage(
                         new PackageId("t-rex"),
                         NuGetVersion.Parse("2.1.4"),
                         new[] { new ToolCommandName("t-rex") }));
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private string _jsonWithNonRoot =
             "{\"version\":2,\"isRoot\":false,\"tools\":{\"t-rex\":{\"version\":\"1.0.53\",\"commands\":[\"t-rex\"]}}}";
 
-        private readonly List<ToolManifestFindingResultSinglePackage> _defaultExpectedResult;
+        private readonly List<ToolManifestPackage> _defaultExpectedResult;
         private readonly string _testDirectoryRoot;
         private const string _manifestFilename = "localtool.manifest.json";
     }

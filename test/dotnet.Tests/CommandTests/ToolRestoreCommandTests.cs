@@ -118,9 +118,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         Array.Empty<ToolCommandName>(), null),
-                    new ToolManifestFindingResultSinglePackage(_packageIdB, _packageVersionB,
+                    new ToolManifestPackage(_packageIdB, _packageVersionB,
                         Array.Empty<ToolCommandName>(), _targetFrameworkB)
                 });
 
@@ -154,9 +154,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         Array.Empty<ToolCommandName>()),
-                    new ToolManifestFindingResultSinglePackage(_packageIdWithCommandNameCollisionWithA,
+                    new ToolManifestPackage(_packageIdWithCommandNameCollisionWithA,
                         _packageVersionWithCommandNameCollisionWithA, Array.Empty<ToolCommandName>())
                 });
 
@@ -183,9 +183,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         Array.Empty<ToolCommandName>()),
-                    new ToolManifestFindingResultSinglePackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
+                    new ToolManifestPackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
                         Array.Empty<ToolCommandName>())
                 });
 
@@ -221,14 +221,14 @@ namespace Microsoft.DotNet.Tests.Commands
 
         private class MockManifestFileFinder : IToolManifestFinder
         {
-            private readonly IReadOnlyCollection<ToolManifestFindingResultSinglePackage> _toReturn;
+            private readonly IReadOnlyCollection<ToolManifestPackage> _toReturn;
 
-            public MockManifestFileFinder(IReadOnlyCollection<ToolManifestFindingResultSinglePackage> toReturn)
+            public MockManifestFileFinder(IReadOnlyCollection<ToolManifestPackage> toReturn)
             {
                 _toReturn = toReturn;
             }
 
-            public IReadOnlyCollection<ToolManifestFindingResultSinglePackage> Find(FilePath? filePath = null)
+            public IReadOnlyCollection<ToolManifestPackage> Find(FilePath? filePath = null)
             {
                 return _toReturn;
             }

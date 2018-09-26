@@ -26,9 +26,9 @@ namespace Microsoft.DotNet.ToolManifest
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }
 
-        public IReadOnlyCollection<ToolManifestFindingResultSinglePackage> Find(FilePath? filePath = null)
+        public IReadOnlyCollection<ToolManifestPackage> Find(FilePath? filePath = null)
         {
-            var result = new List<ToolManifestFindingResultSinglePackage>();
+            var result = new List<ToolManifestPackage>();
 
             IEnumerable<FilePath> allPossibleManifests =
                 filePath != null
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.ToolManifest
                         }
                         else
                         {
-                            result.Add(new ToolManifestFindingResultSinglePackage(
+                            result.Add(new ToolManifestPackage(
                                 packageId,
                                 version,
                                 ToolCommandName.Convert(tools.Value.commands),
