@@ -119,9 +119,9 @@ namespace Microsoft.DotNet.Tests.Commands
                 new MockManifestFileFinder(new[]
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
-                        Array.Empty<ToolCommandName>(), null),
+                        new[] {_toolCommandNameA}, null),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
-                        Array.Empty<ToolCommandName>(), _targetFrameworkB)
+                        new[] {_toolCommandNameB}, _targetFrameworkB)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -155,9 +155,9 @@ namespace Microsoft.DotNet.Tests.Commands
                 new MockManifestFileFinder(new[]
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
-                        Array.Empty<ToolCommandName>()),
+                        new[] {_toolCommandNameA}),
                     new ToolManifestPackage(_packageIdWithCommandNameCollisionWithA,
-                        _packageVersionWithCommandNameCollisionWithA, Array.Empty<ToolCommandName>())
+                        _packageVersionWithCommandNameCollisionWithA, new[] {_toolCommandNameA})
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 new MockManifestFileFinder(new[]
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
-                        Array.Empty<ToolCommandName>()),
+                        new[] {_toolCommandNameA}),
                     new ToolManifestPackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
                         Array.Empty<ToolCommandName>())
                 });
@@ -217,6 +217,36 @@ namespace Microsoft.DotNet.Tests.Commands
                         "any",
                         _toolCommandNameA), _nugetGlobalPackagesFolder, out _)
                 .Should().BeTrue("Existing package will succeed despite other package failed");
+        }
+
+        [Fact]
+        public void ItShouldFailWhenPackageCommandNameDoesNotMatchManifestCommands()
+        {
+            ToolCommandName differentCommandNameA = new ToolCommandName("different-command-nameA");
+            ToolCommandName differentCommandNameB = new ToolCommandName("different-command-nameB");
+            IToolManifestFinder manifestFileFinder =
+                new MockManifestFileFinder(new[]
+                {
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
+                        new[] {differentCommandNameA, differentCommandNameB}, null),
+                });
+
+            ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                manifestFileFinder,
+                _localToolsResolverCache,
+                _nugetGlobalPackagesFolder,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute().Should().Be(1);
+            _reporter.Lines.Should()
+                .Contain(l =>
+                    l.Contains(
+                        string.Format(LocalizableStrings.CommandsMismatch,
+                            _packageIdA,
+                            "\"a\"", "\"different-command-nameA\" \"different-command-nameB\"")));
         }
 
         private class MockManifestFileFinder : IToolManifestFinder
