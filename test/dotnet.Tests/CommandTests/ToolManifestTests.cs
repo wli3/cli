@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<ToolManifestException>()
                 .And.Message.Should()
-                .Contain(LocalizableStrings.IsRootFalseNotSupported + " " + LocalizableStrings.Version1NotSupported);
+                .Contain("isRoot is false is not supported." + " " + "Tools manifest format version 2 is not supported.");
         }
 
         [Fact(Skip = "pending implementation")]

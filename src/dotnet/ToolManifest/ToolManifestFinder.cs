@@ -54,7 +54,8 @@ namespace Microsoft.DotNet.ToolManifest
 
                     if (deserializedManifest.version != 1)
                     {
-                        errors.Add("version that is not 1 is not supported.");
+                        errors.Add(string.Format("Tools manifest format version {0} is not supported.",
+                            deserializedManifest.version));
                     }
 
                     foreach (var tools in deserializedManifest.tools)
