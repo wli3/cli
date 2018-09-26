@@ -173,8 +173,8 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<ToolPackageException>()
                 .And.Message
                 .Should().Be(string.Format(LocalizableStrings.PackagesCommandNameCollision,
-                    "\"local.tool.console.a\", \"command.name.collision.with.package.a\"",
-                    "\"a\", \"A\""));
+                    "\"local.tool.console.a\" \"command.name.collision.with.package.a\"",
+                    "\"a\" \"A\""));
         }
 
         [Fact]
