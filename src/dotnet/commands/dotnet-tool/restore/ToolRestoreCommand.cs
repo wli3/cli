@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
         private static string JoinBySpaceWithQuote(IEnumerable<object> objects)
         {
-            return string.Join(", ", objects.Select(o => $"\"{o.ToString()}\""));
+            return string.Join(" ", objects.Select(o => $"\"{o.ToString()}\""));
         }
 
         private static VersionRange ToVersionRangeWithOnlyOneVersion(NuGetVersion version)

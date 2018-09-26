@@ -104,8 +104,8 @@ namespace Microsoft.DotNet.ToolManifest
 
                         if (packageLevelErrors.Any())
                         {
-                            var joined = string.Join(", ", packageLevelErrors);
-                            errors.Add(string.Format(LocalizableStrings.PackageNameAndErrors, packageId.ToString(), joined));
+                            var joined = string.Join(string.Empty, packageLevelErrors.Select(e => Environment.NewLine + "    " + e));
+                            errors.Add(string.Format(LocalizableStrings.InPackage, packageId.ToString()) + joined);
                         }
                         else
                         {
@@ -119,8 +119,8 @@ namespace Microsoft.DotNet.ToolManifest
 
                     if (errors.Any())
                     {
-                        throw new ToolManifestException(string.Format(LocalizableStrings.InvalidManifestFilePrefix,
-                            string.Join(" ", errors)));
+                        throw new ToolManifestException(LocalizableStrings.InvalidManifestFilePrefix +
+                            string.Join(string.Empty, errors.Select(e => Environment.NewLine + "  " + e)));
                     }
 
                     return result;
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.ToolManifest
 
             throw new ToolManifestException(
                 string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched,
-                    string.Join("; ", allPossibleManifests.Select(f => f.Value))));
+                    string.Join(Environment.NewLine, allPossibleManifests.Select(f => f.Value))));
         }
 
         private IEnumerable<FilePath> EnumerateDefaultAllPossibleManifests()

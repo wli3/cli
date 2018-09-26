@@ -70,9 +70,9 @@ namespace Microsoft.DotNet.Cli.ToolManifest {
             }
         }
         
-        public static string PackageNameAndErrors {
+        public static string InPackage {
             get {
-                return ResourceManager.GetString("PackageNameAndErrors", resourceCulture);
+                return ResourceManager.GetString("InPackage", resourceCulture);
             }
         }
         

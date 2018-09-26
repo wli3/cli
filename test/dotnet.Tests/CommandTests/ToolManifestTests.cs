@@ -116,10 +116,10 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Find();
 
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
-                string.Format(LocalizableStrings.InvalidManifestFilePrefix,
-                            string.Join(" ",
-                                string.Format(LocalizableStrings.PackageNameAndErrors, "t-rex",
-                                    LocalizableStrings.MissingVersion + ", " + LocalizableStrings.FieldCommandsIsMissing))));
+                LocalizableStrings.InvalidManifestFilePrefix + Environment.NewLine + "  " +
+                string.Format(LocalizableStrings.InPackage, "t-rex") + Environment.NewLine + "    " +
+                LocalizableStrings.MissingVersion + Environment.NewLine + "    " +
+                LocalizableStrings.FieldCommandsIsMissing);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<ToolManifestException>()
                 .And.Message.Should()
-                .Contain("isRoot is false is not supported." + " " + "Tools manifest format version 2 is not supported.");
+                .Contain("  isRoot is false is not supported." + Environment.NewLine + "  Tools manifest format version 2 is not supported.");
         }
 
         [Fact(Skip = "pending implementation")]
