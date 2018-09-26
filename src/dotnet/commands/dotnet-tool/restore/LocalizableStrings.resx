@@ -156,10 +156,10 @@
   <data name="ConfigFileOptionName" xml:space="preserve">
     <value>FILE</value>
   </data>
-  <data name="ManifestPath" xml:space="preserve">
+  <data name="ManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
   </data>
-  <data name="ManifestPathDescription" xml:space="preserve">
+  <data name="ManifestPathOptionDescription" xml:space="preserve">
     <value>Path to the manifest file.</value>
   </data>
   <data name="VersionOptionDescription" xml:space="preserve">

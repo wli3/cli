@@ -194,7 +194,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
         private FilePath? GetCustomManifestFileLocation()
         {
-            string customFile = _options.Arguments.SingleOrDefault();
+            string customFile = _options.ValueOrDefault<string>("tool-manifest");
             FilePath? customManifestFileLocation;
             if (customFile != null)
             {

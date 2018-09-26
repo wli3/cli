@@ -124,15 +124,15 @@ namespace Microsoft.DotNet.Cli.commands.restore {
             }
         }
         
-        public static string ManifestPath {
+        public static string ManifestPathOptionName {
             get {
-                return ResourceManager.GetString("ManifestPath", resourceCulture);
+                return ResourceManager.GetString("ManifestPathOptionName", resourceCulture);
             }
         }
         
-        public static string ManifestPathDescription {
+        public static string ManifestPathOptionDescription {
             get {
-                return ResourceManager.GetString("ManifestPathDescription", resourceCulture);
+                return ResourceManager.GetString("ManifestPathOptionDescription", resourceCulture);
             }
         }
         
