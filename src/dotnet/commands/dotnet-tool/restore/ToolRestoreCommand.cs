@@ -96,6 +96,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 new Dictionary<PackageId, ToolPackageException>();
             List<string> errorMessages = new List<string>();
 
+            List<string> successMessages = new List<string>();
+
             foreach (var package in packagesFromManifest)
             {
                 string targetFramework =
@@ -104,6 +106,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
                 if (PackageHasBeenRestored(package, targetFramework))
                 {
+                    successMessages.Add(string.Format(
+                        "Tool '{0}' (version '{1}') was restored. Available commands: {2}", package.PackageId,
+                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandName)));
                     continue;
                 }
 
@@ -137,6 +142,10 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                                 command.Name),
                             command);
                     }
+
+                    successMessages.Add(string.Format(
+                        "Tool '{0}' (version '{1}') was restored. Available commands: {2}", package.PackageId,
+                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandName)));
                 }
                 catch (ToolPackageException e)
                 {
@@ -162,6 +171,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
                 return 1;
             }
+
+            _reporter.WriteLine("Restore was successful.");
+            _reporter.WriteLine(string.Join(Environment.NewLine, successMessages));
 
             return 0;
         }

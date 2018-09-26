@@ -158,6 +158,38 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void WhenRunItCanSaveCommandsToCacheAndShowSuccessMessage()
+        {
+            IToolManifestFinder manifestFileFinder =
+                new MockManifestFileFinder(new[]
+                {
+                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                        new[] {_toolCommandNameA}, null),
+                    new ToolManifestFindingResultSinglePackage(_packageIdB, _packageVersionB,
+                        new[] {_toolCommandNameB}, _targetFrameworkB)
+                });
+
+            ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                manifestFileFinder,
+                _localToolsResolverCache,
+                _nugetGlobalPackagesFolder,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().Contain(l => l.Contains("Restore was successful."));
+            _reporter.Lines.Should().Contain(l => l.Contains(string.Format(
+                "Tool '{0}' (version '{1}') was restored. Available commands: {2}", _packageIdA,
+                _packageVersionA.ToNormalizedString(), _toolCommandNameA)));
+            _reporter.Lines.Should().Contain(l => l.Contains(string.Format(
+                "Tool '{0}' (version '{1}') was restored. Available commands: {2}", _packageIdB,
+                _packageVersionB.ToNormalizedString(), _toolCommandNameB)));
+        }
+
+        [Fact]
         public void WhenRestoredCommandHasTheSameCommandNameItThrows()
         {
             IToolManifestFinder manifestFileFinder =
