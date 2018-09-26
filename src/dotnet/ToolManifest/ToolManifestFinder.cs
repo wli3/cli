@@ -158,6 +158,7 @@ namespace Microsoft.DotNet.ToolManifest
             public bool isRoot { get; set; }
 
             [JsonProperty(Required = Required.Always)]
+            // The dictionary's key is the package id
             public Dictionary<string, SerializableLocalToolSinglePackage> tools { get; set; }
         }
 
