@@ -96,14 +96,8 @@ namespace Microsoft.DotNet.ToolManifest
                             }
                         }
 
-                        if (tools.Value.commands != null)
-                        {
-                            if (tools.Value.commands.Length == 0)
-                            {
-                                packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
-                            }
-                        }
-                        else
+                        if (tools.Value.commands == null 
+                            || (tools.Value.commands != null && tools.Value.commands.Length == 0))
                         {
                             packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
                         }
