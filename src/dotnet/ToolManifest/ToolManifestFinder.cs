@@ -49,12 +49,12 @@ namespace Microsoft.DotNet.ToolManifest
 
                     if (!deserializedManifest.isRoot)
                     {
-                        errors.Add(LocalizableStrings.IsRootFalseNotSupported);
+                        errors.Add("isRoot is false is not supported.");
                     }
 
                     if (deserializedManifest.version != 1)
                     {
-                        errors.Add(LocalizableStrings.Version1NotSupported);
+                        errors.Add("version that is not 1 is not supported.");
                     }
 
                     foreach (var tools in deserializedManifest.tools)

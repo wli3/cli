@@ -126,9 +126,6 @@
   <data name="InvalidManifestFilePrefix" xml:space="preserve">
     <value>Invalid manifest file. {0}</value>
   </data>
-  <data name="IsRootFalseNotSupported" xml:space="preserve">
-    <value>isRoot is false is not supported.</value>
-  </data>
   <data name="MissingVersion" xml:space="preserve">
     <value>field version is missing</value>
   </data>
@@ -137,9 +134,6 @@
   </data>
   <data name="TargetFrameworkIsUnsupported" xml:space="preserve">
     <value>TargetFramework {0} is unsupported</value>
-  </data>
-  <data name="Version1NotSupported" xml:space="preserve">
-    <value>version that is not 1 is not supported.</value>
   </data>
   <data name="VersionIsInvalid" xml:space="preserve">
     <value>version {0} is invalid</value>

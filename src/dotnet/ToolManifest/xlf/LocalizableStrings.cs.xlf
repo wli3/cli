@@ -7,16 +7,6 @@
         <target state="new">field version is missing</target>
         <note />
       </trans-unit>
-      <trans-unit id="Version1NotSupported">
-        <source>version that is not 1 is not supported.</source>
-        <target state="new">version that is not 1 is not supported.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IsRootFalseNotSupported">
-        <source>isRoot is false is not supported.</source>
-        <target state="new">isRoot is false is not supported.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VersionIsInvalid">
         <source>version {0} is invalid</source>
         <target state="new">version {0} is invalid</target>
