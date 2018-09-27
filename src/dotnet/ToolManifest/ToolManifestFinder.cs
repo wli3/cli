@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
@@ -71,13 +72,11 @@ namespace Microsoft.DotNet.ToolManifest
 
         private SerializableLocalToolsManifest DeserializableLocalToolsManifest(FilePath possibleManifest)
         {
-            SerializableLocalToolsManifest deserializedManifest
-                = JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
-                    _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
-                    {
-                        MissingMemberHandling = MissingMemberHandling.Ignore
-                    });
-            return deserializedManifest;
+            return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
+                _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
+                {
+                    MissingMemberHandling = MissingMemberHandling.Ignore
+                });
         }
 
         private static List<ToolManifestPackage> GetToolManifestPackageFromOneManifestFile(
@@ -178,7 +177,8 @@ namespace Microsoft.DotNet.ToolManifest
             [JsonProperty(Required = Required.Always)]
             public int version { get; set; }
 
-            [JsonProperty(Required = Required.Always)]
+            [DefaultValue(false)]
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
             public bool isRoot { get; set; }
 
             [JsonProperty(Required = Required.Always)]

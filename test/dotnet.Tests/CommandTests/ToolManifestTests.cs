@@ -281,7 +281,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private string _jsonContentInParentDirectory =
             @"{
    ""version"":1,
-   ""isRoot"":false,
    ""tools"":{
       ""t-rex"":{  
          ""version"":""1.0.53"",
