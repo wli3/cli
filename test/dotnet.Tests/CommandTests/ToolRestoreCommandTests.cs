@@ -121,15 +121,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-<<<<<<< HEAD
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA}, null),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
-=======
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
-                        new[] {_toolCommandNameA}, null),
-                    new ToolManifestFindingResultSinglePackage(_packageIdB, _packageVersionB,
->>>>>>> Do not restore when restored
                         new[] {_toolCommandNameB}, _targetFrameworkB)
                 });
 
@@ -163,9 +157,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA}, null),
-                    new ToolManifestFindingResultSinglePackage(_packageIdB, _packageVersionB,
+                    new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB}, _targetFrameworkB)
                 });
 
@@ -195,15 +189,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-<<<<<<< HEAD
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA}),
                     new ToolManifestPackage(_packageIdWithCommandNameCollisionWithA,
-=======
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
-                        new[] {_toolCommandNameA}),
-                    new ToolManifestFindingResultSinglePackage(_packageIdWithCommandNameCollisionWithA,
->>>>>>> Do not restore when restored
                         _packageVersionWithCommandNameCollisionWithA, new[] {_toolCommandNameA})
                 });
 
@@ -230,9 +218,9 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA}),
-                    new ToolManifestFindingResultSinglePackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
+                    new ToolManifestPackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
                         new[] {new ToolCommandName("non-exists"),})
                 });
 
@@ -302,7 +290,7 @@ namespace Microsoft.DotNet.Tests.Commands
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
-                    new ToolManifestFindingResultSinglePackage(_packageIdA, _packageVersionA,
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA})
                 });
 

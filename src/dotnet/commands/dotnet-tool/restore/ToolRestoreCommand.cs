@@ -94,8 +94,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             Dictionary<PackageId, ToolPackageException> toolPackageExceptions =
                 new Dictionary<PackageId, ToolPackageException>();
-            List<string> errorMessages = new List<string>();
 
+            List<string> errorMessages = new List<string>();
             List<string> successMessages = new List<string>();
 
             foreach (var package in packagesFromManifest)
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 {
                     successMessages.Add(string.Format(
                         "Tool '{0}' (version '{1}') was restored. Available commands: {2}", package.PackageId,
-                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandName)));
+                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
                     continue;
                 }
 
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
                     successMessages.Add(string.Format(
                         "Tool '{0}' (version '{1}') was restored. Available commands: {2}", package.PackageId,
-                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandName)));
+                        package.Version.ToNormalizedString(), string.Join(" ", package.CommandNames)));
                 }
                 catch (ToolPackageException e)
                 {
@@ -209,9 +209,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             return true;
         }
-        
+
         private bool PackageHasBeenRestored(
-            ToolManifestFindingResultSinglePackage package,
+            ToolManifestPackage package,
             string targetFramework)
         {
             var sampleRestoredCommandIdentifierOfThePackage = new RestoredCommandIdentifier(
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 package.Version,
                 NuGetFramework.Parse(targetFramework),
                 "any",
-                package.CommandName.First());
+                package.CommandNames.First());
 
             if (_localToolsResolverCache.TryLoad(
                 sampleRestoredCommandIdentifierOfThePackage,
