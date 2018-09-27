@@ -176,6 +176,16 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void GivenConflictedManifestFileInDifferentFieldsItOnlyConsiderTheFirstIsRoot()
         {
+            var subdirectoryOfTestRoot = Path.Combine(_testDirectoryRoot, "sub");
+            _fileSystem.Directory.CreateDirectory(subdirectoryOfTestRoot);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename),
+                _jsonContentInParentDirectory);
+            _fileSystem.File.WriteAllText(Path.Combine(subdirectoryOfTestRoot, _manifestFilename),
+                _jsonContentInCurrentDirectoryIsRootTrue);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(subdirectoryOfTestRoot), _fileSystem);
+            var manifestResult = toolManifest.Find();
+
+            manifestResult.Count.Should().Be(2, "only content in the current directory manifest file is considered");
         }
 
 
@@ -260,7 +270,27 @@ namespace Microsoft.DotNet.Tests.Commands
         private string _jsonContentInCurrentDirectory =
             @"{
    ""version"":1,
-   ""isRoot"":false,
+   ""tools"":{
+      ""t-rex"":{
+         ""version"":""1.0.49"",
+         ""commands"":[
+            ""t-rex""
+         ],
+         ""targetFramework"":""netcoreapp2.1""
+      },
+      ""dotnetsay"":{
+         ""version"":""2.1.4"",
+         ""commands"":[
+            ""dotnetsay""
+         ]
+      }
+   }
+}";
+        
+        private string _jsonContentInCurrentDirectoryIsRootTrue =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
    ""tools"":{
       ""t-rex"":{
          ""version"":""1.0.49"",
@@ -278,9 +308,11 @@ namespace Microsoft.DotNet.Tests.Commands
    }
 }";
 
+
         private string _jsonContentInParentDirectory =
             @"{
    ""version"":1,
+   ""isRoot"":false,
    ""tools"":{
       ""t-rex"":{  
          ""version"":""1.0.53"",
