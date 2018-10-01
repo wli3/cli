@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="MalformedText">
-        <source>Malformed command text '{0}'</source>
-        <target state="translated">Hatalı biçimlendirilmiş komut metni: '{0}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BuildOutputPathDoesNotExist">
         <source>outputpathresolver: {0} does not exist</source>
         <target state="translated">outputpathresolver: {0} yok</target>
@@ -154,34 +149,14 @@
         <target state="translated">`{0}` paketi için sürüm çözümlenemedi.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File not found `{0}`.</source>
-        <target state="translated">Dosya bulunamadı `{0}`.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectNotRestoredOrRestoreFailed">
-        <source>The project may not have been restored or restore failed - run `dotnet restore`</source>
-        <target state="translated">Proje geri yüklenmemiş veya geri yükleme başarısız olmuş olabilir - `dotnet restore` çalıştırın</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
         <source>No executable found matching command "{0}"</source>
         <target state="translated">"{0}" komutuyla eşleşen yürütülebilir bulunamadı</target>
         <note />
       </trans-unit>
-      <trans-unit id="WaitingForDebuggerToAttach">
-        <source>Waiting for debugger to attach. Press ENTER to continue</source>
-        <target state="translated">Hata ayıklayıcının eklenmesi bekleniyor. Devam etmek için ENTER tuşuna basın</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProcessId">
         <source>Process ID: {0}</source>
         <target state="translated">İşlem kimliği: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotAccessAssetsFile">
-        <source>Could not access assets file.</source>
-        <target state="translated">Varlık dosyasına erişilemiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="WriteLineForwarderSetPreviously">
@@ -229,29 +204,9 @@
         <target state="translated">"{0}" için komut yürütülebilir dosyası bulunamadı. Proje geri yüklenmemiş veya geri yükleme başarısız olmuş olabilir - `dotnet restore` çalıştırın</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotNetSdkInfoLabel">
-        <source>.NET Core SDK (reflecting any global.json):</source>
-        <target state="translated">.NET Core SDK (varsa global.json’u yansıtır):</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotNetRuntimeInfoLabel">
-        <source>Runtime Environment:</source>
-        <target state="translated">Çalışma Zamanı Ortamı:</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MSBuildArgs">
         <source>MSBuild arguments: {0}</source>
         <target state="translated">MSBuild bağımsız değişkenleri: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EmbedAppNameInHostAppHostHasBeenModified">
-        <source>Unable to use '{0}' as application host executable as it does not contain the expected placeholder byte sequence '{1}' that would mark where the application name would be written.</source>
-        <target state="translated">'{0}', uygulama adının yazılacağı yeri işaretlemesi için beklenen yer tutucu bayt dizisini ('{1}') içermediğinden uygulama konak yürütülebiliri olarak kullanılamıyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EmbedAppNameInHostFileNameIsTooLong">
-        <source>Given file name '{0}' is longer than 1024 bytes</source>
-        <target state="translated">Belirtilen dosya adı ('{0})' 1024 bayttan uzun</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindCommandAvailableAsTool">
@@ -261,16 +216,6 @@ dotnet tool install --global {1}</source>
         <target state="translated">'dotnet {0}' komutu bulunamıyor, yüklemek için lütfen aşağıdaki komutu çalıştırın
 
 dotnet tool install --global {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotnetCliHomeUsed">
-        <source>Using home directory '{0}' set by the '{1}' environment variable.</source>
-        <target state="translated">'{1}' ortam değişkeni tarafından ayarlanan '{0}' giriş dizini kullanılıyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DotNetSdkInfo">
-        <source>.NET Core SDK</source>
-        <target state="new">.NET Core SDK</target>
         <note />
       </trans-unit>
     </body>
