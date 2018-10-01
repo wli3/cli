@@ -1,4 +1,4 @@
-﻿namespace Microsoft.DotNet.Cli.Utils
+﻿namespace Microsoft.DotNet.ShellShim
 {
     internal interface IFilePermissionSetter
     {

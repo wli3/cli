@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.Extensions.DependencyModel;
 using NuGet.Configuration;
@@ -15,7 +16,7 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using ConcurrencyUtilities = NuGet.Common.ConcurrencyUtilities;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class ProjectToolsCommandResolver : ICommandResolver
     {

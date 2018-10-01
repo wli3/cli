@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-namespace Microsoft.DotNet.Cli.Utils
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public abstract class AbstractPathBasedCommandResolver : ICommandResolver
     {

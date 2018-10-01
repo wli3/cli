@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public interface IPackagedCommandSpecFactory
     {

@@ -6,8 +6,9 @@ using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class DotnetToolsCommandResolver : ICommandResolver
     {

@@ -16,9 +16,9 @@ using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
-using Command = Microsoft.DotNet.Cli.Utils.Command;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
+using Microsoft.DotNet.Cli.CommandInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                CommandResult result = Command.Create(
+                CommandResult result = CommandInfrastructure.Command.Create(
                         "dotnet-" + topLevelCommandParserResult.Command,
                         appArgs,
                         FrameworkConstants.CommonFrameworks.NetStandardApp15)

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public interface ICommand
     {

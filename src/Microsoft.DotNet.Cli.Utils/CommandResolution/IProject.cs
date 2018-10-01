@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     internal interface IProject
     {

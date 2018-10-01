@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public struct CommandResult
     {

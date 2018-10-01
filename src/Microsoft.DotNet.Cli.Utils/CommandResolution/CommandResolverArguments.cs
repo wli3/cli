@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class CommandResolverArguments
     {

@@ -7,9 +7,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class Command : ICommand
     {

@@ -14,6 +14,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
+using Microsoft.DotNet.Cli.CommandInfrastructure;
 using LocalizableStrings = Microsoft.DotNet.ToolManifest.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands

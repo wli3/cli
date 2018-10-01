@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     internal static class NuGetUtils
     {

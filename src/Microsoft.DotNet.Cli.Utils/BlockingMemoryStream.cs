@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     /// <summary>
     /// An in-memory stream that will block any read calls until something was written to it.

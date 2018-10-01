@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.ShellShim
 {
     [Serializable]
     internal class FilePermissionSettingException : Exception

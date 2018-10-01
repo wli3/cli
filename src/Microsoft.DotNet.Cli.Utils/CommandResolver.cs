@@ -3,9 +3,10 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     internal class CommandResolver
     {

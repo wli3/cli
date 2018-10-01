@@ -3,9 +3,10 @@
 
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class AppBaseDllCommandResolver : ICommandResolver
     {

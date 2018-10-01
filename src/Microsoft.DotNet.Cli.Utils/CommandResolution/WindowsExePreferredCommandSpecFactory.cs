@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     public class WindowsExePreferredCommandSpecFactory : IPlatformCommandSpecFactory
     {

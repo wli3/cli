@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.CommandInfrastructure
 {
     internal interface IBuiltInCommandEnvironment
     {
