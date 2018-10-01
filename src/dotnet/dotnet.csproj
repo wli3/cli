@@ -81,6 +81,5 @@
   <ItemGroup>
     <Folder Include="commands\dotnet-migrate\xlf" />
     <Folder Include="dotnet-complete\commands\" />
-    <Folder Include="CommandInfrastructure\" />
   </ItemGroup>
 </Project>

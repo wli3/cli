@@ -18,7 +18,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.DotNet.Cli.CommandInfrastructure;
+using Microsoft.DotNet.CommandInfrastructure;
 
 namespace Microsoft.DotNet.Cli
 {

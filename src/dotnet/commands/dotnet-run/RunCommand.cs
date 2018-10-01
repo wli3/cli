@@ -8,9 +8,8 @@ using System.Linq;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.Run.LaunchSettings;
+using Microsoft.DotNet.CommandInfrastructure;
 
 namespace Microsoft.DotNet.Tools.Run
 {
