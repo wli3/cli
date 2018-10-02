@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.ToolManifest
 
                 NuGetFramework targetFramework = null;
                 var targetFrameworkString = tools.Value.targetFramework;
-                if (!(targetFrameworkString is null))
+                if (targetFrameworkString != null)
                 {
                     targetFramework = NuGetFramework.Parse(
                         targetFrameworkString);
