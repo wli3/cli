@@ -115,10 +115,10 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Find();
 
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
-                LocalizableStrings.InvalidManifestFilePrefix + Environment.NewLine + "\t" +
-                string.Format(LocalizableStrings.InPackage, "t-rex", 
-                    ("\t\t" + LocalizableStrings.ToolMissingVersion + Environment.NewLine + "\t\t" +
-                    LocalizableStrings.FieldCommandsIsMissing)));
+                string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                    "\t" + string.Format(LocalizableStrings.InPackage, "t-rex",
+                        ("\t\t" + LocalizableStrings.ToolMissingVersion + Environment.NewLine +
+                        "\t\t" + LocalizableStrings.FieldCommandsIsMissing))));
         }
 
         [Fact]

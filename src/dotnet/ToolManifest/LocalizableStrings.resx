@@ -124,7 +124,8 @@
     <value>Field commands is missing.</value>
   </data>
   <data name="InvalidManifestFilePrefix" xml:space="preserve">
-    <value>Invalid manifest file.</value>
+    <value>Invalid manifest file.
+{0}</value>
   </data>
   <data name="ManifestVersion0" xml:space="preserve">
     <value>Manifest version 0 is not supported. Manifest file path:  {0}</value>

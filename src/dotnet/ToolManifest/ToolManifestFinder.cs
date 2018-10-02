@@ -159,9 +159,9 @@ namespace Microsoft.DotNet.ToolManifest
 
             if (errors.Any())
             {
-                throw new ToolManifestException(LocalizableStrings.InvalidManifestFilePrefix +
-                                                string.Join(string.Empty,
-                                                    errors.Select(e => Environment.NewLine + "\t" + e)));
+                throw new ToolManifestException(
+                    string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                        string.Join(Environment.NewLine, errors.Select(e => "\t" + e))));
             }
 
             return result;
