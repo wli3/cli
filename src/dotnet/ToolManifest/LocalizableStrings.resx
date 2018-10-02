@@ -127,7 +127,7 @@
     <value>Invalid manifest file.</value>
   </data>
   <data name="ManifestVersion0" xml:space="preserve">
-    <value>Manifest version 0 is not supported {0}. Manifest file path:</value>
+    <value>Manifest version 0 is not supported. Manifest file path:  {0}</value>
   </data>
   <data name="ManifestVersionHigherThanSupported" xml:space="preserve">
     <value>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}. Manifest file path:  {2}</value>
