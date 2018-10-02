@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 return 1;
             }
 
-            _reporter.WriteLine("Restore was successful.");
+            _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
             _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
 
             return 0;
