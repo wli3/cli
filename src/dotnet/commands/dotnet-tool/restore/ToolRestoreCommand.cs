@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 if (PackageHasBeenRestored(package, targetFramework))
                 {
                     successMessages.Add(string.Format(
-                        "Tool '{0}' (version '{1}') was restored. Available commands: {2}", package.PackageId,
+                        LocalizableStrings.RestoreSuccessful, package.PackageId,
                         package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
                     continue;
                 }
