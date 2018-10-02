@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.ToolManifest
                 if (packageLevelErrors.Any())
                 {
                     var joined = string.Join(string.Empty,
-                        packageLevelErrors.Select(e => Environment.NewLine + "    " + e));
+                        packageLevelErrors.Select(e => Environment.NewLine + "\t\t" + e));
                     errors.Add(string.Format(LocalizableStrings.InPackage, packageId.ToString()) + joined);
                 }
                 else
@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 throw new ToolManifestException(LocalizableStrings.InvalidManifestFilePrefix +
                                                 string.Join(string.Empty,
-                                                    errors.Select(e => Environment.NewLine + "  " + e)));
+                                                    errors.Select(e => Environment.NewLine + "\t" + e)));
             }
 
             return result;
