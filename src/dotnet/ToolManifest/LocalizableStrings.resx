@@ -121,7 +121,7 @@
     <value>Cannot find any manifests file. Searched {0}</value>
   </data>
   <data name="FieldCommandsIsMissing" xml:space="preserve">
-    <value>field commands is missing.</value>
+    <value>Field commands is missing.</value>
   </data>
   <data name="InvalidManifestFilePrefix" xml:space="preserve">
     <value>Invalid manifest file.</value>
@@ -139,9 +139,9 @@
     <value>TargetFramework {0} is unsupported.</value>
   </data>
   <data name="VersionIsInvalid" xml:space="preserve">
-    <value>version {0} is invalid.</value>
+    <value>Version {0} is invalid.</value>
   </data>
   <data name="ToolMissingVersion" xml:space="preserve">
-    <value>field version is missing.</value>
+    <value>Field version is missing.</value>
   </data>
 </root>
