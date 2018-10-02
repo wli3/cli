@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ManifestVersion0">
-        <source>Manifest version 0 is not supported</source>
-        <target state="new">Manifest version 0 is not supported</target>
+        <source>Manifest version 0 is not supported {0}. Manifest file path:</source>
+        <target state="new">Manifest version 0 is not supported {0}. Manifest file path:</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolMissingVersion">

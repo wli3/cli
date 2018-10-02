@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.ToolManifest
                 {
                     findAnyManifest = true;
                     SerializableLocalToolsManifest deserializedManifest =
-                        DeserializableLocalToolsManifest(possibleManifest);
+                        DeserializeLocalToolsManifest(possibleManifest);
 
                     foreach (ToolManifestPackage p in GetToolManifestPackageFromOneManifestFile(deserializedManifest, possibleManifest))
                     {
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.ToolManifest
             return result;
         }
 
-        private SerializableLocalToolsManifest DeserializableLocalToolsManifest(FilePath possibleManifest)
+        private SerializableLocalToolsManifest DeserializeLocalToolsManifest(FilePath possibleManifest)
         {
             return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
                 _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
@@ -90,9 +90,7 @@ namespace Microsoft.DotNet.ToolManifest
 
             if (deserializedManifest.version == 0)
             {
-                errors.Add(
-                    LocalizableStrings.ManifestVersion0 +
-                    path.Value);
+                errors.Add(string.Format(LocalizableStrings.ManifestVersion0, path.Value));
             }
 
             if (deserializedManifest.version > SupportedVersion)
