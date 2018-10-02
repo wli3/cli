@@ -116,9 +116,9 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
                 LocalizableStrings.InvalidManifestFilePrefix + Environment.NewLine + "\t" +
-                string.Format(LocalizableStrings.InPackage, "t-rex") + Environment.NewLine + "\t\t" +
-                LocalizableStrings.ToolMissingVersion + Environment.NewLine + "\t\t" +
-                LocalizableStrings.FieldCommandsIsMissing);
+                string.Format(LocalizableStrings.InPackage, "t-rex", 
+                    ("\t\t" + LocalizableStrings.ToolMissingVersion + Environment.NewLine + "\t\t" +
+                    LocalizableStrings.FieldCommandsIsMissing)));
         }
 
         [Fact]

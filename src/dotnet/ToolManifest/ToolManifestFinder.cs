@@ -144,9 +144,9 @@ namespace Microsoft.DotNet.ToolManifest
 
                 if (packageLevelErrors.Any())
                 {
-                    var joined = string.Join(string.Empty,
-                        packageLevelErrors.Select(e => Environment.NewLine + "\t\t" + e));
-                    errors.Add(string.Format(LocalizableStrings.InPackage, packageId.ToString()) + joined);
+                    var joinedWithIndentation = string.Join(Environment.NewLine,
+                        packageLevelErrors.Select(e => "\t\t" + e));
+                    errors.Add(string.Format(LocalizableStrings.InPackage, packageId.ToString(), joinedWithIndentation));
                 }
                 else
                 {

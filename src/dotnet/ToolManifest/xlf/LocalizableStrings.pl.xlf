@@ -28,8 +28,10 @@
         <note />
       </trans-unit>
       <trans-unit id="InPackage">
-        <source>In package {0}:</source>
-        <target state="new">In package {0}:</target>
+        <source>In package {0}:
+{1}</source>
+        <target state="new">In package {0}:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestVersionHigherThanSupported">
