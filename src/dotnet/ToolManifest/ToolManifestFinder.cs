@@ -115,13 +115,12 @@ namespace Microsoft.DotNet.ToolManifest
                 }
                 else
                 {
-                    var versionParseResult = NuGetVersion.TryParse(
-                        versionString, out version);
-                    if (!versionParseResult)
+                    if (!NuGetVersion.TryParse(versionString, out version))
                     {
                         packageLevelErrors.Add(string.Format(LocalizableStrings.VersionIsInvalid, versionString));
                     }
                 }
+
                 NuGetFramework targetFramework = null;
                 var targetFrameworkString = tools.Value.targetFramework;
                 if (!(targetFrameworkString is null))
