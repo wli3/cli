@@ -5,7 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using FluentAssertions.Execution;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandInfrastructure;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {

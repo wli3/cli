@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.CommandInfrastructure;
 
 namespace Microsoft.DotNet.TestFramework
 {

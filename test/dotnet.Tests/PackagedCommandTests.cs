@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandInfrastructure;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.InternalAbstractions;

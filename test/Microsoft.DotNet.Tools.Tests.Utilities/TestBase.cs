@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
+using Microsoft.DotNet.CommandInfrastructure;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {

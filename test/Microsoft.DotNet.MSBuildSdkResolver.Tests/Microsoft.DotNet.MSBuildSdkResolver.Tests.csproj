@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" />
-    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +28,7 @@
     <PackageReference Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion_ForMSBuildSdkResolverOnly)" />
     <PackageReference Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion_ForMSBuildSdkResolverOnly)" />
     <PackageReference Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion_ForMSBuildSdkResolverOnly)" />
+    <PackageReference Include="FluentAssertions" Version="4.18.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,14 +3,15 @@
   <PropertyGroup>
     <Description>Microsoft.DotNet.TestFramework Class Library</Description>
     <VersionPrefix>$(CliVersionPrefix)</VersionPrefix>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(CliTargetFramework)</TargetFramework>
     <AssemblyOriginatorKeyFile>../../tools/Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
+    <AssetTargetFallback>$(AssetTargetFallback);dotnet5.4;portable-net451+win8</AssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
   </ItemGroup>
   
