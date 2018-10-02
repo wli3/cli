@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.ToolManifest
 
             if (!findAnyManifest)
             {
-                throw new ToolManifestCannotFindException(
+                throw new ToolManifestCannotBeFoundException(
                     string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched,
                         string.Join(Environment.NewLine, allPossibleManifests.Select(f => f.Value))));
             }

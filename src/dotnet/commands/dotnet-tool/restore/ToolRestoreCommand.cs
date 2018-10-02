@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             {
                 packagesFromManifest = _toolManifestFinder.Find(customManifestFileLocation);
             }
-            catch (ToolManifestCannotFindException e)
+            catch (ToolManifestCannotBeFoundException e)
             {
                 _reporter.WriteLine(e.Message.Yellow());
                 return 0;
