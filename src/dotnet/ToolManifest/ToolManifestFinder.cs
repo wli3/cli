@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.ToolManifest
 
         // The supported tool manifest file version.
         private const int SupportedVersion = 1;
+
         public ToolManifestFinder(DirectoryPath probStart, IFileSystem fileSystem = null)
         {
             _probStart = probStart;
