@@ -187,9 +187,9 @@ namespace Microsoft.DotNet.Tests.Commands
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Contains(string.Format(
+            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(
                             LocalizableStrings.ManifestVersionHigherThanSupported,
-                            99, 1));
+                            99, 1, ""));
         }
 
         private string _jsonContent =

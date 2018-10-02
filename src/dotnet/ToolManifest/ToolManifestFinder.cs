@@ -98,8 +98,7 @@ namespace Microsoft.DotNet.ToolManifest
                 errors.Add(
                     string.Format(
                         LocalizableStrings.ManifestVersionHigherThanSupported,
-                        deserializedManifest.version, SupportedVersion) +
-                    path.Value);
+                        deserializedManifest.version, SupportedVersion, path.Value));
             }
 
             foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools in deserializedManifest.tools)
