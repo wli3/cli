@@ -73,6 +73,13 @@ namespace Microsoft.DotNet.ToolManifest
             return result;
         }
 
+        public bool TryFind(ToolCommandName toolCommandName, out ToolManifestPackage toolManifestPackage)
+        {
+            toolManifestPackage = new ToolManifestPackage(new PackageId("temp"), new NuGetVersion("1.0.0"),
+                new[] {new ToolCommandName("temp")});
+            return true;
+        }
+
         private SerializableLocalToolsManifest DeserializeLocalToolsManifest(FilePath possibleManifest)
         {
             return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
