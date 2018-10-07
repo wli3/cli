@@ -262,6 +262,15 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenInvalidJsonManifestFileWhenFindByCommandNameItReturnFalse()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContentInvalidJson);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+
+            toolManifest.TryFind(new ToolCommandName("dotnetSay"), out var result).Should().BeFalse();
+        }
+
+        [Fact]
         public void GivenConflictedManifestFileInDifferentFieldsWhenFindByCommandNameItReturnMergedContent()
         {
             var subdirectoryOfTestRoot = Path.Combine(_testDirectoryRoot, "sub");
@@ -437,6 +446,26 @@ namespace Microsoft.DotNet.Tests.Commands
    ""tools"":{
       ""t-rex"":{
          ""version"":""1.0.53"",
+         ""commands"":[
+            ""t-rex""
+         ]
+      },
+      ""dotnetsay"":{
+         ""version"":""2.1.4"",
+         ""commands"":[
+            ""dotnetsay""
+         ]
+      }
+   }
+}";
+
+        private string _jsonContentInvalidJson =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+      ""t-rex"":{
+         ""version"":""1.0.53"",,
          ""commands"":[
             ""t-rex""
          ]
