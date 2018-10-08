@@ -170,20 +170,33 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                     ? LocalizableStrings.RestorePartiallySuccessful
                     : LocalizableStrings.RestoreFailed;
 
-                _errorReporter.WriteLine(partialOrTotalFailed +
-                                         Environment.NewLine +
-                                         string.Join(
+                _errorReporter.WriteLine(string.Join(
                                              Environment.NewLine,
-                                             CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)));
+                                             CreateErrorMessage(toolPackageExceptions).Concat(errorMessages))
+                                             
 
-                return 1;
             }
 
             _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
             _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
 
+
+
+                                    partialOrTotalFailed +
+                                    
+                                         Environment.NewLine +
+                                         );
+
+                return 1;
             return 0;
         }
+
+        // make it like 
+        // error : llllllllloooooooooooooogggggggggggg
+        // package a sucuess
+        // package b failed
+        // package a success
+        // install sucessful
 
         private static IEnumerable<string> CreateErrorMessage(
             Dictionary<PackageId, ToolPackageException> toolPackageExceptions)
