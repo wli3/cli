@@ -7,11 +7,17 @@ using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.ToolManifest;
+using Microsoft.DotNet.ToolPackage;
 
 namespace Microsoft.DotNet.CommandFactory
 {
-    public class LocalToolsCommandResolver : ICommandResolver
+    internal class LocalToolsCommandResolver : ICommandResolver
     {
+        public LocalToolsCommandResolver(ToolManifestFinder toolManifest, ILocalToolsResolverCache localToolsResolverCache)
+        {
+        }
+
         public CommandSpec Resolve(CommandResolverArguments arguments)
         {
 
