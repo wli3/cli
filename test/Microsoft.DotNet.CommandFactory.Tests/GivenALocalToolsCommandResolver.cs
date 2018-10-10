@@ -17,6 +17,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
+using LocalizableStrings = Microsoft.DotNet.CommandFactory.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -145,7 +146,7 @@ namespace Microsoft.DotNet.Tests
                 CommandName = _toolCommandNameA.ToString()
             });
 
-            action.ShouldThrow<GracefulException>($"Please run \"dotnet tool restore\" to make command \"{_toolCommandNameA.ToString()}\" available.");
+            action.ShouldThrow<GracefulException>(string.Format(LocalizableStrings.NeedRunToolRestore, _toolCommandNameA.ToString()));
         }
     }
 }
