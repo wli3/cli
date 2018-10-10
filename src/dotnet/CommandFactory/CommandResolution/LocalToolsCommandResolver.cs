@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.CommandFactory
                         toolManifestPackage.PackageId,
                         toolManifestPackage.Version,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
-                        "any",
+                        Constants.AnyRid,
                         toolCommandName),
                     _nugetGlobalPackagesFolder,
                     out var restoredCommand))

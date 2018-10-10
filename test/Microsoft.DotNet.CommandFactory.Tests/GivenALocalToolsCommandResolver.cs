@@ -107,7 +107,17 @@ namespace Microsoft.DotNet.Tests
             FilePath fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
             _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
-            _localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, RestoredCommand> { [new RestoredCommandIdentifier(_packageIdA, _packageVersionA, NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()), "any", _toolCommandNameA)] = new RestoredCommand(_toolCommandNameA, "dotnet", fakeExecutable) }, _nugetGlobalPackagesFolder);
+            _localToolsResolverCache.Save(
+                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                {
+                    [new RestoredCommandIdentifier(
+                        _packageIdA,
+                        _packageVersionA,
+                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                        Constants.AnyRid,
+                        _toolCommandNameA)]
+                            = new RestoredCommand(_toolCommandNameA, "dotnet", fakeExecutable)
+                }, _nugetGlobalPackagesFolder);
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(toolManifest, _localToolsResolverCache, _nugetGlobalPackagesFolder);
             var commandResolverArguments = new CommandResolverArguments()

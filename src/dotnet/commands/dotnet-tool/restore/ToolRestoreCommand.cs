@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                                 toolPackage.Id,
                                 toolPackage.Version,
                                 NuGetFramework.Parse(targetFramework),
-                                "any",
+                                Constants.AnyRid,
                                 command.Name),
                             command);
                     }
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 package.PackageId,
                 package.Version,
                 NuGetFramework.Parse(targetFramework),
-                "any",
+                Constants.AnyRid,
                 package.CommandNames.First());
 
             if (_localToolsResolverCache.TryLoad(
