@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.CommandFactory
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IFileSystem _fileSystem;
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
+        private const string LeadingDotnetPrefix = "dotnet-";
 
         public LocalToolsCommandResolver(ToolManifestFinder toolManifest = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
@@ -40,7 +41,17 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            ToolCommandName toolCommandName = new ToolCommandName(arguments.CommandName);
+            ToolCommandName toolCommandName;
+
+            if (arguments.CommandName.StartsWith(LeadingDotnetPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                toolCommandName = new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                return null;
+            }
+
             if (_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
             {
                 if (_localToolsResolverCache.TryLoad(

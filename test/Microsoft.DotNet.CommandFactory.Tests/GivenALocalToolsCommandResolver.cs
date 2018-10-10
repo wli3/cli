@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests
         {
             var result = _localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
-                CommandName = _toolCommandNameA.ToString(),
+                CommandName = $"dotnet-{_toolCommandNameA.ToString()}",
             });
 
             result.Should().NotBeNull();
@@ -143,10 +143,24 @@ namespace Microsoft.DotNet.Tests
 
             Action action = () => _localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
-                CommandName = _toolCommandNameA.ToString()
+                CommandName = $"dotnet-{_toolCommandNameA.ToString()}",
             });
 
             action.ShouldThrow<GracefulException>(string.Format(LocalizableStrings.NeedRunToolRestore, _toolCommandNameA.ToString()));
+        }
+
+        [Fact(Skip = "pending")]
+        public void ItCanResolveAmbiguityCausedByPrefixDotnetDash()
+        {
+/*
+/// ##### Global tools to local tools command map
+
+| global tools command invoke | local tools command invoke |
+| ------ | ------ |
+| dotnetsay | dotnet dotnetsay |
+| dotnet say(aka dotnet - say) | dotnet say |
+| dotnetsay and dotnet say both exist | dotnet dotnetsay and dotnet dotnet-say |
+*/
         }
     }
 }
