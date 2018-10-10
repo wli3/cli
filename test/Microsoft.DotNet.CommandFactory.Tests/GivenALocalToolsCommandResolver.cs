@@ -6,17 +6,14 @@ using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Cli;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -32,6 +29,8 @@ namespace Microsoft.DotNet.Tests
         private readonly string _temporaryDirectory;
         private readonly string _pathToPlacePackages;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
+        private readonly ToolManifestFinder _toolManifest;
+        private FilePath _fakeExecutable;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
 
         private readonly NuGetVersion _packageVersionWithCommandNameCollisionWithA;
@@ -39,6 +38,9 @@ namespace Microsoft.DotNet.Tests
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
 
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
+        private readonly string _testDirectoryRoot;
+        private readonly LocalToolsCommandResolver _localToolsCommandResolver;
+        private const string _manifestFilename = "localtool.manifest.json";
 
         public GivenALocalToolsCommandResolver()
         {
@@ -82,6 +84,26 @@ namespace Microsoft.DotNet.Tests
                     _fileSystem,
                     new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")),
                     1);
+
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
+            _toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+
+            _fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
+            _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
+            _fileSystem.File.CreateEmptyFile(_fakeExecutable.Value);
+            _localToolsResolverCache.Save(
+                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                {
+                    [new RestoredCommandIdentifier(
+                        _packageIdA,
+                        _packageVersionA,
+                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                        Constants.AnyRid,
+                        _toolCommandNameA)]
+                            = new RestoredCommand(_toolCommandNameA, "dotnet", _fakeExecutable)
+                }, _nugetGlobalPackagesFolder);
+
+            _localToolsCommandResolver = new LocalToolsCommandResolver(_toolManifest, _localToolsResolverCache, _fileSystem, _nugetGlobalPackagesFolder);
         }
 
         private string _jsonContent =
@@ -101,46 +123,29 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItCanFindToolExecutable()
         {
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonContent);
-            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
-
-            FilePath fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
-            _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
-            _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
-            _localToolsResolverCache.Save(
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
-                {
-                    [new RestoredCommandIdentifier(
-                        _packageIdA,
-                        _packageVersionA,
-                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
-                        Constants.AnyRid,
-                        _toolCommandNameA)]
-                            = new RestoredCommand(_toolCommandNameA, "dotnet", fakeExecutable)
-                }, _nugetGlobalPackagesFolder);
-
-            var localToolsCommandResolver = new LocalToolsCommandResolver(toolManifest, _localToolsResolverCache, _nugetGlobalPackagesFolder);
-            var commandResolverArguments = new CommandResolverArguments()
+            var result = _localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = _toolCommandNameA.ToString(),
-            };
-
-            var result = localToolsCommandResolver.Resolve(commandResolverArguments);
+            });
 
             result.Should().NotBeNull();
 
             var commandPath = result.Args.Trim('"');
             _fileSystem.File.Exists(commandPath).Should().BeTrue("the following path exists: " + commandPath);
-            commandPath.Should().Be(fakeExecutable.Value);
+            commandPath.Should().Be(_fakeExecutable.Value);
         }
 
-        [Fact(Skip = "pending")]
-        public void WhenCacheIsCleanedAfterRestoreItShowError()
+        [Fact]
+        public void WhenNuGetGlobalPackageLocationIsCleanedAfterRestoreItShowError()
         {
+            _fileSystem.File.Delete(_fakeExecutable.Value);
 
+            Action action = () => _localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            {
+                CommandName = _toolCommandNameA.ToString()
+            });
+
+            action.ShouldThrow<GracefulException>($"Please run \"dotnet tool restore\" to make command \"{_toolCommandNameA.ToString()}\" available.");
         }
-
-        private readonly string _testDirectoryRoot;
-        private const string _manifestFilename = "localtool.manifest.json";
     }
 }

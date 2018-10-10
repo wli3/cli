@@ -19,12 +19,14 @@ namespace Microsoft.DotNet.CommandFactory
     {
         private readonly ToolManifestFinder _toolManifest;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
+        private readonly IFileSystem _fileSystem;
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
 
-        public LocalToolsCommandResolver(ToolManifestFinder toolManifest, ILocalToolsResolverCache localToolsResolverCache, DirectoryPath? nugetGlobalPackagesFolder)
+        public LocalToolsCommandResolver(ToolManifestFinder toolManifest, ILocalToolsResolverCache localToolsResolverCache, IFileSystem fileSystem, DirectoryPath? nugetGlobalPackagesFolder)
         {
             _toolManifest = toolManifest ?? throw new ArgumentNullException(nameof(toolManifest));
             _localToolsResolverCache = localToolsResolverCache ?? throw new ArgumentNullException(nameof(localToolsResolverCache));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _nugetGlobalPackagesFolder = nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
         }
 
@@ -48,6 +50,11 @@ namespace Microsoft.DotNet.CommandFactory
                     _nugetGlobalPackagesFolder,
                     out var restoredCommand))
                 {
+                    if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
+                    {
+                        throw new GracefulException(string.Format("Please run \"dotnet tool restore\" to make command \"{0}\" available.", toolCommandName.ToString()));
+                    }
+
                     return CreatePackageCommandSpecUsingMuxer(
                         restoredCommand.Executable.Value,
                         arguments.CommandArguments);
