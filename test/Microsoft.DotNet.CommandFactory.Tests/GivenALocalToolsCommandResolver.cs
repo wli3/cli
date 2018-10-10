@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
             _localToolsResolverCache.Save(new Dictionary<RestoredCommandIdentifier, RestoredCommand> { [new RestoredCommandIdentifier(_packageIdA, _packageVersionA, NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()), "any", _toolCommandNameA)] = new RestoredCommand(_toolCommandNameA, "dotnet", fakeExecutable) }, _nugetGlobalPackagesFolder);
 
-            var localToolsCommandResolver = new LocalToolsCommandResolver(toolManifest, _localToolsResolverCache);
+            var localToolsCommandResolver = new LocalToolsCommandResolver(toolManifest, _localToolsResolverCache, _nugetGlobalPackagesFolder);
             var commandResolverArguments = new CommandResolverArguments()
             {
                 CommandName = _toolCommandNameA.ToString(),
