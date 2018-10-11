@@ -121,21 +121,6 @@ namespace Microsoft.DotNet.ToolManifest
                     }
                 }
 
-                NuGetFramework targetFramework = null;
-                var targetFrameworkString = tools.Value.targetFramework;
-                if (targetFrameworkString != null)
-                {
-                    targetFramework = NuGetFramework.Parse(
-                        targetFrameworkString);
-
-                    if (targetFramework.IsUnsupported)
-                    {
-                        packageLevelErrors.Add(
-                            string.Format(LocalizableStrings.TargetFrameworkIsUnsupported,
-                                targetFrameworkString));
-                    }
-                }
-
                 if (tools.Value.commands == null
                     || (tools.Value.commands != null && tools.Value.commands.Length == 0))
                 {
@@ -198,7 +183,6 @@ namespace Microsoft.DotNet.ToolManifest
         {
             public string version { get; set; }
             public string[] commands { get; set; }
-            public string targetFramework { get; set; }
         }
     }
 }

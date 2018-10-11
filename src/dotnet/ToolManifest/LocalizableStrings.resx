@@ -138,9 +138,6 @@
     <value>In package {0}:
 {1}</value>
   </data>
-  <data name="TargetFrameworkIsUnsupported" xml:space="preserve">
-    <value>TargetFramework {0} is unsupported.</value>
-  </data>
   <data name="VersionIsInvalid" xml:space="preserve">
     <value>Version {0} is invalid.</value>
   </data>

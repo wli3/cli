@@ -7,11 +7,6 @@
         <target state="new">Version {0} is invalid.</target>
         <note />
       </trans-unit>
-      <trans-unit id="TargetFrameworkIsUnsupported">
-        <source>TargetFramework {0} is unsupported.</source>
-        <target state="new">TargetFramework {0} is unsupported.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FieldCommandsIsMissing">
         <source>Missing 'commands' entry.</source>
         <target state="new">Missing 'commands' entry.</target>
