@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Tests
                     new []{
                         typeof(MuxerCommandResolver),
                         typeof(DotnetToolsCommandResolver),
+                        typeof(LocalToolsCommandResolver),
                         typeof(RootedCommandResolver),
                         typeof(ProjectToolsCommandResolver),
                         typeof(AppBaseDllCommandResolver),
