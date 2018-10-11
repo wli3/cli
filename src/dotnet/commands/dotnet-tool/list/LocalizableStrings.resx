@@ -136,7 +136,8 @@
     <value>(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.</value>
   </data>
   <data name="InvalidPackageWarning" xml:space="preserve">
-    <value>Warning: tool package '{0}' is invalid: {1}</value>
+    <value>Warning: tool package '{0}' is invalid, please contact tool author:
+{1}</value>
   </data>
   <data name="PackageIdColumn" xml:space="preserve">
     <value>Package Id</value>

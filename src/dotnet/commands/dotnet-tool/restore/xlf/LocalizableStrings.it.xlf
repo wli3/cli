@@ -3,23 +3,15 @@
   <file datatype="xml" source-language="en" target-language="it" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>restore tools to the current development environment.</source>
-        <target state="new">restore tools to the current development environment.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolPathOptionName">
-        <source>PATH</source>
-        <target state="new">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolPathOptionDescription">
-        <source>The directory containing the tools to list.</source>
-        <target state="new">The directory containing the tools to list.</target>
+        <source>Restore tools defined in the local tool manifest.</source>
+        <target state="new">Restore tools defined in the local tool manifest.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageWarning">
-        <source>Warning: tool package '{0}' is invalid: {1}</source>
-        <target state="new">Warning: tool package '{0}' is invalid: {1}</target>
+        <source>Warning: tool package '{0}' is invalid, please contact tool author:
+{1}</source>
+        <target state="new">Warning: tool package '{0}' is invalid, please contact tool author:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdColumn">
