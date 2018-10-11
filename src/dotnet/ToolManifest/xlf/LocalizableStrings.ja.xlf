@@ -18,10 +18,10 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidManifestFilePrefix">
-        <source>Invalid manifest file.
-{0}</source>
-        <target state="new">Invalid manifest file.
-{0}</target>
+        <source>Invalid manifest file. Path: {0}
+{1}</source>
+        <target state="new">Invalid manifest file. Path: {0}
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindAnyManifestsFileSearched">
@@ -39,8 +39,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ManifestVersionHigherThanSupported">
-        <source>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}. Manifest file path: {2}</source>
-        <target state="new">Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}. Manifest file path: {2}</target>
+        <source>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</source>
+        <target state="new">Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestVersion0">

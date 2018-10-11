@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.ToolManifest
                 errors.Add(
                     string.Format(
                         LocalizableStrings.ManifestVersionHigherThanSupported,
-                        deserializedManifest.version, SupportedVersion, path.Value));
+                        deserializedManifest.version, SupportedVersion));
             }
 
             foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools in deserializedManifest.tools)
@@ -161,6 +161,7 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 throw new ToolManifestException(
                     string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                        path.Value,
                         string.Join(Environment.NewLine, errors.Select(e => "\t" + e))));
             }
 
