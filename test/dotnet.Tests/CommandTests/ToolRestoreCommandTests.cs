@@ -130,6 +130,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -166,6 +167,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -179,7 +181,8 @@ namespace Microsoft.DotNet.Tests.Commands
                 LocalizableStrings.RestoreSuccessful, _packageIdB,
                 _packageVersionB.ToNormalizedString(), _toolCommandNameB)));
 
-            _reporter.Lines.Should().Contain(l => l.Contains("\x1B[32m"), "ansicolor code for green, message should be green");
+            _reporter.Lines.Should().Contain(l => l.Contains("\x1B[32m"),
+                "ansicolor code for green, message should be green");
         }
 
         [Fact]
@@ -199,6 +202,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -228,6 +232,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -270,11 +275,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
 
-               toolRestoreCommand.Execute().Should().Be(1);
+            toolRestoreCommand.Execute().Should().Be(1);
             _reporter.Lines.Should()
                 .Contain(l =>
                     l.Contains(
@@ -287,13 +293,14 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenCannotFindManifestFileItPrintsWarning()
         {
             IToolManifestFinder realManifestFinderImplementationWithMockFileSystem =
-                 new ToolManifestFinder(new DirectoryPath(Path.GetTempPath()), _fileSystem);
+                new ToolManifestFinder(new DirectoryPath(Path.GetTempPath()), _fileSystem);
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
                 _parseResult,
                 _toolPackageInstallerMock,
                 realManifestFinderImplementationWithMockFileSystem,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -301,10 +308,11 @@ namespace Microsoft.DotNet.Tests.Commands
             toolRestoreCommand.Execute().Should().Be(0);
 
             _reporter.Lines.Should()
-                .Contain(l => l.Contains(string.Format(ToolManifest.LocalizableStrings.CannotFindAnyManifestsFileSearched, "")));
+                .Contain(l =>
+                    l.Contains(string.Format(ToolManifest.LocalizableStrings.CannotFindAnyManifestsFileSearched, "")));
         }
 
-		[Fact]
+        [Fact]
         public void WhenPackageIsRestoredAlreadyItWillNotRestoreItAgain()
         {
             IToolManifestFinder manifestFileFinder =
@@ -319,6 +327,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolPackageInstallerMock,
                 manifestFileFinder,
                 _localToolsResolverCache,
+                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter
             );
@@ -329,6 +338,35 @@ namespace Microsoft.DotNet.Tests.Commands
 
             installCallCountBeforeTheSecondRestore.Should().BeGreaterThan(0);
             _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore);
+        }
+
+        [Fact]
+        public void WhenPackageIsRestoredAlreadyButDllIsRemovedItRestoresAgain()
+        {
+            IToolManifestFinder manifestFileFinder =
+                new MockManifestFileFinder(new[]
+                {
+                    new ToolManifestPackage(_packageIdA, _packageVersionA,
+                        new[] {_toolCommandNameA})
+                });
+
+            ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                manifestFileFinder,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute();
+            _fileSystem.Directory.Delete(_nugetGlobalPackagesFolder.Value, true);
+            var installCallCountBeforeTheSecondRestore = _installCalledCount;
+            toolRestoreCommand.Execute();
+
+            installCallCountBeforeTheSecondRestore.Should().BeGreaterThan(0);
+            _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore + 1);
         }
 
         private class MockManifestFileFinder : IToolManifestFinder

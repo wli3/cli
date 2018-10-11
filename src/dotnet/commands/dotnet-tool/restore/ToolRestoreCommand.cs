@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly IToolManifestFinder _toolManifestFinder;
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private readonly AppliedOption _options;
+        private readonly IFileSystem _fileSystem;
         private readonly IReporter _reporter;
         private readonly string[] _sources;
         private readonly IToolPackageInstaller _toolPackageInstaller;
@@ -38,6 +39,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             IToolPackageInstaller toolPackageInstaller = null,
             IToolManifestFinder toolManifestFinder = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
+            IFileSystem fileSystem = null,
             DirectoryPath? nugetGlobalPackagesFolder = null,
             IReporter reporter = null)
             : base(result)
@@ -63,6 +65,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                   ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
 
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
+            _fileSystem = fileSystem ?? new FileSystemWrapper();
 
             _nugetGlobalPackagesFolder =
                 nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
@@ -222,15 +225,11 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 Constants.AnyRid,
                 package.CommandNames.First());
 
-            if (_localToolsResolverCache.TryLoad(
-                sampleRestoredCommandIdentifierOfThePackage,
-                _nugetGlobalPackagesFolder,
-                out _))
-            {
-                return true;
-            }
-
-            return false;
+            return _localToolsResolverCache.TryLoad(
+                       sampleRestoredCommandIdentifierOfThePackage,
+                       _nugetGlobalPackagesFolder,
+                       out var restoredCommand)
+                   && _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
         private FilePath? GetCustomManifestFileLocation()
