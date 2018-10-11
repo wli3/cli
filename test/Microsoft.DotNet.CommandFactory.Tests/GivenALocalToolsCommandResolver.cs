@@ -22,9 +22,11 @@ namespace Microsoft.DotNet.Tests
 {
     public class GivenALocalToolsCommandResolver : TestBase
     {
-        private readonly IFileSystem _fileSystem;
-
         private const string ManifestFilename = "localtool.manifest.json";
+        private readonly string _testDirectoryRoot;
+        private DirectoryPath _nugetGlobalPackagesFolder;
+        private readonly LocalToolsResolverCache _localToolsResolverCache;
+        private readonly IFileSystem _fileSystem;
 
         public GivenALocalToolsCommandResolver()
         {
@@ -32,49 +34,10 @@ namespace Microsoft.DotNet.Tests
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             string temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-
             _localToolsResolverCache = new LocalToolsResolverCache(
                 _fileSystem,
                 new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
         }
-
-        private string _jsonContent =
-            @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""local.tool.console.a"":{
-         ""version"":""1.0.4"",
-         ""commands"":[
-            ""$TOOLCOMMAND$""
-         ]
-      }
-   }
-}";
-
-        private string _jsonContentWithDotnetDash =
-            @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""local.tool.console.a"":{
-         ""version"":""1.0.4"",
-         ""commands"":[
-            ""a""
-         ]
-      },
-      ""local.tool.console.dotnet.a"":{
-         ""version"":""1.0.4"",
-         ""commands"":[
-            ""dotnet-a""
-         ]
-      }
-   }
-}";
-
-        private readonly string _testDirectoryRoot;
-        private DirectoryPath _nugetGlobalPackagesFolder;
-        private readonly LocalToolsResolverCache _localToolsResolverCache;
 
         [Theory]
         [InlineData("a")]
@@ -210,5 +173,39 @@ namespace Microsoft.DotNet.Tests
                 CommandName = "dotnet-dotnet-a",
             }).Args.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
         }
+
+        private string _jsonContent =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+      ""local.tool.console.a"":{
+         ""version"":""1.0.4"",
+         ""commands"":[
+            ""$TOOLCOMMAND$""
+         ]
+      }
+   }
+}";
+
+        private string _jsonContentWithDotnetDash =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+      ""local.tool.console.a"":{
+         ""version"":""1.0.4"",
+         ""commands"":[
+            ""a""
+         ]
+      },
+      ""local.tool.console.dotnet.a"":{
+         ""version"":""1.0.4"",
+         ""commands"":[
+            ""dotnet-a""
+         ]
+      }
+   }
+}";
     }
 }
