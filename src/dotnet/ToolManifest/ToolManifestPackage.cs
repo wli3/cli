@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 return true;
             }
-            else if (otherCommandNames == null || CommandNames == null )
+            else if (otherCommandNames == null || CommandNames == null)
             {
                 return false;
             }

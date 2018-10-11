@@ -11,12 +11,14 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         public static string GetLocation()
         {
-            return _nugetGlobalPackagesFolder.Value;
+            return NugetGlobalPackagesFolder.Value;
         }
 
-        private static Lazy<string> _nugetGlobalPackagesFolder = new Lazy<string>(() => {
-             ISettings nugetSetting = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
+        // This call could take about 00.050s. So cache it can help
+        private static readonly Lazy<string> NugetGlobalPackagesFolder = new Lazy<string>(() =>
+        {
+            ISettings nugetSetting = Settings.LoadDefaultSettings(
+                root: Directory.GetCurrentDirectory(),
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
 

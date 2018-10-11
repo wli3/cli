@@ -31,7 +31,8 @@ namespace Microsoft.DotNet.CommandFactory
             _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _fileSystem = fileSystem ?? new FileSystemWrapper();
-            _nugetGlobalPackagesFolder = nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
+            _nugetGlobalPackagesFolder =
+                nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
         }
 
         public CommandSpec Resolve(CommandResolverArguments arguments)
@@ -45,70 +46,41 @@ namespace Microsoft.DotNet.CommandFactory
 
             if (arguments.CommandName.StartsWith(LeadingDotnetPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                toolCommandName = new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty, StringComparison.OrdinalIgnoreCase));
+                toolCommandName = new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty,
+                    StringComparison.OrdinalIgnoreCase));
             }
             else
             {
                 return null;
             }
 
-            if (_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
+            if (!_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
             {
-                if (_localToolsResolverCache.TryLoad(
-                    new RestoredCommandIdentifier(
-                        toolManifestPackage.PackageId,
-                        toolManifestPackage.Version,
-                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
-                        Constants.AnyRid,
-                        toolCommandName),
-                    _nugetGlobalPackagesFolder,
-                    out var restoredCommand))
-                {
-                    if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
-                    {
-                        throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore, toolCommandName.ToString()));
-                    }
+                return null;
+            }
 
-                    return CreatePackageCommandSpecUsingMuxer(
-                        restoredCommand.Executable.Value,
-                        arguments.CommandArguments);
+            if (_localToolsResolverCache.TryLoad(
+                new RestoredCommandIdentifier(
+                    toolManifestPackage.PackageId,
+                    toolManifestPackage.Version,
+                    NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                    Constants.AnyRid,
+                    toolCommandName),
+                _nugetGlobalPackagesFolder,
+                out var restoredCommand))
+            {
+                if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
+                {
+                    throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore,
+                        toolCommandName.ToString()));
                 }
+
+                return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
+                    restoredCommand.Executable.Value,
+                    arguments.CommandArguments);
             }
 
             return null;
-        }
-
-        private CommandSpec CreatePackageCommandSpecUsingMuxer(
-            string commandPath,
-            IEnumerable<string> commandArguments)
-        {
-            var arguments = new List<string>();
-
-            var muxer = new Muxer();
-
-            var host = muxer.MuxerPath;
-            if (host == null)
-            {
-                throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
-            }
-
-            arguments.Add(commandPath);
-
-            if (commandArguments != null)
-            {
-                arguments.AddRange(commandArguments);
-            }
-
-            return CreateCommandSpec(host, arguments);
-        }
-
-        private CommandSpec CreateCommandSpec(
-            string commandPath,
-            IEnumerable<string> commandArguments)
-        {
-            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(commandArguments);
-
-            return new CommandSpec(commandPath, escapedArgs);
         }
     }
 }
