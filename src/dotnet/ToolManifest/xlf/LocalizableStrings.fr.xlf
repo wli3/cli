@@ -48,6 +48,11 @@
         <target state="new">Missing 'version' entry.</target>
         <note />
       </trans-unit>
+      <trans-unit id="JsonParsingError">
+        <source>Json parsing error in file {0} : {1}</source>
+        <target state="new">Json parsing error in file {0} : {1}</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

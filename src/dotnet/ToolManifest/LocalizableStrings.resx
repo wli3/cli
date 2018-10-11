@@ -144,4 +144,7 @@
   <data name="ToolMissingVersion" xml:space="preserve">
     <value>Missing 'version' entry.</value>
   </data>
+  <data name="JsonParsingError" xml:space="preserve">
+    <value>Json parsing error in file {0} : {1}</value>
+  </data>
 </root>

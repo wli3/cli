@@ -75,11 +75,18 @@ namespace Microsoft.DotNet.ToolManifest
 
         private SerializableLocalToolsManifest DeserializeLocalToolsManifest(FilePath possibleManifest)
         {
-            return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
-                _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
-                {
-                    MissingMemberHandling = MissingMemberHandling.Ignore
-                });
+            try
+            {
+                return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
+                    _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
+                    {
+                        MissingMemberHandling = MissingMemberHandling.Ignore
+                    });
+            }
+            catch (JsonReaderException e)
+            {
+                throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError, possibleManifest.Value, e.Message));
+            }
         }
 
         private List<ToolManifestPackage> GetToolManifestPackageFromOneManifestFile(
