@@ -133,9 +133,9 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                     {
                         errorMessages.Add(
                             string.Format(LocalizableStrings.CommandsMismatch,
+                                JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
                                 package.PackageId,
-                                JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString())),
-                                JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString()))));
+                                JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
                     }
 
                     foreach (RestoredCommand command in toolPackage.Commands)

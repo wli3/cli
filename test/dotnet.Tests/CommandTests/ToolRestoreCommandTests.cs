@@ -274,13 +274,12 @@ namespace Microsoft.DotNet.Tests.Commands
                 _reporter
             );
 
-               toolRestoreCommand.Execute().Should().Be(1);
+            toolRestoreCommand.Execute().Should().Be(1);
             _reporter.Lines.Should()
                 .Contain(l =>
                     l.Contains(
                         string.Format(LocalizableStrings.CommandsMismatch,
-                            _packageIdA,
-                            "\"a\"", "\"different-command-nameA\" \"different-command-nameB\"")));
+                            "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "\"a\"")));
         }
 
         [Fact]
