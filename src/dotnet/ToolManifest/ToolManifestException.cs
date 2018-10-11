@@ -8,13 +8,9 @@ namespace Microsoft.DotNet.ToolManifest
 {
     internal class ToolManifestException : GracefulException
     {
-
-        public ToolManifestException(string message) : base(message)
+        public ToolManifestException(string message) : base(new[] { message }, null, false)
         {
-        }
 
-        public ToolManifestException(string message, Exception innerException) : base(message, innerException)
-        {
         }
     }
 }
