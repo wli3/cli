@@ -23,13 +23,11 @@ namespace Microsoft.DotNet.Tests
     public class GivenALocalToolsCommandResolver : TestBase
     {
         private readonly IFileSystem _fileSystem;
-        private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
 
         private const string ManifestFilename = "localtool.manifest.json";
 
         public GivenALocalToolsCommandResolver()
         {
-            
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             string temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
@@ -38,8 +36,6 @@ namespace Microsoft.DotNet.Tests
             _localToolsResolverCache = new LocalToolsResolverCache(
                 _fileSystem,
                 new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
-
-            
         }
 
         private string _jsonContent =
@@ -55,20 +51,26 @@ namespace Microsoft.DotNet.Tests
       }
    }
 }";
-        
-//        private string _jsonContentWithDotnetDash =
-//            @"{
-//   ""version"":1,
-//   ""isRoot"":true,
-//   ""tools"":{
-//      ""local.tool.console.a"":{
-//         ""version"":""1.0.4"",
-//         ""commands"":[
-//            ""a""
-//         ]
-//      }
-//   }
-//}";
+
+        private string _jsonContentWithDotnetDash =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+      ""local.tool.console.a"":{
+         ""version"":""1.0.4"",
+         ""commands"":[
+            ""a""
+         ]
+      },
+      ""local.tool.console.dotnet.a"":{
+         ""version"":""1.0.4"",
+         ""commands"":[
+            ""dotnet-a""
+         ]
+      }
+   }
+}";
 
         private readonly string _testDirectoryRoot;
         private DirectoryPath _nugetGlobalPackagesFolder;
@@ -80,8 +82,10 @@ namespace Microsoft.DotNet.Tests
         public void ItCanFindToolExecutable(string toolCommand)
         {
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename), _jsonContent.Replace("$TOOLCOMMAND$", toolCommand));
-            ToolManifestFinder toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
+                _jsonContent.Replace("$TOOLCOMMAND$", toolCommand));
+            ToolManifestFinder toolManifest =
+                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             ToolCommandName toolCommandNameA = new ToolCommandName(toolCommand);
             var fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
@@ -90,7 +94,7 @@ namespace Microsoft.DotNet.Tests
                 new Dictionary<RestoredCommandIdentifier, RestoredCommand>
                 {
                     [new RestoredCommandIdentifier(
-                            _packageIdA,
+                            new PackageId("local.tool.console.a"),
                             packageVersionA,
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
@@ -99,14 +103,14 @@ namespace Microsoft.DotNet.Tests
                 }, _nugetGlobalPackagesFolder);
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
-                toolManifest, 
+                toolManifest,
                 _localToolsResolverCache,
-                _fileSystem, 
+                _fileSystem,
                 _nugetGlobalPackagesFolder);
-            
+
             var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
-                CommandName = $"dotnet-a",
+                CommandName = "dotnet-a",
             });
 
             result.Should().NotBeNull();
@@ -121,8 +125,10 @@ namespace Microsoft.DotNet.Tests
         {
             ToolCommandName toolCommandNameA = new ToolCommandName("a");
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename), _jsonContent.Replace("$TOOLCOMMAND$", toolCommandNameA.Value));
-            ToolManifestFinder toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
+                _jsonContent.Replace("$TOOLCOMMAND$", toolCommandNameA.Value));
+            ToolManifestFinder toolManifest =
+                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
 
             var fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
@@ -131,7 +137,7 @@ namespace Microsoft.DotNet.Tests
                 new Dictionary<RestoredCommandIdentifier, RestoredCommand>
                 {
                     [new RestoredCommandIdentifier(
-                            _packageIdA,
+                            new PackageId("local.tool.console.a"),
                             packageVersionA,
                             NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                             Constants.AnyRid,
@@ -140,9 +146,9 @@ namespace Microsoft.DotNet.Tests
                 }, _nugetGlobalPackagesFolder);
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
-                toolManifest, 
+                toolManifest,
                 _localToolsResolverCache,
-                _fileSystem, 
+                _fileSystem,
                 _nugetGlobalPackagesFolder);
 
             _fileSystem.File.Delete(fakeExecutable.Value);
@@ -156,18 +162,53 @@ namespace Microsoft.DotNet.Tests
                 toolCommandNameA.ToString()));
         }
 
-        [Fact(Skip = "pending")]
+        [Fact]
         public void ItCanResolveAmbiguityCausedByPrefixDotnetDash()
         {
-/*
-/// ##### Global tools to local tools command map
+            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
+                _jsonContentWithDotnetDash);
+            ToolManifestFinder toolManifest =
+                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
 
-| global tools command invoke | local tools command invoke |
-| ------ | ------ |
-| dotnetsay | dotnet dotnetsay |
-| dotnet say(aka dotnet - say) | dotnet say |
-| dotnetsay and dotnet say both exist | dotnet dotnetsay and dotnet dotnet-say |
-*/
+            var fakeExecutableA = _nugetGlobalPackagesFolder.WithFile("fakeExecutable-a.dll");
+            var fakeExecutableDotnetA = _nugetGlobalPackagesFolder.WithFile("fakeExecutable-a.dll");
+            _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
+            _fileSystem.File.CreateEmptyFile(fakeExecutableA.Value);
+            _fileSystem.File.CreateEmptyFile(fakeExecutableDotnetA.Value);
+            _localToolsResolverCache.Save(
+                new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                {
+                    [new RestoredCommandIdentifier(
+                            new PackageId("local.tool.console.a"),
+                            NuGetVersion.Parse("1.0.4"),
+                            NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                            Constants.AnyRid,
+                            new ToolCommandName("a"))]
+                        = new RestoredCommand(new ToolCommandName("a"), "dotnet", fakeExecutableA),
+                    [new RestoredCommandIdentifier(
+                            new PackageId("local.tool.console.dotnet.a"),
+                            NuGetVersion.Parse("1.0.4"),
+                            NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                            Constants.AnyRid,
+                            new ToolCommandName("dotnet-a"))]
+                        = new RestoredCommand(new ToolCommandName("dotnet-a"), "dotnet", fakeExecutableDotnetA)
+                }, _nugetGlobalPackagesFolder);
+
+            var localToolsCommandResolver = new LocalToolsCommandResolver(
+                toolManifest,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder);
+
+            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-a",
+            }).Args.Trim('"').Should().Be(fakeExecutableA.Value);
+
+            localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-dotnet-a",
+            }).Args.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
         }
     }
 }

@@ -42,18 +42,30 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            ToolCommandName toolCommandName;
-
-            if (arguments.CommandName.StartsWith(LeadingDotnetPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                toolCommandName = new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty,
-                    StringComparison.OrdinalIgnoreCase));
-            }
-            else
+            if (!arguments.CommandName.StartsWith(LeadingDotnetPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
+            var resolveResultWithoutLeadingDotnet = PackageCommandSpecUsingMuxer(arguments,
+                new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty,
+                    StringComparison.OrdinalIgnoreCase)));
+            var resolveResultWithLeadingDotnet =
+                PackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
+
+            if (resolveResultWithoutLeadingDotnet != null && resolveResultWithLeadingDotnet != null)
+            {
+                return resolveResultWithoutLeadingDotnet;
+            }
+            else
+            {
+                return resolveResultWithoutLeadingDotnet ?? resolveResultWithLeadingDotnet;
+            }
+        }
+
+        private CommandSpec PackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
+            ToolCommandName toolCommandName)
+        {
             if (!_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
             {
                 return null;
