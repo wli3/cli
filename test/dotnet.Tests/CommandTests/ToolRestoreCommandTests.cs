@@ -240,12 +240,10 @@ namespace Microsoft.DotNet.Tests.Commands
 
             int executeResult = toolRestoreCommand.Execute();
             _reporter.Lines.Should()
-                .Contain(l => l.Contains(LocalizableStrings.RestoreFailed +
-                                         Environment.NewLine +
-                                         string.Join(
-                                             Environment.NewLine,
-                                             string.Format(LocalizableStrings.PackageFailedToRestore,
-                                                 "non-exists", ""))));
+                .Contain(l => l.Contains(string.Format(LocalizableStrings.PackageFailedToRestore,
+                    "non-exists", "")));
+
+            _reporter.Lines.Should().Contain(l => l.Contains(LocalizableStrings.RestorePartiallyFailed));
 
             executeResult.Should().Be(1);
 

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
@@ -15,7 +14,6 @@ using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Command = Microsoft.DotNet.Cli.Utils.Command;
 
 namespace Microsoft.DotNet.Tools.Tool.Restore
 {
@@ -85,7 +83,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             FilePath? customManifestFileLocation = GetCustomManifestFileLocation();
 
             FilePath? configFile = null;
-            if (_configFilePath != null) configFile = new FilePath(_configFilePath);
+            if (_configFilePath != null)
+                configFile = new FilePath(_configFilePath);
 
             IReadOnlyCollection<ToolManifestPackage> packagesFromManifest;
             try
@@ -164,25 +163,36 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             _localToolsResolverCache.Save(dictionary, _nugetGlobalPackagesFolder);
 
+            return PrintConclusionAndReturn(dictionary.Count() > 0, toolPackageExceptions, errorMessages, successMessages);
+        }
+
+        private int PrintConclusionAndReturn(
+            bool anySuccess,
+            Dictionary<PackageId, ToolPackageException> toolPackageExceptions,
+            List<string> errorMessages,
+            List<string> successMessages)
+        {
             if (toolPackageExceptions.Any() || errorMessages.Any())
             {
-                var partialOrTotalFailed = dictionary.Count() > 0
-                    ? LocalizableStrings.RestorePartiallyFailed
-                    : LocalizableStrings.RestoreFailed;
+                _errorReporter.WriteLine(string.Join(
+                                        Environment.NewLine,
+                                        CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)));
 
-                _errorReporter.WriteLine(partialOrTotalFailed +
-                                         Environment.NewLine +
-                                         string.Join(
-                                             Environment.NewLine,
-                                             CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)));
+                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
+                _errorReporter.WriteLine(Environment.NewLine +
+                    (anySuccess
+                    ? LocalizableStrings.RestorePartiallyFailed
+                    : LocalizableStrings.RestoreFailed));
 
                 return 1;
             }
+            else
+            {
+                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
+                _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
 
-            _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
-            _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
-
-            return 0;
+                return 0;
+            }
         }
 
         private static IEnumerable<string> CreateErrorMessage(
