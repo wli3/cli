@@ -174,13 +174,14 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         {
             if (toolPackageExceptions.Any() || errorMessages.Any())
             {
+                _reporter.WriteLine(Environment.NewLine);
                 _errorReporter.WriteLine(string.Join(
                                         Environment.NewLine,
                                         CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)).Red());
 
                 _reporter.WriteLine(Environment.NewLine);
 
-                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
+                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages));
                 _errorReporter.WriteLine(Environment.NewLine +
                     (anySuccess
                     ? LocalizableStrings.RestorePartiallyFailed
@@ -190,7 +191,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             }
             else
             {
-                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
+                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages));
                 _reporter.WriteLine(Environment.NewLine);
                 _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
 
