@@ -29,11 +29,6 @@
         <target state="new">Commands</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidToolPathOption">
-        <source>Tool path '{0}' does not exist.</source>
-        <target state="new">Tool path '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSourceOptionDescription">
         <source>Add an additional NuGet package source to use during installation.</source>
         <target state="new">Add an additional NuGet package source to use during installation.</target>
@@ -69,11 +64,6 @@
         <target state="new">Package "{0}" failed to restore, due to {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackagesCommandNameCollision">
-        <source>Packages {0} have a command with the same name {1} regardless of the casing.</source>
-        <target state="new">Packages {0} have a command with the same name {1} regardless of the casing.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RestorePartiallySuccessful">
         <source>Restore Partially Successful.</source>
         <target state="new">Restore Partially Successful.</target>
@@ -107,6 +97,17 @@
       <trans-unit id="LocalToolsRestoreWasSuccessful">
         <source>Local tools restore was successful.</source>
         <target state="new">Local tools restore was successful.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackagesCommandNameCollisionConclusion">
+        <source>Command name conflicts. Command names are case insensitive.
+{0}</source>
+        <target state="new">Command name conflicts. Command names are case insensitive.
+{0}</target>
+        <note />0 could be multiple PackagesCommandNameCollisionForOnePackage</trans-unit>
+      <trans-unit id="PackagesCommandNameCollisionForOnePackage">
+        <source>A command "{0}" in package "{1}"</source>
+        <target state="new">A command "{0}" in package "{1}"</target>
         <note />
       </trans-unit>
     </body>

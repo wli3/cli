@@ -136,9 +136,6 @@
   <data name="CommandsMismatch" xml:space="preserve">
     <value>The command {0} specified in the tool manifest file is not contained in the package with Package Id {1}. The commands contained in the package are {2}.</value>
   </data>
-  <data name="InvalidToolPathOption" xml:space="preserve">
-    <value>Tool path '{0}' does not exist.</value>
-  </data>
   <data name="AddSourceOptionDescription" xml:space="preserve">
     <value>Add an additional NuGet package source to use during installation.</value>
   </data>
@@ -166,8 +163,9 @@
   <data name="PackageFailedToRestore" xml:space="preserve">
     <value>Package "{0}" failed to restore, due to {1}</value>
   </data>
-  <data name="PackagesCommandNameCollision" xml:space="preserve">
-    <value>Packages {0} have a command with the same name {1} regardless of the casing.</value>
+  <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
+    <value>Command name conflicts. Command names are case insensitive.
+{0}</value>
   </data>
   <data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
@@ -180,5 +178,8 @@
   </data>
   <data name="LocalToolsRestoreWasSuccessful" xml:space="preserve">
     <value>Local tools restore was successful.</value>
+  </data>
+  <data name="PackagesCommandNameCollisionForOnePackage" xml:space="preserve">
+    <value>A command "{0}" in package "{1}"</value>
   </data>
 </root>

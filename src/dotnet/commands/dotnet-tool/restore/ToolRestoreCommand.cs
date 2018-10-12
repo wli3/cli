@@ -262,9 +262,13 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
                 .Where(grouped => grouped.Count() > 1)
                 .Select(nonUniquePackageIdAndCommandNames =>
-                    string.Format(LocalizableStrings.PackagesCommandNameCollision,
-                        JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.PackageId.ToString())),
-                        JoinBySpaceWithQuote(nonUniquePackageIdAndCommandNames.Select(a => a.CommandName.ToString()))))
+                    string.Format(LocalizableStrings.PackagesCommandNameCollisionConclusion,
+                        string.Join(Environment.NewLine,
+                            nonUniquePackageIdAndCommandNames.Select(
+                                p => "\t" + string.Format(
+                                    LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                                    p.CommandName.Value,
+                                    p.PackageId.ToString())))))
                 .ToArray();
 
             if (errors.Any())

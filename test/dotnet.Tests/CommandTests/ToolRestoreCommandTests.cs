@@ -206,9 +206,15 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolRestoreCommand.Execute();
             a.ShouldThrow<ToolPackageException>()
                 .And.Message
-                .Should().Be(string.Format(LocalizableStrings.PackagesCommandNameCollision,
-                    "\"local.tool.console.a\" \"command.name.collision.with.package.a\"",
-                    "\"a\" \"A\""));
+                .Should().Be(string.Format(LocalizableStrings.PackagesCommandNameCollisionConclusion,
+                        string.Join(Environment.NewLine,
+                            new[] {
+                                 "\t" + string.Format(LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                                    _toolCommandNameA.Value,
+                                    _packageIdA.ToString()),
+                                "\t" + string.Format(LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                                    "A",
+                                    _packageIdWithCommandNameCollisionWithA.ToString())})));
         }
 
         [Fact]
