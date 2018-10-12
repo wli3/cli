@@ -176,19 +176,22 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             {
                 _errorReporter.WriteLine(string.Join(
                                         Environment.NewLine,
-                                        CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)));
+                                        CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)).Red());
+
+                _reporter.WriteLine(Environment.NewLine);
 
                 _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
                 _errorReporter.WriteLine(Environment.NewLine +
                     (anySuccess
                     ? LocalizableStrings.RestorePartiallyFailed
-                    : LocalizableStrings.RestoreFailed));
+                    : LocalizableStrings.RestoreFailed).Red());
 
                 return 1;
             }
             else
             {
                 _reporter.WriteLine(string.Join(Environment.NewLine, successMessages).Green());
+                _reporter.WriteLine(Environment.NewLine);
                 _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
 
                 return 0;
