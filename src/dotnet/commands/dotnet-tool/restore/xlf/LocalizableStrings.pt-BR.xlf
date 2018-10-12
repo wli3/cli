@@ -64,14 +64,9 @@
         <target state="new">Package "{0}" failed to restore, due to {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="RestorePartiallySuccessful">
-        <source>Restore Partially Successful.</source>
-        <target state="new">Restore Partially Successful.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RestoreFailed">
-        <source>Restore Failed.</source>
-        <target state="new">Restore Failed.</target>
+        <source>Restore failed.</source>
+        <target state="new">Restore failed.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandsMismatch">
@@ -95,8 +90,8 @@
         <note />
       </trans-unit>
       <trans-unit id="LocalToolsRestoreWasSuccessful">
-        <source>Local tools restore was successful.</source>
-        <target state="new">Local tools restore was successful.</target>
+        <source>Restore was successful.</source>
+        <target state="new">Restore was successful.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagesCommandNameCollisionConclusion">
@@ -108,6 +103,11 @@
       <trans-unit id="PackagesCommandNameCollisionForOnePackage">
         <source>A command "{0}" in package "{1}"</source>
         <target state="new">A command "{0}" in package "{1}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RestorePartiallyFailed">
+        <source>Restore partially failed.</source>
+        <target state="new">Restore partially failed.</target>
         <note />
       </trans-unit>
     </body>

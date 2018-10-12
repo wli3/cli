@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CommandDescription" xml:space="preserve">
-    <value>List tools installed in the current development environment.</value>
+    <value>List tools installed globally or locally.</value>
   </data>
   <data name="GlobalOptionDescription" xml:space="preserve">
     <value>List tools in the current user's tools directory.</value>

@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>List tools installed in the current development environment.</source>
-        <target state="translated">Enumera las herramientas instaladas en el entorno de desarrollo actual.</target>
+        <source>List tools installed globally or locally.</source>
+        <target state="needs-review-translation">Enumera las herramientas instaladas en el entorno de desarrollo actual.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalOptionDescription">

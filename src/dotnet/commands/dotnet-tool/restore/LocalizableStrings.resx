@@ -170,14 +170,14 @@
   <data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
   </data>
-  <data name="RestorePartiallySuccessful" xml:space="preserve">
-    <value>Restore Partially Successful.</value>
+  <data name="RestorePartiallyFailed" xml:space="preserve">
+    <value>Restore partially failed.</value>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Restore Failed.</value>
+    <value>Restore failed.</value>
   </data>
   <data name="LocalToolsRestoreWasSuccessful" xml:space="preserve">
-    <value>Local tools restore was successful.</value>
+    <value>Restore was successful.</value>
   </data>
   <data name="PackagesCommandNameCollisionForOnePackage" xml:space="preserve">
     <value>A command "{0}" in package "{1}"</value>

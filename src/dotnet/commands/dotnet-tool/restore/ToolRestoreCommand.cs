@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             if (toolPackageExceptions.Any() || errorMessages.Any())
             {
                 var partialOrTotalFailed = dictionary.Count() > 0
-                    ? LocalizableStrings.RestorePartiallySuccessful
+                    ? LocalizableStrings.RestorePartiallyFailed
                     : LocalizableStrings.RestoreFailed;
 
                 _errorReporter.WriteLine(partialOrTotalFailed +

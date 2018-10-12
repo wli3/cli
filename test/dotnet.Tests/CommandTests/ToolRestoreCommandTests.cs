@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             int executeResult = toolRestoreCommand.Execute();
             _reporter.Lines.Should()
-                .Contain(l => l.Contains(LocalizableStrings.RestorePartiallySuccessful +
+                .Contain(l => l.Contains(LocalizableStrings.RestoreFailed +
                                          Environment.NewLine +
                                          string.Join(
                                              Environment.NewLine,
