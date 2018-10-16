@@ -23,7 +23,8 @@ namespace Microsoft.DotNet.CommandFactory
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private const string LeadingDotnetPrefix = "dotnet-";
 
-        public LocalToolsCommandResolver(ToolManifestFinder toolManifest = null,
+        public LocalToolsCommandResolver(
+            ToolManifestFinder toolManifest = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
             IFileSystem fileSystem = null,
             DirectoryPath? nugetGlobalPackagesFolder = null)
@@ -50,6 +51,7 @@ namespace Microsoft.DotNet.CommandFactory
             var resolveResultWithoutLeadingDotnet = PackageCommandSpecUsingMuxer(arguments,
                 new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty,
                     StringComparison.OrdinalIgnoreCase)));
+
             var resolveResultWithLeadingDotnet =
                 PackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
 
