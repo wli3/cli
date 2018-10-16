@@ -48,11 +48,11 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            var resolveResultWithoutLeadingDotnet = PackageCommandSpecUsingMuxer(arguments,
+            var resolveResultWithoutLeadingDotnet = GetPackageCommandSpecUsingMuxer(arguments,
                 new ToolCommandName(arguments.CommandName.Substring(LeadingDotnetPrefix.Length)));
 
             var resolveResultWithLeadingDotnet =
-                PackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
+                GetPackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
 
             if (resolveResultWithoutLeadingDotnet != null && resolveResultWithLeadingDotnet != null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.CommandFactory
             }
         }
 
-        private CommandSpec PackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
+        private CommandSpec GetPackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
             ToolCommandName toolCommandName)
         {
             if (!_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
