@@ -49,8 +49,7 @@ namespace Microsoft.DotNet.CommandFactory
             }
 
             var resolveResultWithoutLeadingDotnet = PackageCommandSpecUsingMuxer(arguments,
-                new ToolCommandName(arguments.CommandName.Replace(LeadingDotnetPrefix, string.Empty,
-                    StringComparison.OrdinalIgnoreCase)));
+                new ToolCommandName(arguments.CommandName.Substring(LeadingDotnetPrefix.Length)));
 
             var resolveResultWithLeadingDotnet =
                 PackageCommandSpecUsingMuxer(arguments, new ToolCommandName(arguments.CommandName));
