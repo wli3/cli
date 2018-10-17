@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.ToolManifest
                 {
                     throw new ToolManifestException(
                         string.Format(LocalizableStrings.InvalidManifestFilePrefix,
-                            path.Value,
+                            possibleManifest.Value,
                             string.Join(Environment.NewLine, errors.Select(e => "\t" + e))));
                 }
 
