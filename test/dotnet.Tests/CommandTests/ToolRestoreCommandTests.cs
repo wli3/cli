@@ -121,10 +121,10 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory)),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -160,10 +160,10 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory)),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -197,10 +197,10 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory)),
                     new ToolManifestPackage(_packageIdWithCommandNameCollisionWithA,
                         _packageVersionWithCommandNameCollisionWithA, new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -235,10 +235,10 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory)),
                     new ToolManifestPackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
                         new[] {new ToolCommandName("non-exists")},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {differentCommandNameA, differentCommandNameB},
-                        new FilePath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory)),
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -332,7 +332,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new FilePath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,

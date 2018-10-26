@@ -17,13 +17,19 @@ namespace Microsoft.DotNet.ToolManifest
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
         public ToolCommandName[] CommandNames { get; }
-        public FilePath OriginManifestFile { get; }
+        /// <summary>
+        /// The directory the will take affect first.
+        /// When it is under .config directory, it is not .config directory
+        /// it is .config's parent directory
+        /// </summary>
+        public DirectoryPath FirstAffectDirectory { get; }
 
         public ToolManifestPackage(PackageId packagePackageId,
             NuGetVersion version,
-            ToolCommandName[] toolCommandNames, FilePath originManifestFile)
+            ToolCommandName[] toolCommandNames,
+            DirectoryPath firstAffectDirectory)
         {
-            OriginManifestFile = originManifestFile;
+            FirstAffectDirectory = firstAffectDirectory;
             PackageId = packagePackageId;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             CommandNames = toolCommandNames ?? throw new ArgumentNullException(nameof(toolCommandNames));
@@ -40,7 +46,8 @@ namespace Microsoft.DotNet.ToolManifest
             return PackageId.Equals(other.PackageId) &&
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
                    CommandNamesEqual(other.CommandNames) &&
-                   OriginManifestFile.Value.Equals(other.OriginManifestFile.Value, StringComparison.Ordinal);
+                   FirstAffectDirectory.Value.TrimEnd('/', '\\')
+                     .Equals(other.FirstAffectDirectory.Value.TrimEnd('/', '\\'), StringComparison.Ordinal);
         }
 
         private bool CommandNamesEqual(ToolCommandName[] otherCommandNames)

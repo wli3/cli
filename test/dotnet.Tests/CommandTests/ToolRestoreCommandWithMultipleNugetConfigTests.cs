@@ -117,9 +117,11 @@ namespace Microsoft.DotNet.Tests.Commands
                 new MockManifestFileFinder(new[]
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
-                        new[] {_toolCommandNameA}, TODO),
+                        new[] {_toolCommandNameA},
+                        new DirectoryPath(_temporaryDirectory)),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
-                        new[] {_toolCommandNameB}, TODO)
+                        new[] {_toolCommandNameB},
+                        new DirectoryPath(_temporaryDirectory))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
