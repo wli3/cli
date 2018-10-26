@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ToolManifest
         {
             var allPossibleManifests =
                 filePath != null
-                    ? new (FilePath, DirectoryPath)[] {(filePath.Value, filePath.Value.GetDirectoryPath()) }
+                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath()) }
                     : EnumerateDefaultAllPossibleManifests();
 
             bool findAnyManifest = false;

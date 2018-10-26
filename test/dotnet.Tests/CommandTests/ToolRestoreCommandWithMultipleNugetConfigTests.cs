@@ -37,10 +37,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
 
-        private readonly PackageId _packageIdWithCommandNameCollisionWithA =
-            new PackageId("command.name.collision.with.package.a");
-
-        private readonly NuGetVersion _packageVersionWithCommandNameCollisionWithA;
         private readonly NuGetVersion _packageVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
 
@@ -48,21 +44,33 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly NuGetVersion _packageVersionB;
         private readonly ToolCommandName _toolCommandNameB = new ToolCommandName("b");
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
+        private readonly string _nugetConfigUnderTestRoot;
+        private readonly string _nugetConfigUnderSubDir;
 
         public ToolRestoreCommandWithMultipleNugetConfigTests()
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
-            _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");
             _packageVersionB = NuGetVersion.Parse("1.0.4");
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+
             _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             ToolPackageStoreMock toolPackageStoreMock =
                 new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
+
+            var testRoot = Path.Combine(_temporaryDirectory, "testroot");
+            _fileSystem.Directory.CreateDirectory(testRoot);
+            _nugetConfigUnderTestRoot = Path.Combine(testRoot, "nuget.config");
+            _fileSystem.File.CreateEmptyFile(_nugetConfigUnderTestRoot);
+            var subDir = Path.Combine(testRoot, "sub");
+            _fileSystem.Directory.CreateDirectory(subDir);
+            _nugetConfigUnderSubDir = Path.Combine(subDir, "nuget.config");
+            _fileSystem.File.CreateEmptyFile(_nugetConfigUnderSubDir);
+
             _toolPackageInstallerMock = new ToolPackageInstallerMock(
                 _fileSystem,
                 _toolPackageStore,
@@ -73,7 +81,8 @@ namespace Microsoft.DotNet.Tests.Commands
                     {
                         new MockFeed
                         {
-                            Type = MockFeedType.ImplicitAdditionalFeed,
+                            Type = MockFeedType.FeedFromLookUpNugetConfig,
+                            Uri = _nugetConfigUnderTestRoot,
                             Packages = new List<MockFeedPackage>
                             {
                                 new MockFeedPackage
@@ -82,18 +91,21 @@ namespace Microsoft.DotNet.Tests.Commands
                                     Version = _packageVersionA.ToNormalizedString(),
                                     ToolCommandName = _toolCommandNameA.ToString()
                                 },
+                            }
+                        },
+
+                        new MockFeed
+                        {
+                            Type = MockFeedType.FeedFromLookUpNugetConfig,
+                            Uri = _nugetConfigUnderSubDir,
+                            Packages = new List<MockFeedPackage>
+                            {
                                 new MockFeedPackage
                                 {
                                     PackageId = _packageIdB.ToString(),
                                     Version = _packageVersionB.ToNormalizedString(),
                                     ToolCommandName = _toolCommandNameB.ToString()
                                 },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
-                                    Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
-                                    ToolCommandName = "A"
-                                }
                             }
                         }
                     }));
@@ -111,17 +123,17 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void WhenRunItCanSaveCommandsToCache()
+        public void WhenManifestPackageAreFromDifferentDirectoryItCanFindTheRightNugetConfigAndSaveToCache()
         {
             IToolManifestFinder manifestFileFinder =
                 new MockManifestFileFinder(new[]
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderTestRoot))),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(Path.GetDirectoryName(_nugetConfigUnderSubDir)))
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
@@ -142,11 +154,17 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), _nugetGlobalPackagesFolder, out RestoredCommand restoredCommand)
+                        _toolCommandNameA), _nugetGlobalPackagesFolder, out RestoredCommand _)
                 .Should().BeTrue();
 
-            _fileSystem.File.Exists(restoredCommand.Executable.Value)
-                .Should().BeTrue($"Cached command should be found at {restoredCommand.Executable.Value}");
+            _localToolsResolverCache.TryLoad(
+                    new RestoredCommandIdentifier(
+                        _packageIdB,
+                        _packageVersionB,
+                        NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                        Constants.AnyRid,
+                        _toolCommandNameB), _nugetGlobalPackagesFolder, out RestoredCommand _)
+                .Should().BeTrue();
         }
 
         private class MockManifestFileFinder : IToolManifestFinder
