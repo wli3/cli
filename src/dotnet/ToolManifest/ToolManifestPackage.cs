@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
@@ -16,12 +17,13 @@ namespace Microsoft.DotNet.ToolManifest
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
         public ToolCommandName[] CommandNames { get; }
+        public FilePath OriginManifestFile { get; }
 
-        public ToolManifestPackage(
-            PackageId packagePackageId,
+        public ToolManifestPackage(PackageId packagePackageId,
             NuGetVersion version,
-            ToolCommandName[] toolCommandNames)
+            ToolCommandName[] toolCommandNames, FilePath originManifestFile)
         {
+            OriginManifestFile = originManifestFile;
             PackageId = packagePackageId;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             CommandNames = toolCommandNames ?? throw new ArgumentNullException(nameof(toolCommandNames));
@@ -37,7 +39,8 @@ namespace Microsoft.DotNet.ToolManifest
         {
             return PackageId.Equals(other.PackageId) &&
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
-                   CommandNamesEqual(other.CommandNames);
+                   CommandNamesEqual(other.CommandNames) &&
+                   OriginManifestFile.Value.Equals(other.OriginManifestFile.Value, StringComparison.Ordinal);
         }
 
         private bool CommandNamesEqual(ToolCommandName[] otherCommandNames)

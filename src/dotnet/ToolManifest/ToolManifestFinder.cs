@@ -191,7 +191,8 @@ namespace Microsoft.DotNet.ToolManifest
                     result.Add(new ToolManifestPackage(
                         packageId,
                         version,
-                        ToolCommandName.Convert(tools.Value.commands)));
+                        ToolCommandName.Convert(tools.Value.commands),
+                        path));
                 }
             }
 

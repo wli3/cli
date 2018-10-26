@@ -32,11 +32,13 @@ namespace Microsoft.DotNet.Tests.Commands
                 new ToolManifestPackage(
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
-                    new[] {new ToolCommandName("t-rex")}),
+                    new[] {new ToolCommandName("t-rex")},
+                    new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))),
                 new ToolManifestPackage(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
-                    new[] {new ToolCommandName("dotnetsay")})
+                    new[] {new ToolCommandName("dotnetsay")},
+                    new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename)))
             };
         }
 
@@ -88,7 +90,8 @@ namespace Microsoft.DotNet.Tests.Commands
                     new ToolManifestPackage(
                         new PackageId("t-rex"),
                         NuGetVersion.Parse("2.1.4"),
-                        new[] {new ToolCommandName("t-rex")}));
+                        new[] {new ToolCommandName("t-rex")},
+                        new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
         }
 
         [Fact]
@@ -108,7 +111,8 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should().Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
+            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+                .Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
         [Fact]
@@ -116,7 +120,8 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should().Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
+            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+                .Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
         [Fact]
@@ -141,7 +146,8 @@ namespace Microsoft.DotNet.Tests.Commands
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(LocalizableStrings.VersionIsInvalid, "1.*"));
+            a.ShouldThrow<ToolManifestException>().And.Message.Should()
+                .Contain(string.Format(LocalizableStrings.VersionIsInvalid, "1.*"));
         }
 
         [Fact]
@@ -160,20 +166,23 @@ namespace Microsoft.DotNet.Tests.Commands
                 p => p == new ToolManifestPackage(
                          new PackageId("t-rex"),
                          NuGetVersion.Parse("1.0.49"),
-                         new[] {new ToolCommandName("t-rex")}),
+                         new[] {new ToolCommandName("t-rex")},
+                         new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))),
                 because: "when different manifest file has the same package id, " +
                          "only keep entry that is in the manifest close to current directory");
             manifestResult.Should().Contain(
                 p => p == new ToolManifestPackage(
                          new PackageId("dotnetsay"),
                          NuGetVersion.Parse("2.1.4"),
-                         new[] {new ToolCommandName("dotnetsay")}));
+                         new[] {new ToolCommandName("dotnetsay")},
+                         new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
 
             manifestResult.Should().Contain(
                 p => p == new ToolManifestPackage(
                          new PackageId("dotnetsay"),
                          NuGetVersion.Parse("2.1.4"),
-                         new[] { new ToolCommandName("dotnetsay") }),
+                         new[] {new ToolCommandName("dotnetsay")},
+                         new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))),
                 because: "combine both content in different manifests");
         }
 
@@ -226,7 +235,8 @@ namespace Microsoft.DotNet.Tests.Commands
             result.ShouldBeEquivalentTo(new ToolManifestPackage(
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
-                new[] {new ToolCommandName("dotnetsay")}));
+                new[] {new ToolCommandName("dotnetsay")},
+                new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
         }
 
         [Fact]
@@ -239,7 +249,8 @@ namespace Microsoft.DotNet.Tests.Commands
             result.ShouldBeEquivalentTo(new ToolManifestPackage(
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
-                new[] {new ToolCommandName("dotnetsay")}));
+                new[] {new ToolCommandName("dotnetsay")},
+                new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
         }
 
         [Fact]
@@ -253,7 +264,8 @@ namespace Microsoft.DotNet.Tests.Commands
             result.ShouldBeEquivalentTo(new ToolManifestPackage(
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
-                new[] {new ToolCommandName("dotnetsay")}));
+                new[] {new ToolCommandName("dotnetsay")},
+                new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
         }
 
         [Fact]
@@ -309,7 +321,8 @@ namespace Microsoft.DotNet.Tests.Commands
             result.ShouldBeEquivalentTo(new ToolManifestPackage(
                 new PackageId("t-rex"),
                 NuGetVersion.Parse("1.0.49"),
-                new[] {new ToolCommandName("t-rex")}));
+                new[] {new ToolCommandName("t-rex")},
+                new FilePath(Path.Combine(_testDirectoryRoot, _manifestFilename))));
         }
 
         [Fact]
