@@ -131,7 +131,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 {
                     if (nugetConfig == null)
                     {
-                        return SimulateNugetSearchNugetConfigAndMatch(rootConfigDirectory,
+                        return SimulateNugetSearchNugetConfigAndMatch(
+                            rootConfigDirectory,
                             feed);
                     }
                     else
@@ -180,7 +181,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 }
             }
 
-            return feed.Type != MockFeedType.ExplicitNugetConfig;
+            return feed.Type != MockFeedType.ExplicitNugetConfig
+                    && feed.Type != MockFeedType.FeedFromLookUpNugetConfig;
         }
 
         private static IEnumerable<FilePath> EnumerateDefaultAllPossibleNuGetConfig(DirectoryPath probStart)
