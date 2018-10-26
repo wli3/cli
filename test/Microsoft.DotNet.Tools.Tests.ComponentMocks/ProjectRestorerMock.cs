@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public MockFeedPackage GetPackage(
             string packageId,
-            VersionRange versionRange = null,
+            VersionRange versionRange,
             FilePath? nugetConfig = null)
         {
             var allPackages = _feeds
@@ -135,11 +135,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     return true;
                 })
                 .SelectMany(f => f.Packages)
-                .Where(f => f.PackageId == packageId);
+                .Where(f => f.PackageId == packageId)
+                .ToList();
 
             var bestVersion = versionRange.FindBestMatch(allPackages.Select(p => NuGetVersion.Parse(p.Version)));
 
-            var package = allPackages.Where(p => NuGetVersion.Parse(p.Version).Equals(bestVersion)).FirstOrDefault();
+            var package = allPackages.FirstOrDefault(p => NuGetVersion.Parse(p.Version).Equals(bestVersion));
 
             if (package == null)
             {
