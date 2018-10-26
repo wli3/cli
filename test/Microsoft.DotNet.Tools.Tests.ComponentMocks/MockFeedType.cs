@@ -6,6 +6,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
     public enum MockFeedType
     {
         FeedFromGlobalNugetConfig,
+        FeedFromLookUpNugetConfig,
         ExplicitNugetConfig,
         ImplicitAdditionalFeed
     }

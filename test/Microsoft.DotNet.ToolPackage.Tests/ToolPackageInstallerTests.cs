@@ -175,20 +175,40 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void GivenAConfigFileRootDirectoryPackageInstallSucceeds(bool testMockBehaviorIsInSync)
+        public void GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir(
+            bool testMockBehaviorIsInSync)
         {
             var nugetConfigPath = GenerateRandomNugetConfigFilePath();
             var subDirUnderNugetConfigPath = nugetConfigPath.GetDirectoryPath().WithSubDirectories("sub");
 
+            var onlyNugetConfigInParentDirHasPackagesFeed = new List<MockFeed>
+            {
+                new MockFeed
+                {
+                    Type = MockFeedType.FeedFromLookUpNugetConfig,
+                    Uri = nugetConfigPath.Value,
+                    Packages = new List<MockFeedPackage>
+                    {
+                        new MockFeedPackage
+                        {
+                            PackageId = TestPackageId.ToString(),
+                            Version = TestPackageVersion,
+                            ToolCommandName = "SimulatorCommand"
+                        }
+                    }
+                }
+            };
+
             var (store, storeQuery, installer, uninstaller, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 writeLocalFeedToNugetConfig: nugetConfigPath,
-                feeds: Array.Empty<MockFeed>());
+                feeds: onlyNugetConfigInParentDirHasPackagesFeed);
 
             fileSystem.Directory.CreateDirectory(subDirUnderNugetConfigPath.Value);
 
             var package = installer.InstallPackage(
-                new PackageLocation(rootConfigDirectory: subDirUnderNugetConfigPath), packageId: TestPackageId,
+                new PackageLocation(rootConfigDirectory: subDirUnderNugetConfigPath),
+                packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
 
