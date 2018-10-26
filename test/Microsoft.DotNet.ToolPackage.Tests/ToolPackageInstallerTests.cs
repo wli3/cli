@@ -172,17 +172,23 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Fact]
-        public void GivenAConfigFileRootDirectoryPackageInstallSucceeds()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GivenAConfigFileRootDirectoryPackageInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var subDirUnderNugetConfigPath = nugetConfigPath.GetDirectoryPath().WithSubDirectories("sub");
 
             var (store, storeQuery, installer, uninstaller, reporter, fileSystem) = Setup(
-                useMock: false,
-                writeLocalFeedToNugetConfig: nugetConfigPath);
+                useMock: testMockBehaviorIsInSync,
+                writeLocalFeedToNugetConfig: nugetConfigPath,
+                feeds: Array.Empty<MockFeed>());
+
+            fileSystem.Directory.CreateDirectory(subDirUnderNugetConfigPath.Value);
 
             var package = installer.InstallPackage(
-                new PackageLocation(rootConfigDirectory: nugetConfigPath.GetDirectoryPath()), packageId: TestPackageId,
+                new PackageLocation(rootConfigDirectory: subDirUnderNugetConfigPath), packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework);
 

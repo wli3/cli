@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 _feeds.Add(new MockFeed
                     {
-                        Type = MockFeedType.FeedFromLookUpNugetConfig,
+                        Type = MockFeedType.FeedFromGlobalNugetConfig,
                         Packages = new List<MockFeedPackage>
                         {
                             new MockFeedPackage
@@ -131,8 +131,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         return ExcludeOtherFeeds(nugetConfig, f);
                     }
-
-                    return true;
+                    else
+                    {
+                        return f.Type != MockFeedType.ExplicitNugetConfig;
+                    }
                 })
                 .SelectMany(f => f.Packages)
                 .Where(f => f.PackageId == packageId)
