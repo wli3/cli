@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.ToolManifest
 
         public IReadOnlyCollection<ToolManifestPackage> Find(FilePath? filePath = null)
         {
-            var allPossibleManifests =
+            IEnumerable<(FilePath manifestfile, DirectoryPath manifestFileFirstAffect)> allPossibleManifests =
                 filePath != null
-                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath()) }
+                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath())}
                     : EnumerateDefaultAllPossibleManifests();
 
             bool findAnyManifest = false;
