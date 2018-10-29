@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
@@ -96,81 +98,110 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 return 0;
             }
 
-            Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary =
-                new Dictionary<RestoredCommandIdentifier, RestoredCommand>();
+            var succeeded = new ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand>();
+            var exceptions = new ConcurrentDictionary<PackageId, ToolPackageException>();
+            var errorMessages = new ConcurrentQueue<string>();
+            var successMessages = new ConcurrentQueue<string>();
 
-            Dictionary<PackageId, ToolPackageException> toolPackageExceptions =
-                new Dictionary<PackageId, ToolPackageException>();
+            Parallel.ForEach(packagesFromManifest,
+                package =>
+                {
+                    InstallPackages(
+                        package,
+                        configFile,
+                        succeeded,
+                        exceptions,
+                        errorMessages,
+                        successMessages);
+                });
 
-            List<string> errorMessages = new List<string>();
-            List<string> successMessages = new List<string>();
+            EnsureNoCommandNameCollision(succeeded);
 
-            foreach (var package in packagesFromManifest)
+            _localToolsResolverCache.Save(succeeded, _nugetGlobalPackagesFolder);
+
+            return PrintConclusionAndReturn(succeeded.Any(), exceptions, errorMessages, successMessages);
+        }
+
+        private void InstallPackages(
+            ToolManifestPackage package,
+            FilePath? configFile,
+            ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary,
+            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions,
+            ConcurrentQueue<string> errorMessages,
+            ConcurrentQueue<string> successMessages)
+        {
+            string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
+
+            if (PackageHasBeenRestored(package, targetFramework))
             {
-                string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
-
-                if (PackageHasBeenRestored(package, targetFramework))
-                {
-                    successMessages.Add(string.Format(
-                        LocalizableStrings.RestoreSuccessful, package.PackageId,
-                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
-                    continue;
-                }
-
-                try
-                {
-                    IToolPackage toolPackage =
-                        _toolPackageInstaller.InstallPackageToExternalManagedLocation(
-                            new PackageLocation(
-                                nugetConfig: configFile,
-                                additionalFeeds: _sources,
-                                rootConfigDirectory: package.FirstEffectDirectory),
-                            package.PackageId, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework,
-                            verbosity: _verbosity);
-
-                    if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
-                    {
-                        errorMessages.Add(
-                            string.Format(LocalizableStrings.CommandsMismatch,
-                                JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
-                                package.PackageId,
-                                JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
-                    }
-
-                    foreach (RestoredCommand command in toolPackage.Commands)
-                    {
-                        dictionary.Add(
-                            new RestoredCommandIdentifier(
-                                toolPackage.Id,
-                                toolPackage.Version,
-                                NuGetFramework.Parse(targetFramework),
-                                Constants.AnyRid,
-                                command.Name),
-                            command);
-                    }
-
-                    successMessages.Add(string.Format(
-                        LocalizableStrings.RestoreSuccessful, package.PackageId,
-                        package.Version.ToNormalizedString(), string.Join(" ", package.CommandNames)));
-                }
-                catch (ToolPackageException e)
-                {
-                    toolPackageExceptions.Add(package.PackageId, e);
-                }
+                successMessages.Enqueue(string.Format(
+                    LocalizableStrings.RestoreSuccessful, package.PackageId,
+                    package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
+                return;
             }
 
-            EnsureNoCommandNameCollision(dictionary);
+            try
+            {
+                IToolPackage toolPackage =
+                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
+                        new PackageLocation(
+                            nugetConfig: configFile,
+                            additionalFeeds: _sources,
+                            rootConfigDirectory: package.FirstAffectDirectory),
+                        package.PackageId, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework,
+                        verbosity: _verbosity);
 
-            _localToolsResolverCache.Save(dictionary, _nugetGlobalPackagesFolder);
+                if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
+                {
+                    errorMessages.Enqueue(
+                        string.Format(LocalizableStrings.CommandsMismatch,
+                            JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
+                            package.PackageId,
+                            JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
+                }
 
-            return PrintConclusionAndReturn(dictionary.Count() > 0, toolPackageExceptions, errorMessages, successMessages);
+                foreach (RestoredCommand command in toolPackage.Commands)
+                {
+                    var successReturn = dictionary.TryAdd(
+                        new RestoredCommandIdentifier(
+                            toolPackage.Id,
+                            toolPackage.Version,
+                            NuGetFramework.Parse(targetFramework),
+                            Constants.AnyRid,
+                            command.Name),
+                        command);
+
+                    AssertNoFalseAddingToDictionary(dictionary, command, successReturn);
+                }
+
+                successMessages.Enqueue(string.Format(
+                    LocalizableStrings.RestoreSuccessful, package.PackageId,
+                    package.Version.ToNormalizedString(), string.Join(" ", package.CommandNames)));
+            }
+            catch (ToolPackageException e)
+            {
+                toolPackageExceptions.TryAdd(package.PackageId, e);
+            }
+        }
+
+        private static void AssertNoFalseAddingToDictionary(
+            ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary,
+            RestoredCommand command,
+            bool successReturn)
+        {
+            if (successReturn == false)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to add {command.DebugToString()} to " +
+                    $"{string.Join(";", dictionary.Values.Select(k => k.DebugToString()))}");
+            }
         }
 
         private int PrintConclusionAndReturn(
             bool anySuccess,
-            Dictionary<PackageId, ToolPackageException> toolPackageExceptions,
-            List<string> errorMessages,
-            List<string> successMessages)
+            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions,
+            ConcurrentQueue<string> errorMessages,
+            ConcurrentQueue<string> successMessages)
         {
             if (toolPackageExceptions.Any() || errorMessages.Any())
             {
@@ -200,7 +231,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         }
 
         private static IEnumerable<string> CreateErrorMessage(
-            Dictionary<PackageId, ToolPackageException> toolPackageExceptions)
+            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions)
         {
             return toolPackageExceptions.Select(p =>
                 string.Format(LocalizableStrings.PackageFailedToRestore,
@@ -265,7 +296,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             return customManifestFileLocation;
         }
 
-        private void EnsureNoCommandNameCollision(Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
+        private void EnsureNoCommandNameCollision(ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
         {
             string[] errors = dictionary
                 .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
