@@ -98,25 +98,28 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 return 0;
             }
 
-            ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary =
-                new ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand>();
+            var succeeded = new ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand>();
+            var exceptions = new ConcurrentDictionary<PackageId, ToolPackageException>();
+            var errorMessages = new ConcurrentQueue<string>();
+            var successMessages = new ConcurrentQueue<string>();
 
-            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions =
-                new ConcurrentDictionary<PackageId, ToolPackageException>();
+            Parallel.ForEach(packagesFromManifest,
+                package =>
+                {
+                    InstallPackages(
+                        package,
+                        configFile,
+                        succeeded,
+                        exceptions,
+                        errorMessages,
+                        successMessages);
+                });
 
-            ConcurrentQueue<string> errorMessages = new ConcurrentQueue<string>();
-            ConcurrentQueue<string> successMessages = new ConcurrentQueue<string>();
+            EnsureNoCommandNameCollision(succeeded);
 
-            Parallel.ForEach(packagesFromManifest, (package) =>
-            {
-                InstallPackages(package, configFile, dictionary, toolPackageExceptions, errorMessages, successMessages);
-            });
+            _localToolsResolverCache.Save(succeeded, _nugetGlobalPackagesFolder);
 
-            EnsureNoCommandNameCollision(dictionary);
-
-            _localToolsResolverCache.Save(dictionary, _nugetGlobalPackagesFolder);
-
-            return PrintConclusionAndReturn(dictionary.Count() > 0, toolPackageExceptions, errorMessages, successMessages);
+            return PrintConclusionAndReturn(succeeded.Any(), exceptions, errorMessages, successMessages);
         }
 
         private void InstallPackages(
@@ -183,11 +186,14 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
         private static void AssertNoFalseAddingToDictionary(
             ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary,
-            RestoredCommand command, bool successReturn)
+            RestoredCommand command,
+            bool successReturn)
         {
             if (successReturn == false)
             {
-                throw new InvalidOperationException($"Failed to add {command.DebugToString()} to {string.Join(";", dictionary.Values.Select(k => k.DebugToString()))}");
+                throw new InvalidOperationException(
+                    $"Failed to add {command.DebugToString()} to " +
+                    $"{string.Join(";", dictionary.Values.Select(k => k.DebugToString()))}");
             }
         }
 
