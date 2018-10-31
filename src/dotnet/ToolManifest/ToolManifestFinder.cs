@@ -240,5 +240,36 @@ namespace Microsoft.DotNet.ToolManifest
             public string version { get; set; }
             public string[] commands { get; set; }
         }
+
+
+        public FilePath FindFirst()
+        {
+            foreach ((FilePath possibleManifest, DirectoryPath _) in EnumerateDefaultAllPossibleManifests())
+            {
+                if (_fileSystem.File.Exists(possibleManifest.Value))
+                {
+                    return possibleManifest;
+                }
+            }
+
+            throw new ToolManifestCannotBeFoundException(
+                    string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched,
+                        string.Join(Environment.NewLine, EnumerateDefaultAllPossibleManifests().Select(f => f.manifestfile.Value))));
+        }
+
+        public void Add(
+            FilePath to,
+            PackageId packageId,
+            NuGetVersion nuGetVersion,
+            ToolCommandName[] toolCommandName)
+        {
+            var alltext = _fileSystem.File.ReadAllText(to.Value);
+
+            SerializableLocalToolsManifest deserializedManifest =
+                   DeserializeLocalToolsManifest(to);
+
+            List<ToolManifestPackage> toolManifestPackages =
+                GetToolManifestPackageFromOneManifestFile(deserializedManifest, to, to.GetDirectoryPath());
+        }
     }
 }

@@ -364,6 +364,85 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<ToolManifestException>();
         }
 
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryItCanAddEntryToIt()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonContent);
+
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+
+            toolManifest.Add(new FilePath(manifestFile),
+                new PackageId("new-tool"),
+                NuGetVersion.Parse("3.0.0"),
+                new[] { new ToolCommandName("newtool") });
+
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(@"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+      ""t-rex"":{
+         ""version"":""1.0.53"",
+         ""commands"":[
+            ""t-rex""
+         ]
+      },
+      ""dotnetsay"":{
+         ""version"":""2.1.4"",
+         ""commands"":[
+            ""dotnetsay""
+         ]
+      },
+    ""new-tool"":{
+         ""version"":""3.0.0"",
+         ""commands"":[
+            ""newtool""
+         ]
+      }
+   }
+}");
+        }
+
+        // TODO wul It throws on duplication
+        // it throws when the manifest file is invalid
+
+       // it throw when cannot find
+
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryItCanFindTheFirstManifestFile()
+        {
+            string manifestPath = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestPath, _jsonContent);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            FilePath toolmanifestFilePath = toolManifest.FindFirst();
+
+            toolmanifestFilePath.Value.Should().Be(manifestPath);
+        }
+
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryItDoesNotThrowsWhenTheManifestFileIsNotValid()
+        {
+            string manifestPath = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestPath, _jsonWithMissingField);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            FilePath toolmanifestFilePath = toolManifest.FindFirst();
+
+            toolmanifestFilePath.Value.Should().Be(manifestPath);
+        }
+
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryItThrowsWhenTheManifestFileCannotBeFound()
+        {
+            string manifestPath = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+            Action a = () => toolManifest.FindFirst();
+
+            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+                .Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
+        }
+
+
+
         private string _jsonContent =
             @"{
    ""version"":1,
