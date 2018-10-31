@@ -270,6 +270,15 @@ namespace Microsoft.DotNet.ToolManifest
             List<ToolManifestPackage> toolManifestPackages =
                 GetToolManifestPackageFromOneManifestFile(deserializedManifest, to, to.GetDirectoryPath());
 
+            var existing = toolManifestPackages.Where(t => t.PackageId.Equals(packageId));
+            if (existing.Any())
+            {
+                var existingPackage = existing.Single();
+                throw new ToolManifestException($"Cannot add package {packageId.ToString()} version {nuGetVersion.ToNormalizedString()} " +
+                    $"to manifest file {to.Value}. " +
+                    $"Package {existingPackage.PackageId.ToString()} version {existingPackage.Version.ToNormalizedString()} exists.");
+            }
+
             deserializedManifest.tools.Add(
                 packageId.ToString(),
                 new SerializableLocalToolSinglePackage
