@@ -274,6 +274,14 @@ namespace Microsoft.DotNet.ToolManifest
             if (existing.Any())
             {
                 var existingPackage = existing.Single();
+
+                if (existingPackage.PackageId.Equals(packageId)
+                    && existingPackage.Version == nuGetVersion
+                    && CommandNamesEqual(existingPackage.CommandNames, toolCommandName))
+                {
+                    return;
+                }
+
                 throw new ToolManifestException($"Cannot add package {packageId.ToString()} version {nuGetVersion.ToNormalizedString()} " +
                     $"to manifest file {to.Value}. " +
                     $"Package {existingPackage.PackageId.ToString()} version {existingPackage.Version.ToNormalizedString()} exists.");
@@ -290,6 +298,22 @@ namespace Microsoft.DotNet.ToolManifest
             _fileSystem.File.WriteAllText(
                 to.Value,
                 JsonConvert.SerializeObject(deserializedManifest, Formatting.Indented));
+        }
+
+        private bool CommandNamesEqual(ToolCommandName[] left, ToolCommandName[] right)
+        {
+            if (left == null && right == null)
+            {
+                return true;
+            }
+            else if (right == null || left == null)
+            {
+                return false;
+            }
+            else
+            {
+                return left.SequenceEqual(right);
+            }
         }
     }
 }

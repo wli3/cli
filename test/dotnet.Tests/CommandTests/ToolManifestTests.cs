@@ -405,7 +405,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenManifestFileOnSameDirectoryItThrowsWhenAddingTheSamePackageIdTool()
+        public void GivenManifestFileOnSameDirectoryWhenAddingTheSamePackageIdToolItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
             _fileSystem.File.WriteAllText(manifestFile, _jsonContent);
@@ -423,12 +423,55 @@ namespace Microsoft.DotNet.Tests.Commands
                 .And.Message.Should().Contain($"Cannot add package {packageId.ToString()} version {nuGetVersion.ToNormalizedString()} " +
                     $"to manifest file {manifestFile}. " +
                     $"Package {packageId.ToString()} version {"2.1.4"} exists.");
+
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
+
+            // TODO wul no checkin, loc
+        }
+
+        [Fact]
+        public void GivenManifestFileOnSameDirectoryWhenAddingTheSamePackageIdSameVersionSameCommandsItDoesNothing()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonContent);
+
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+
+            PackageId packageId = new PackageId("dotnetsay");
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("2.1.4");
+            Action a = () => toolManifest.Add(new FilePath(manifestFile),
+                packageId,
+                nuGetVersion,
+                new[] { new ToolCommandName("dotnetsay") });
+
+            a.ShouldNotThrow();
+
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
 
         // TODO wul It throws on duplication
         // it throws when the manifest file is invalid
 
-        // it throw when cannot find
+        [Fact]
+        public void GivenAnInvalidManifestFileOnSameDirectoryWhenAddItThrows()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonContent);
+
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+
+            PackageId packageId = new PackageId("dotnetsay");
+            NuGetVersion nuGetVersion = NuGetVersion.Parse("3.0.0");
+            Action a = () => toolManifest.Add(new FilePath(manifestFile),
+                packageId,
+                nuGetVersion,
+                new[] { new ToolCommandName("dotnetsay") });
+
+            a.ShouldThrow<ToolManifestException>()
+              .And.Message.Should().Contain("HI");
+
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
+        }
 
         [Fact]
         public void GivenManifestFileOnSameDirectoryItCanFindTheFirstManifestFile()
