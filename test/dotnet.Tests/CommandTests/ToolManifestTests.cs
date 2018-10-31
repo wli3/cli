@@ -452,6 +452,8 @@ namespace Microsoft.DotNet.Tests.Commands
         // TODO wul It throws on duplication
         // it throws when the manifest file is invalid
 
+       // TODO wul add file retry
+
         [Fact]
         public void GivenAnInvalidManifestFileOnSameDirectoryWhenAddItThrows()
         {
