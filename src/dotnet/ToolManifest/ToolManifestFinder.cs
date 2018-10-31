@@ -241,7 +241,6 @@ namespace Microsoft.DotNet.ToolManifest
             public string[] commands { get; set; }
         }
 
-
         public FilePath FindFirst()
         {
             foreach ((FilePath possibleManifest, DirectoryPath _) in EnumerateDefaultAllPossibleManifests())
@@ -270,6 +269,18 @@ namespace Microsoft.DotNet.ToolManifest
 
             List<ToolManifestPackage> toolManifestPackages =
                 GetToolManifestPackageFromOneManifestFile(deserializedManifest, to, to.GetDirectoryPath());
+
+            deserializedManifest.tools.Add(
+                packageId.ToString(),
+                new SerializableLocalToolSinglePackage
+                {
+                    version = nuGetVersion.ToNormalizedString(),
+                    commands = toolCommandName.Select(c => c.Value).ToArray()
+                });
+
+            _fileSystem.File.WriteAllText(
+                to.Value,
+                JsonConvert.SerializeObject(deserializedManifest, Formatting.Indented));
         }
     }
 }

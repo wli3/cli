@@ -378,28 +378,28 @@ namespace Microsoft.DotNet.Tests.Commands
                 new[] { new ToolCommandName("newtool") });
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(@"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""t-rex"":{
-         ""version"":""1.0.53"",
-         ""commands"":[
-            ""t-rex""
-         ]
-      },
-      ""dotnetsay"":{
-         ""version"":""2.1.4"",
-         ""commands"":[
-            ""dotnetsay""
-         ]
-      },
-    ""new-tool"":{
-         ""version"":""3.0.0"",
-         ""commands"":[
-            ""newtool""
-         ]
-      }
-   }
+  ""version"": 1,
+  ""isRoot"": true,
+  ""tools"": {
+    ""t-rex"": {
+      ""version"": ""1.0.53"",
+      ""commands"": [
+        ""t-rex""
+      ]
+    },
+    ""dotnetsay"": {
+      ""version"": ""2.1.4"",
+      ""commands"": [
+        ""dotnetsay""
+      ]
+    },
+    ""new-tool"": {
+      ""version"": ""3.0.0"",
+      ""commands"": [
+        ""newtool""
+      ]
+    }
+  }
 }");
         }
 
