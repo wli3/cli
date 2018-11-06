@@ -98,46 +98,38 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 return 0;
             }
 
-            var succeeded = new ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand>();
             var exceptions = new ConcurrentDictionary<PackageId, ToolPackageException>();
             var errorMessages = new ConcurrentQueue<string>();
             var successMessages = new ConcurrentQueue<string>();
 
-            Parallel.ForEach(packagesFromManifest,
-                package =>
-                {
-                    InstallPackages(
-                        package,
-                        configFile,
-                        succeeded,
-                        exceptions,
-                        errorMessages,
-                        successMessages);
-                });
+            ToolRestoreResult[] toolRestoreResults = packagesFromManifest.Select(package =>
+                InstallPackages(
+                    package,
+                    configFile)).ToArray();
+
+            Dictionary<RestoredCommandIdentifier, RestoredCommand> succeeded =
+                toolRestoreResults.SelectMany(result => result.SaveToCache).ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
             EnsureNoCommandNameCollision(succeeded);
 
             _localToolsResolverCache.Save(succeeded, _nugetGlobalPackagesFolder);
 
-            return PrintConclusionAndReturn(succeeded.Any(), exceptions, errorMessages, successMessages);
+            return PrintConclusionAndReturn(toolRestoreResults);
         }
 
-        private void InstallPackages(
+        private ToolRestoreResult InstallPackages(
             ToolManifestPackage package,
-            FilePath? configFile,
-            ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary,
-            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions,
-            ConcurrentQueue<string> errorMessages,
-            ConcurrentQueue<string> successMessages)
+            FilePath? configFile)
         {
             string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
             if (PackageHasBeenRestored(package, targetFramework))
             {
-                successMessages.Enqueue(string.Format(
+                return ToolRestoreResult.Success(
+                    Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>(),
+                    string.Format(
                     LocalizableStrings.RestoreSuccessful, package.PackageId,
                     package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
-                return;
             }
 
             try
@@ -153,68 +145,90 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
                 if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
                 {
-                    errorMessages.Enqueue(
+                    return ToolRestoreResult.Failure(
                         string.Format(LocalizableStrings.CommandsMismatch,
                             JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
                             package.PackageId,
                             JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
                 }
 
-                foreach (RestoredCommand command in toolPackage.Commands)
-                {
-                    var successReturn = dictionary.TryAdd(
+                return ToolRestoreResult.Success(
+                    saveToCache: toolPackage.Commands.Select(command => (
                         new RestoredCommandIdentifier(
                             toolPackage.Id,
                             toolPackage.Version,
                             NuGetFramework.Parse(targetFramework),
                             Constants.AnyRid,
                             command.Name),
-                        command);
-
-                    AssertNoFalseAddingToDictionary(dictionary, command, successReturn);
-                }
-
-                successMessages.Enqueue(string.Format(
-                    LocalizableStrings.RestoreSuccessful, package.PackageId,
-                    package.Version.ToNormalizedString(), string.Join(" ", package.CommandNames)));
+                        command)).ToArray(),
+                    message: string.Format(
+                        LocalizableStrings.RestoreSuccessful,
+                        package.PackageId,
+                        package.Version.ToNormalizedString(),
+                        string.Join(" ", package.CommandNames)));
             }
             catch (ToolPackageException e)
             {
-                toolPackageExceptions.TryAdd(package.PackageId, e);
+                return ToolRestoreResult.Failure(package.PackageId, e);
             }
         }
 
-        private static void AssertNoFalseAddingToDictionary(
-            ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary,
-            RestoredCommand command,
-            bool successReturn)
+        private struct ToolRestoreResult
         {
-            if (successReturn == false)
+            public (RestoredCommandIdentifier, RestoredCommand)[] SaveToCache { get; }
+            public bool IsSuccess { get; }
+            public string Message { get; }
+
+            private ToolRestoreResult(
+                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+                bool isSuccess, string message)
             {
-                throw new InvalidOperationException(
-                    $"Failed to add {command.DebugToString()} to " +
-                    $"{string.Join(";", dictionary.Values.Select(k => k.DebugToString()))}");
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    throw new ArgumentException("message", nameof(message));
+                }
+
+                SaveToCache = saveToCache ?? Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>();
+                IsSuccess = isSuccess;
+                Message = message;
+            }
+
+            public static ToolRestoreResult Success(
+                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+                string message)
+            {
+                return new ToolRestoreResult(saveToCache, true, message);
+            }
+
+            public static ToolRestoreResult Failure(string message)
+            {
+                return new ToolRestoreResult(null, false, message);
+            }
+
+            public static ToolRestoreResult Failure(
+                PackageId packageId,
+                ToolPackageException toolPackageException)
+            {
+                return new ToolRestoreResult(null, false,
+                    string.Format(LocalizableStrings.PackageFailedToRestore,
+                        packageId.ToString(), toolPackageException.ToString()));
             }
         }
 
-        private int PrintConclusionAndReturn(
-            bool anySuccess,
-            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions,
-            ConcurrentQueue<string> errorMessages,
-            ConcurrentQueue<string> successMessages)
+        private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)
         {
-            if (toolPackageExceptions.Any() || errorMessages.Any())
+            if (toolRestoreResults.Any(r => !r.IsSuccess))
             {
                 _reporter.WriteLine(Environment.NewLine);
                 _errorReporter.WriteLine(string.Join(
                                         Environment.NewLine,
-                                        CreateErrorMessage(toolPackageExceptions).Concat(errorMessages)).Red());
+                                        toolRestoreResults.Where(r => !r.IsSuccess).Select(r => r.Message)).Red());
 
                 _reporter.WriteLine(Environment.NewLine);
 
-                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages));
+                _reporter.WriteLine(string.Join(Environment.NewLine, toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
                 _errorReporter.WriteLine(Environment.NewLine +
-                    (anySuccess
+                    (toolRestoreResults.Any(r => r.IsSuccess)
                     ? LocalizableStrings.RestorePartiallyFailed
                     : LocalizableStrings.RestoreFailed).Red());
 
@@ -222,7 +236,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             }
             else
             {
-                _reporter.WriteLine(string.Join(Environment.NewLine, successMessages));
+                _reporter.WriteLine(string.Join(Environment.NewLine, toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
                 _reporter.WriteLine(Environment.NewLine);
                 _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
 
@@ -296,7 +310,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             return customManifestFileLocation;
         }
 
-        private void EnsureNoCommandNameCollision(ConcurrentDictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
+        private void EnsureNoCommandNameCollision(Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
         {
             string[] errors = dictionary
                 .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
