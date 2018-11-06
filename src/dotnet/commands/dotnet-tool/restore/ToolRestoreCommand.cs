@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -98,17 +97,14 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 return 0;
             }
 
-            var exceptions = new ConcurrentDictionary<PackageId, ToolPackageException>();
-            var errorMessages = new ConcurrentQueue<string>();
-            var successMessages = new ConcurrentQueue<string>();
-
-            ToolRestoreResult[] toolRestoreResults = packagesFromManifest.Select(package =>
-                InstallPackages(
-                    package,
-                    configFile)).ToArray();
+            ToolRestoreResult[] toolRestoreResults
+                = packagesFromManifest
+                    .Select(package => InstallPackages(package, configFile))
+                    .AsParallel().ToArray();
 
             Dictionary<RestoredCommandIdentifier, RestoredCommand> succeeded =
-                toolRestoreResults.SelectMany(result => result.SaveToCache).ToDictionary(pair => pair.Item1, pair => pair.Item2);
+                toolRestoreResults.SelectMany(result => result.SaveToCache)
+                    .ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
             EnsureNoCommandNameCollision(succeeded);
 
@@ -126,10 +122,10 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             if (PackageHasBeenRestored(package, targetFramework))
             {
                 return ToolRestoreResult.Success(
-                    Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>(),
-                    string.Format(
-                    LocalizableStrings.RestoreSuccessful, package.PackageId,
-                    package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
+                    saveToCache: Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>(),
+                    message: string.Format(
+                        LocalizableStrings.RestoreSuccessful, package.PackageId,
+                        package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
             }
 
             try
@@ -173,83 +169,37 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             }
         }
 
-        private struct ToolRestoreResult
-        {
-            public (RestoredCommandIdentifier, RestoredCommand)[] SaveToCache { get; }
-            public bool IsSuccess { get; }
-            public string Message { get; }
-
-            private ToolRestoreResult(
-                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
-                bool isSuccess, string message)
-            {
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    throw new ArgumentException("message", nameof(message));
-                }
-
-                SaveToCache = saveToCache ?? Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>();
-                IsSuccess = isSuccess;
-                Message = message;
-            }
-
-            public static ToolRestoreResult Success(
-                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
-                string message)
-            {
-                return new ToolRestoreResult(saveToCache, true, message);
-            }
-
-            public static ToolRestoreResult Failure(string message)
-            {
-                return new ToolRestoreResult(null, false, message);
-            }
-
-            public static ToolRestoreResult Failure(
-                PackageId packageId,
-                ToolPackageException toolPackageException)
-            {
-                return new ToolRestoreResult(null, false,
-                    string.Format(LocalizableStrings.PackageFailedToRestore,
-                        packageId.ToString(), toolPackageException.ToString()));
-            }
-        }
-
         private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)
         {
             if (toolRestoreResults.Any(r => !r.IsSuccess))
             {
                 _reporter.WriteLine(Environment.NewLine);
                 _errorReporter.WriteLine(string.Join(
-                                        Environment.NewLine,
-                                        toolRestoreResults.Where(r => !r.IsSuccess).Select(r => r.Message)).Red());
+                    Environment.NewLine,
+                    toolRestoreResults.Where(r => !r.IsSuccess).Select(r => r.Message)).Red());
 
                 _reporter.WriteLine(Environment.NewLine);
 
-                _reporter.WriteLine(string.Join(Environment.NewLine, toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
+                _reporter.WriteLine(
+                    string.Join(Environment.NewLine,
+                        toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
+
                 _errorReporter.WriteLine(Environment.NewLine +
-                    (toolRestoreResults.Any(r => r.IsSuccess)
-                    ? LocalizableStrings.RestorePartiallyFailed
-                    : LocalizableStrings.RestoreFailed).Red());
+                                         (toolRestoreResults.Any(r => r.IsSuccess)
+                                             ? LocalizableStrings.RestorePartiallyFailed
+                                             : LocalizableStrings.RestoreFailed).Red());
 
                 return 1;
             }
             else
             {
-                _reporter.WriteLine(string.Join(Environment.NewLine, toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
+                _reporter.WriteLine(string.Join(Environment.NewLine,
+                    toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
                 _reporter.WriteLine(Environment.NewLine);
                 _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
 
                 return 0;
             }
-        }
-
-        private static IEnumerable<string> CreateErrorMessage(
-            ConcurrentDictionary<PackageId, ToolPackageException> toolPackageExceptions)
-        {
-            return toolPackageExceptions.Select(p =>
-                string.Format(LocalizableStrings.PackageFailedToRestore,
-                    p.Key.ToString(), p.Value.ToString()));
         }
 
         private static bool ManifestCommandMatchesActualInPackage(
@@ -344,6 +294,48 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                 includeMinVersion: true,
                 maxVersion: version,
                 includeMaxVersion: true);
+        }
+
+        private struct ToolRestoreResult
+        {
+            public (RestoredCommandIdentifier, RestoredCommand)[] SaveToCache { get; }
+            public bool IsSuccess { get; }
+            public string Message { get; }
+
+            private ToolRestoreResult(
+                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+                bool isSuccess, string message)
+            {
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    throw new ArgumentException("message", nameof(message));
+                }
+
+                SaveToCache = saveToCache ?? Array.Empty<(RestoredCommandIdentifier, RestoredCommand)>();
+                IsSuccess = isSuccess;
+                Message = message;
+            }
+
+            public static ToolRestoreResult Success(
+                (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+                string message)
+            {
+                return new ToolRestoreResult(saveToCache, true, message);
+            }
+
+            public static ToolRestoreResult Failure(string message)
+            {
+                return new ToolRestoreResult(null, false, message);
+            }
+
+            public static ToolRestoreResult Failure(
+                PackageId packageId,
+                ToolPackageException toolPackageException)
+            {
+                return new ToolRestoreResult(null, false,
+                    string.Format(LocalizableStrings.PackageFailedToRestore,
+                        packageId.ToString(), toolPackageException.ToString()));
+            }
         }
     }
 }
