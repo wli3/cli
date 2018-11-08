@@ -198,11 +198,8 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="InvalidNuGetVersionRange" xml:space="preserve">
     <value>Specified version '{0}' is not a valid NuGet version range.</value>
   </data>
-  <data name="InstallToolCommandNeedGlobalOrToolPath" xml:space="preserve">
-    <value>Please specify either the global option (--global) or the tool path option (--tool-path).</value>
-  </data>
-  <data name="InstallToolCommandInvalidGlobalAndToolPath" xml:space="preserve">
-    <value>(--global) conflicts with the tool path option (--tool-path). Please specify only one of the options.</value>
+  <data name="InstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
+    <value>The local option, the global option (--global), the tool path option (--tool-path), can only have one at a time. Have options: {0}. Please specify only one of the options.</value>
   </data>
   <data name="ToolPathOptionName" xml:space="preserve">
     <value>PATH</value>

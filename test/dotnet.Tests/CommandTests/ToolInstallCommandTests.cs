@@ -44,16 +44,16 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => installGlobalOrToolPathCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.InstallToolCommandInvalidGlobalAndToolPath);
+                .Should().Contain(string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath, "global tool-path"));
         }
-
+        
         [Fact]
-        public void WhenRunWithNeitherOfGlobalNorToolPathShowErrorMessage()
+        public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
-            var result = Parser.Instance.Parse($"dotnet tool install {PackageId}");
+            var result = Parser.Instance.Parse($"dotnet tool install --local --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
+            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
 
             var installGlobalOrToolPathCommand = new ToolInstallCommand(
                 appliedCommand,
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => installGlobalOrToolPathCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.InstallToolCommandNeedGlobalOrToolPath);
+                .Should().Contain(LocalizableStrings.InstallToolCommandInvalidGlobalAndToolPath);
         }
     }
 }
