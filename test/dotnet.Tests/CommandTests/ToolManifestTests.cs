@@ -22,6 +22,9 @@ namespace Microsoft.DotNet.Tests.Commands
     public class ToolManifestTests
     {
         private readonly IFileSystem _fileSystem;
+        private readonly List<ToolManifestPackage> _defaultExpectedResult;
+        private readonly string _testDirectoryRoot;
+        private const string _manifestFilename = "dotnet-tools.json";
 
         public ToolManifestTests()
         {
@@ -449,11 +452,6 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
 
-        // TODO wul It throws on duplication
-        // it throws when the manifest file is invalid
-
-       // TODO wul add file retry
-
         [Fact]
         public void GivenAnInvalidManifestFileOnSameDirectoryWhenAddItThrows()
         {
@@ -507,8 +505,6 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(string.Format(LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
-
-
 
         private string _jsonContent =
             @"{
@@ -687,8 +683,6 @@ namespace Microsoft.DotNet.Tests.Commands
    }
 }";
 
-        private readonly List<ToolManifestPackage> _defaultExpectedResult;
-        private readonly string _testDirectoryRoot;
-        private const string _manifestFilename = "dotnet-tools.json";
+
     }
 }
