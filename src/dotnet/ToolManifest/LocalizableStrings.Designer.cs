@@ -64,9 +64,9 @@ namespace Microsoft.DotNet.Cli.ToolManifest {
             }
         }
         
-        public static string ManifestMissionVersion {
+        public static string ManifestVersion0 {
             get {
-                return ResourceManager.GetString("ManifestMissionVersion", resourceCulture);
+                return ResourceManager.GetString("ManifestVersion0", resourceCulture);
             }
         }
         
@@ -76,27 +76,39 @@ namespace Microsoft.DotNet.Cli.ToolManifest {
             }
         }
         
-        public static string MissingVersion {
-            get {
-                return ResourceManager.GetString("MissingVersion", resourceCulture);
-            }
-        }
-        
         public static string InPackage {
             get {
                 return ResourceManager.GetString("InPackage", resourceCulture);
             }
         }
         
-        public static string TargetFrameworkIsUnsupported {
-            get {
-                return ResourceManager.GetString("TargetFrameworkIsUnsupported", resourceCulture);
-            }
-        }
-        
         public static string VersionIsInvalid {
             get {
                 return ResourceManager.GetString("VersionIsInvalid", resourceCulture);
+            }
+        }
+        
+        public static string ToolMissingVersion {
+            get {
+                return ResourceManager.GetString("ToolMissingVersion", resourceCulture);
+            }
+        }
+        
+        public static string JsonParsingError {
+            get {
+                return ResourceManager.GetString("JsonParsingError", resourceCulture);
+            }
+        }
+        
+        public static string ManifestMissingIsRoot {
+            get {
+                return ResourceManager.GetString("ManifestMissingIsRoot", resourceCulture);
+            }
+        }
+        
+        public static string ManifestPackageIdCollision {
+            get {
+                return ResourceManager.GetString("ManifestPackageIdCollision", resourceCulture);
             }
         }
     }

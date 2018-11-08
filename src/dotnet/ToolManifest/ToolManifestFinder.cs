@@ -262,8 +262,6 @@ namespace Microsoft.DotNet.ToolManifest
             NuGetVersion nuGetVersion,
             ToolCommandName[] toolCommandName)
         {
-            var alltext = _fileSystem.File.ReadAllText(to.Value);
-
             SerializableLocalToolsManifest deserializedManifest =
                    DeserializeLocalToolsManifest(to);
 
@@ -282,9 +280,13 @@ namespace Microsoft.DotNet.ToolManifest
                     return;
                 }
 
-                throw new ToolManifestException($"Cannot add package {packageId.ToString()} version {nuGetVersion.ToNormalizedString()} " +
-                    $"to manifest file {to.Value}. " +
-                    $"Package {existingPackage.PackageId.ToString()} version {existingPackage.Version.ToNormalizedString()} exists.");
+                throw new ToolManifestException(string.Format(
+                    LocalizableStrings.ManifestPackageIdCollision,
+                    packageId.ToString(),
+                    nuGetVersion.ToNormalizedString(),
+                    to.Value,
+                    existingPackage.PackageId.ToString(),
+                    existingPackage.Version.ToNormalizedString()));
             }
 
             deserializedManifest.tools.Add(

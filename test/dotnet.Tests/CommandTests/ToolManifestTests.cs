@@ -420,16 +420,21 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Add(new FilePath(manifestFile),
                 packageId,
                 nuGetVersion,
-                new[] { new ToolCommandName("dotnetsay") });
+                new[] {new ToolCommandName("dotnetsay")});
+
+
+            var expectedString = string.Format(
+                LocalizableStrings.ManifestPackageIdCollision,
+                packageId.ToString(),
+                nuGetVersion.ToNormalizedString(),
+                manifestFile,
+                packageId.ToString(),
+                "2.1.4");
 
             a.ShouldThrow<ToolManifestException>()
-                .And.Message.Should().Contain($"Cannot add package {packageId.ToString()} version {nuGetVersion.ToNormalizedString()} " +
-                    $"to manifest file {manifestFile}. " +
-                    $"Package {packageId.ToString()} version {"2.1.4"} exists.");
+                .And.Message.Should().Contain(expectedString);
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
-
-            // TODO wul no checkin, loc
         }
 
         [Fact]
@@ -456,7 +461,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void GivenAnInvalidManifestFileOnSameDirectoryWhenAddItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
-            _fileSystem.File.WriteAllText(manifestFile, _jsonContent);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonWithInvalidField);
 
             var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
 
@@ -465,12 +470,15 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => toolManifest.Add(new FilePath(manifestFile),
                 packageId,
                 nuGetVersion,
-                new[] { new ToolCommandName("dotnetsay") });
+                new[] {new ToolCommandName("dotnetsay")});
 
             a.ShouldThrow<ToolManifestException>()
-              .And.Message.Should().Contain("HI");
+                .And.Message.Should().Contain(
+                    string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                        manifestFile,
+                        string.Empty));
 
-            _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonWithInvalidField);
         }
 
         [Fact]
