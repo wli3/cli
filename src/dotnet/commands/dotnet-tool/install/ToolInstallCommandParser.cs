@@ -20,6 +20,10 @@ namespace Microsoft.DotNet.Cli
                     LocalizableStrings.GlobalOptionDescription,
                     Accept.NoArguments()),
                 Create.Option(
+                    "--local",
+                    LocalizableStrings.LocalOptionDescription,
+                    Accept.NoArguments()),
+                Create.Option(
                     "--tool-path",
                     LocalizableStrings.ToolPathOptionDescription,
                     Accept.ExactlyOneArgument()
