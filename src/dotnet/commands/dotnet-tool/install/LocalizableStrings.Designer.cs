@@ -196,15 +196,9 @@ namespace Microsoft.DotNet.Cli.commands.install {
             }
         }
         
-        public static string InstallToolCommandNeedGlobalOrToolPath {
+        public static string InstallToolCommandInvalidGlobalAndLocalAndToolPath {
             get {
-                return ResourceManager.GetString("InstallToolCommandNeedGlobalOrToolPath", resourceCulture);
-            }
-        }
-        
-        public static string InstallToolCommandInvalidGlobalAndToolPath {
-            get {
-                return ResourceManager.GetString("InstallToolCommandInvalidGlobalAndToolPath", resourceCulture);
+                return ResourceManager.GetString("InstallToolCommandInvalidGlobalAndLocalAndToolPath", resourceCulture);
             }
         }
         
