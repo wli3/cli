@@ -140,9 +140,49 @@ namespace Microsoft.DotNet.Tests.Commands
             AssertDefaultInstallSuccess();
         }
 
-        // TODO no manifest file throw
-        // TODO can find file in the current directory
+        [Fact]
+        public void GivenNoManifestFileItShouldThrow()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            Action a = () => toolInstallLocalCommand.Execute();
+            a.ShouldThrow<GracefulException>()
+                .And.Message.Should()
+                .Contain(string.Format(ToolManifest.LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
+        }
         // TODO throw when framework is specified
+
+        [Fact]
+        public void WhenRunWithExplicitManifestFileItShouldAddToExplicitManifestFile()
+        {
+            var explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
+            _fileSystem.File.Delete(_manifestFilePath);
+            _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, "subdirectory"));
+            _fileSystem.File.WriteAllText(explicitManifestFilePath, _jsonContent);
+
+            ParseResult result =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            Cli.CommandLine.Parser parser = Parser.Instance;
+            var parseResult = parser.ParseFrom("dotnet tool",
+                new[] {"install", _packageIdA.ToString(), "--tool-manifest", explicitManifestFilePath});
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
+        }
 
         [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
@@ -292,11 +332,6 @@ namespace Microsoft.DotNet.Tests.Commands
             AssertDefaultInstallSuccess();
         }
 
-        [Fact]
-        public void WhenRunWithoutAMatchingRangeItShouldFail()
-        {
-        }
-
         private void AssertDefaultInstallSuccess()
         {
             var manifestPackages = _toolManifestFinder.Find();
@@ -314,7 +349,6 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
-
 
         private string _jsonContent =
             @"{

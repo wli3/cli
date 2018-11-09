@@ -115,7 +115,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                var manifestFile = _toolManifestFinder.FindFirst();
+                var manifestFile = string.IsNullOrWhiteSpace(_explicitManifestFile)
+                    ? _toolManifestFinder.FindFirst()
+                    : new FilePath(_explicitManifestFile);
 
                 IToolPackage toolDownloadedPackage =
                     _toolPackageInstaller.InstallPackageToExternalManagedLocation(
