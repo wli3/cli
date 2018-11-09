@@ -77,7 +77,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 _toolPackageInstaller = toolPackageInstaller;
             }
 
-            _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
+            _toolManifestFinder = toolManifestFinder ??
+                                  new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _fileSystem = fileSystem ?? new FileSystemWrapper();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
@@ -112,50 +113,60 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
-            var manifestFile = _toolManifestFinder.FindFirst();
-
-            IToolPackage toolDownloadedPackage =
-                   _toolPackageInstaller.InstallPackageToExternalManagedLocation(
-                       new PackageLocation(
-                           nugetConfig: configFile,
-                           additionalFeeds: _sources,
-                           rootConfigDirectory: manifestFile.GetDirectoryPath()),
-                       _packageId,
-                       versionRange,
-                       targetFramework,
-                       verbosity: _verbosity);
-
-            _toolManifestEditor.Add(
-                manifestFile,
-                toolDownloadedPackage.Id,
-                toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
-
-            foreach (var restoredCommand in toolDownloadedPackage.Commands)
+            try
             {
-                _localToolsResolverCache.Save(
-                    new Dictionary<RestoredCommandIdentifier, RestoredCommand>
-                    {
-                        [new RestoredCommandIdentifier(
-                                toolDownloadedPackage.Id,
-                                toolDownloadedPackage.Version,
-                                NuGetFramework.Parse(targetFramework),
-                                Constants.AnyRid,
-                                restoredCommand.Name)] =
-                            restoredCommand
-                    },
-                    _nugetGlobalPackagesFolder);
-            }
+                var manifestFile = _toolManifestFinder.FindFirst();
 
-            _reporter.WriteLine(
-                string.Format(
-                    LocalizableStrings.LocalToolInstallationSucceeded,
-                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                IToolPackage toolDownloadedPackage =
+                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
+                        new PackageLocation(
+                            nugetConfig: configFile,
+                            additionalFeeds: _sources,
+                            rootConfigDirectory: manifestFile.GetDirectoryPath()),
+                        _packageId,
+                        versionRange,
+                        targetFramework,
+                        verbosity: _verbosity);
+
+                _toolManifestEditor.Add(
+                    manifestFile,
                     toolDownloadedPackage.Id,
-                    toolDownloadedPackage.Version.ToNormalizedString(),
-                    manifestFile.Value).Green());
+                    toolDownloadedPackage.Version,
+                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
 
-            return 0;
+                foreach (var restoredCommand in toolDownloadedPackage.Commands)
+                {
+                    _localToolsResolverCache.Save(
+                        new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                        {
+                            [new RestoredCommandIdentifier(
+                                    toolDownloadedPackage.Id,
+                                    toolDownloadedPackage.Version,
+                                    NuGetFramework.Parse(targetFramework),
+                                    Constants.AnyRid,
+                                    restoredCommand.Name)] =
+                                restoredCommand
+                        },
+                        _nugetGlobalPackagesFolder);
+                }
+
+                _reporter.WriteLine(
+                    string.Format(
+                        LocalizableStrings.LocalToolInstallationSucceeded,
+                        string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                        toolDownloadedPackage.Id,
+                        toolDownloadedPackage.Version.ToNormalizedString(),
+                        manifestFile.Value).Green());
+
+                return 0;
+            }
+            catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
+            {
+                throw new GracefulException(
+                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
+                    verboseMessages: new[] {ex.ToString()},
+                    isUserError: false);
+            }
         }
     }
 }

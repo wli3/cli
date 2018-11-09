@@ -222,6 +222,26 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
         {
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
+            var _appliedCommand = result["dotnet"]["tool"]["install"];
+            Cli.CommandLine.Parser parser = Parser.Instance;
+            var _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "non-exist"});
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            a.ShouldThrow<GracefulException>()
+                .And.Message.Should()
+                .Contain(LocalizableStrings.ToolInstallationRestoreFailed);
         }
 
         [Fact]
