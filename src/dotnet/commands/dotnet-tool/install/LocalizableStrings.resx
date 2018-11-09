@@ -199,7 +199,7 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
     <value>Specified version '{0}' is not a valid NuGet version range.</value>
   </data>
   <data name="InstallToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
-    <value>The local option, the global option (--global), the tool path option (--tool-path), can only have one at a time. Have options: {0}. Please specify only one of the options.</value>
+    <value>Cannot have options: {0}. The local option(--local), the global option (--global), the tool path option (--tool-path), can only have one at a time. Please specify only one of the options.</value>
   </data>
   <data name="ToolPathOptionName" xml:space="preserve">
     <value>PATH</value>

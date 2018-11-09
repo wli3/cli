@@ -24,6 +24,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
+        private readonly bool _local;
+        private const string GlobalOption = "global";
+        private const string LocalOption = "local";
+        private const string ToolPathOption = "tool-path";
 
         public ToolInstallCommand(
             AppliedOption appliedCommand,
@@ -37,23 +41,48 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolInstallGlobalOrToolPathCommand
                 ?? new ToolInstallGlobalOrToolPathCommand(_appliedCommand, _parseResult);
 
-            _global = appliedCommand.ValueOrDefault<bool>("global");
-            _toolPath = appliedCommand.SingleArgumentOrDefault("tool-path");
+            _global = appliedCommand.ValueOrDefault<bool>(GlobalOption);
+            _local = appliedCommand.ValueOrDefault<bool>(LocalOption);
+            _toolPath = appliedCommand.SingleArgumentOrDefault(ToolPathOption);
         }
 
         public override int Execute()
         {
-            if (string.IsNullOrWhiteSpace(_toolPath) && !_global)
+            EnsureNoConflictGlobalLocalToolPathOption();
+
+            if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
-                throw new GracefulException(LocalizableStrings.InstallToolCommandNeedGlobalOrToolPath);
+                return _toolInstallGlobalOrToolPathCommand.Execute();
             }
 
-            if (!string.IsNullOrWhiteSpace(_toolPath) && _global)
+            return 1;
+        }
+
+        private void EnsureNoConflictGlobalLocalToolPathOption()
+        {
+            List<string> options = new List<string>();
+            if (_global)
             {
-                throw new GracefulException(LocalizableStrings.InstallToolCommandInvalidGlobalAndToolPath);
+                options.Add(GlobalOption);
             }
 
-            return _toolInstallGlobalOrToolPathCommand.Execute();
+            if (_local)
+            {
+                options.Add(LocalOption);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_toolPath))
+            {
+                options.Add(ToolPathOption);
+            }
+
+            if (options.Count > 1)
+            {
+                throw new GracefulException(
+                    string.Format(
+                        LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                        string.Join(" ", options)));
+            }
         }
     }
 }
