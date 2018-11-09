@@ -112,33 +112,32 @@ namespace Microsoft.DotNet.Tests.Commands
                     1);
         }
 
-        [Fact]
-        public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
-        {
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(_appliedCommand,
-                _parseResult,
-                _createToolPackageStoreAndInstaller,
-                _createShellShimRepository,
-                _environmentPathInstructionMock,
-                _reporter);
+//        [Fact]
+//        public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
+//        {
+//            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(_appliedCommand,
+//                _parseResult,
+//                _createToolPackageStoreAndInstaller,
+//                _createShellShimRepository,
+//                _environmentPathInstructionMock,
+//                _reporter);
+//
+//            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+//
+//            // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
+//            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
+//            var deserializedFakeShim = JsonConvert.DeserializeObject<AppHostShellShimMakerMock.FakeShim>(
+//                _fileSystem.File.ReadAllText(ExpectedCommandPath()));
+//
+//            _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
+//        }
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-
-            // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
-            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
-            var deserializedFakeShim = JsonConvert.DeserializeObject<AppHostShellShimMakerMock.FakeShim>(
-                _fileSystem.File.ReadAllText(ExpectedCommandPath()));
-
-            _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
-        }
-        
         // TODO no manifest file throw
         // TODO 
 
         [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
-
         }
 
         [Fact]
@@ -148,6 +147,11 @@ namespace Microsoft.DotNet.Tests.Commands
 
         [Fact]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
+        {
+        }
+
+        [Fact]
+        public void GivenManifestFileConflictItShouldNotAddToCache()
         {
         }
 

@@ -11,13 +11,13 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
-
     internal class ToolInstallLocalCommand : CommandBase
     {
         private readonly IReporter _reporter;
@@ -30,19 +30,36 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string[] _source;
         private readonly string _verbosity;
         private IEnumerable<string> _forwardRestoreArguments;
+        private IToolPackageInstaller _toolPackageInstaller;
 
         public ToolInstallLocalCommand(
             AppliedOption appliedCommand,
             ParseResult parseResult,
-            CreateToolPackageStoresAndInstaller createToolPackageStoreAndInstaller = null,
-            CreateShellShimRepository createShellShimRepository = null,
-            IEnvironmentPathInstruction environmentPathInstruction = null,
+            IToolPackageInstaller toolPackageInstaller = null,
+            IToolManifestFile toolManifestFile = null,
+            ILocalToolsResolverCache localToolsResolverCache = null,
+            IFileSystem fileSystem = null,
+            DirectoryPath? nugetGlobalPackagesFolder = null,
             IReporter reporter = null)
             : base(parseResult)
         {
             if (appliedCommand == null)
             {
                 throw new ArgumentNullException(nameof(appliedCommand));
+            }
+
+            if (toolPackageInstaller == null)
+            {
+                (IToolPackageStore,
+                    IToolPackageStoreQuery,
+                    IToolPackageInstaller installer) toolPackageStoresAndInstaller
+                        = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
+                            additionalRestoreArguments: appliedCommand.OptionValuesToBeForwarded());
+                _toolPackageInstaller = toolPackageStoresAndInstaller.installer;
+            }
+            else
+            {
+                _toolPackageInstaller = toolPackageInstaller;
             }
 
             _packageId = new PackageId(appliedCommand.Arguments.Single());
@@ -52,7 +69,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _source = appliedCommand.ValueOrDefault<string[]>("add-source");
             _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
 
-			_forwardRestoreArguments = appliedCommand.OptionValuesToBeForwarded();
+            _forwardRestoreArguments = appliedCommand.OptionValuesToBeForwarded();
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
