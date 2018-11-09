@@ -118,5 +118,30 @@ namespace Microsoft.DotNet.Tests.Commands
             a.ShouldThrow<GracefulException>().And.Message
                 .Should().Contain(LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
+        
+        [Fact]
+        public void WhenRunWithLocalAndFrameworkShowErrorMessage()
+        {
+            var result =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {PackageId} --framework netcoreapp2.1");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            var parser = Parser.Instance;
+            var parseResult = parser.ParseFrom(
+                "dotnet tool",
+                new[]
+                {
+                    "install", PackageId, "--framework", "netcoreapp2.1"
+                });
+
+            var toolInstallCommand = new ToolInstallCommand(
+                appliedCommand,
+                parseResult);
+
+            Action a = () => toolInstallCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain(LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption);
+        }
     }
 }

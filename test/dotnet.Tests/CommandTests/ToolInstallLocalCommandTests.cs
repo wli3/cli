@@ -151,7 +151,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 .And.Message.Should()
                 .Contain(string.Format(ToolManifest.LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
-        // TODO throw when framework is specified
 
         [Fact]
         public void WhenRunWithExplicitManifestFileItShouldAddToExplicitManifestFile()

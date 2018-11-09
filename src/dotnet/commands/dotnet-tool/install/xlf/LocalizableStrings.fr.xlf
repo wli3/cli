@@ -19,6 +19,11 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
         <target state="new">Install the tool and add to the local tool manifest.</target>
         <note />
       </trans-unit>
+      <trans-unit id="LocalOptionDoesNotSupportFrameworkOption">
+        <source>Local option(--local) does not support framework option.</source>
+        <target state="new">Local option(--local) does not support framework option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="LocalToolInstallationSucceeded">
         <source>You can invoke the tool using the following command with prefix: {0}
 Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</source>
