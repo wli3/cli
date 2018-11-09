@@ -20,17 +20,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         private readonly IToolManifestFinder _toolManifestFinder;
         private readonly IToolManifestEditor _toolManifestEditor;
-        private readonly IFileSystem _fileSystem;
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
 
         private readonly PackageId _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
-        private readonly string _framework;
         private readonly string[] _sources;
         private readonly string _verbosity;
         private readonly string _explicitManifestFile;
@@ -42,7 +39,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             IToolManifestFinder toolManifestFinder = null,
             IToolManifestEditor toolManifestEditor = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
-            IFileSystem fileSystem = null,
             DirectoryPath? nugetGlobalPackagesFolder = null,
             IReporter reporter = null)
             : base(parseResult)
@@ -55,13 +51,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _packageId = new PackageId(appliedCommand.Arguments.Single());
             _packageVersion = appliedCommand.ValueOrDefault<string>("version");
             _configFilePath = appliedCommand.ValueOrDefault<string>("configfile");
-            _framework = appliedCommand.ValueOrDefault<string>("framework");
             _sources = appliedCommand.ValueOrDefault<string[]>("add-source");
             _verbosity = appliedCommand.SingleArgumentOrDefault("verbosity");
             _explicitManifestFile = appliedCommand.SingleArgumentOrDefault("--tool-manifest");
 
             _reporter = (reporter ?? Reporter.Output);
-            _errorReporter = (reporter ?? Reporter.Error);
 
             if (toolPackageInstaller == null)
             {
@@ -80,7 +74,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestFinder = toolManifestFinder ??
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
-            _fileSystem = fileSystem ?? new FileSystemWrapper();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _nugetGlobalPackagesFolder =
                 nugetGlobalPackagesFolder ?? new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());

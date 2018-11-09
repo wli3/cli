@@ -42,27 +42,15 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly string _manifestFilePath;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
-
-        private readonly PackageId _packageIdWithCommandNameCollisionWithA =
-            new PackageId("command.name.collision.with.package.a");
-
-        private readonly NuGetVersion _packageVersionWithCommandNameCollisionWithA;
         private readonly NuGetVersion _packageVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
-
-        private readonly PackageId _packageIdB = new PackageId("local.tool.console.B");
-        private readonly NuGetVersion _packageVersionB;
-        private readonly ToolCommandName _toolCommandNameB = new ToolCommandName("b");
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
-
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
 
         public ToolInstallLocalCommandTests()
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
-            _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");
-            _packageVersionB = NuGetVersion.Parse("1.0.4");
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -90,18 +78,6 @@ namespace Microsoft.DotNet.Tests.Commands
                                     PackageId = _packageIdA.ToString(),
                                     Version = _packageVersionA.ToNormalizedString(),
                                     ToolCommandName = _toolCommandNameA.ToString()
-                                },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdB.ToString(),
-                                    Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameB.ToString()
-                                },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
-                                    Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
-                                    ToolCommandName = "A"
                                 }
                             }
                         }
@@ -153,7 +129,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void WhenRunWithExplicitManifestFileItShouldAddToExplicitManifestFile()
+        public void WhenRunWithExplicitManifestFileItShouldAddEntryToExplicitManifestFile()
         {
             var explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
             _fileSystem.File.Delete(_manifestFilePath);
@@ -175,7 +151,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
 
@@ -228,7 +203,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
 
@@ -276,7 +250,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
         }
@@ -298,7 +271,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
 
@@ -323,7 +295,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
 
