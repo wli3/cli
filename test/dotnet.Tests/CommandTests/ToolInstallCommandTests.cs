@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands
             Action a = () => installGlobalOrToolPathCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.InstallToolCommandInvalidGlobalAndToolPath);
+                .Should().Contain(string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath, "local tool-path"));
         }
     }
 }
