@@ -23,6 +23,9 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 using System.Runtime.InteropServices;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using Microsoft.DotNet.ToolManifest;
+using NuGet.Frameworks;
+
 
 namespace Microsoft.DotNet.Tests.Commands
 {
@@ -37,6 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly string _temporaryDirectory;
         private readonly string _pathToPlacePackages;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
+        private readonly string _manifestFilePath;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
 
         private readonly PackageId _packageIdWithCommandNameCollisionWithA =
@@ -50,6 +54,9 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly NuGetVersion _packageVersionB;
         private readonly ToolCommandName _toolCommandNameB = new ToolCommandName("b");
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
+
+        private ToolManifestFinder _toolManifestFinder;
+        private ToolManifestEditor _toolManifestEditor;
 
         public ToolInstallLocalCommandTests()
         {
@@ -100,10 +107,21 @@ namespace Microsoft.DotNet.Tests.Commands
                         }
                     }));
 
-            ParseResult result = Parser.Instance.Parse("dotnet tool restore");
-            _appliedCommand = result["dotnet"]["tool"]["restore"];
+            _localToolsResolverCache
+                = new LocalToolsResolverCache(
+                    _fileSystem,
+                    new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")),
+                    1);
+
+            _manifestFilePath = Path.Combine(_temporaryDirectory, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, _manifestFilePath), _jsonContent);
+            _toolManifestFinder = new ToolManifestFinder(new DirectoryPath(_temporaryDirectory), _fileSystem);
+            _toolManifestEditor = new ToolManifestEditor(_fileSystem);
+
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()}");
+            _appliedCommand = result["dotnet"]["tool"]["install"];
             Cli.CommandLine.Parser parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] {"restore"});
+            _parseResult = parser.ParseFrom("dotnet tool", new[] { "install", _packageIdA.ToString() });
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -112,28 +130,40 @@ namespace Microsoft.DotNet.Tests.Commands
                     1);
         }
 
-//        [Fact]
-//        public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
-//        {
-//            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(_appliedCommand,
-//                _parseResult,
-//                _createToolPackageStoreAndInstaller,
-//                _createShellShimRepository,
-//                _environmentPathInstructionMock,
-//                _reporter);
-//
-//            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-//
-//            // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
-//            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
-//            var deserializedFakeShim = JsonConvert.DeserializeObject<AppHostShellShimMakerMock.FakeShim>(
-//                _fileSystem.File.ReadAllText(ExpectedCommandPath()));
-//
-//            _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
-//        }
+        [Fact]
+        public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
+        {
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
 
-        // TODO no manifest file throw
-        // TODO 
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            var manifestPackages = _toolManifestFinder.Find();
+            manifestPackages.Should().HaveCount(1);
+            var addedPackage = manifestPackages.Single();
+            _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
+                addedPackage.PackageId,
+                addedPackage.Version,
+                NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                Constants.AnyRid,
+                addedPackage.CommandNames.Single()),
+                _nugetGlobalPackagesFolder,
+                out RestoredCommand restoredCommand
+                ).Should().BeTrue();
+
+            _fileSystem.File.Exists(restoredCommand.Executable.Value);
+        }
+
+        //TODO no manifest file throw
+        //TODO can find file in the current directory
 
         [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
@@ -174,5 +204,15 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
         }
+
+
+        private string _jsonContent =
+            @"{
+   ""version"":1,
+   ""isRoot"":true,
+   ""tools"":{
+   }
+}";
+
     }
 }
