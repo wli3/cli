@@ -55,8 +55,8 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly ToolCommandName _toolCommandNameB = new ToolCommandName("b");
         private readonly DirectoryPath _nugetGlobalPackagesFolder;
 
-        private ToolManifestFinder _toolManifestFinder;
-        private ToolManifestEditor _toolManifestEditor;
+        private readonly ToolManifestFinder _toolManifestFinder;
+        private readonly ToolManifestEditor _toolManifestEditor;
 
         public ToolInstallLocalCommandTests()
         {
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Tests.Commands
             ParseResult result = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()}");
             _appliedCommand = result["dotnet"]["tool"]["install"];
             Cli.CommandLine.Parser parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] { "install", _packageIdA.ToString() });
+            _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", _packageIdA.ToString()});
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -133,7 +133,95 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+
+            AssertDefaultInstallSuccess();
+        }
+
+        // TODO no manifest file throw
+        // TODO can find file in the current directory
+        // TODO throw when framework is specified
+
+        [Fact]
+        public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
+        {
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            var toolInstallCommand = new ToolInstallCommand(
+                _appliedCommand,
+                _parseResult,
+                toolInstallLocalCommand: toolInstallLocalCommand);
+
+            toolInstallCommand.Execute().Should().Be(0);
+            AssertDefaultInstallSuccess();
+        }
+
+        [Fact]
+        public void WhenRunWithPackageIdItShouldShowSuccessMessage()
+        {
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+
+            _reporter.Lines[0].Should()
+                .Contain(
+                    string.Format(LocalizableStrings.LocalToolInstallationSucceeded,
+                        _toolCommandNameA.ToString(),
+                        _packageIdA,
+                        _packageVersionA.ToNormalizedString(),
+                        _manifestFilePath).Green());
+        }
+
+        [Fact]
+        public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
+        {
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
+            var _appliedCommand = result["dotnet"]["tool"]["install"];
+            Cli.CommandLine.Parser parser = Parser.Instance;
+            var _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "non-exist"});
+
+            var installLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            Action a = () => installLocalCommand.Execute();
+            a.ShouldThrow<GracefulException>()
+                .And.Message.Should()
+                .Contain(LocalizableStrings.ToolInstallationRestoreFailed);
+
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Be(_jsonContent, "Manifest file should not be changed");
+        }
+
+        [Fact]
+        public void GivenManifestFileConflictItShouldNotAddToCache()
+        {
+            _toolManifestEditor.Add(
+                new FilePath(_manifestFilePath),
+                _packageIdA,
+                new NuGetVersion(1, 1, 1),
+                new[] {_toolCommandNameA});
+
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            Action a = () => toolInstallLocalCommand.Execute();
+            a.ShouldThrow<GracefulException>();
+
+            _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
+                    _packageIdA,
+                    _packageVersionA,
+                    NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                    Constants.AnyRid,
+                    _toolCommandNameA),
+                _nugetGlobalPackagesFolder,
+                out RestoredCommand restoredCommand
+            ).Should().BeFalse("it should not add to cache if add to manifest failed. " +
+                               "But restore do not need to 'revert' since it just set in nuget global directory");
+        }
+
+        private ToolInstallLocalCommand GetDefaultTestToolInstallLocalCommand()
+        {
+            return new ToolInstallLocalCommand(
                 _appliedCommand,
                 _parseResult,
                 _toolPackageInstallerMock,
@@ -143,10 +231,21 @@ namespace Microsoft.DotNet.Tests.Commands
                 _fileSystem,
                 _nugetGlobalPackagesFolder,
                 _reporter);
+        }
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+        [Fact]
+        public void WhenRunWithExactVersionItShouldSucceed()
+        {
+        }
 
-            AssertDefaultInstallSuccess();
+        [Fact]
+        public void WhenRunWithValidVersionRangeItShouldSucceed()
+        {
+        }
+
+        [Fact]
+        public void WhenRunWithoutAMatchingRangeItShouldFail()
+        {
         }
 
         private void AssertDefaultInstallSuccess()
@@ -167,108 +266,6 @@ namespace Microsoft.DotNet.Tests.Commands
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
-        // TODO no manifest file throw
-        // TODO can find file in the current directory
-        // TODO throw when framework is specified
-
-        [Fact]
-        public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
-        {
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
-                _appliedCommand,
-                _parseResult,
-                _toolPackageInstallerMock,
-                _toolManifestFinder,
-                _toolManifestEditor,
-                _localToolsResolverCache,
-                _fileSystem,
-                _nugetGlobalPackagesFolder,
-                _reporter);
-            
-            var toolInstallCommand = new ToolInstallCommand(
-                _appliedCommand,
-                _parseResult,
-                toolInstallLocalCommand: toolInstallGlobalOrToolPathCommand);
-
-            toolInstallCommand.Execute().Should().Be(0);
-            AssertDefaultInstallSuccess();
-        }
-
-        [Fact]
-        public void WhenRunWithPackageIdItShouldShowSuccessMessage()
-        {
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
-                _appliedCommand,
-                _parseResult,
-                _toolPackageInstallerMock,
-                _toolManifestFinder,
-                _toolManifestEditor,
-                _localToolsResolverCache,
-                _fileSystem,
-                _nugetGlobalPackagesFolder,
-                _reporter);
-
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-
-            _reporter.Lines[0].Should()
-                .Contain(
-                    string.Format(LocalizableStrings.LocalToolInstallationSucceeded,
-                        _toolCommandNameA.ToString(),
-                        _packageIdA,
-                        _packageVersionA.ToNormalizedString(),
-                        _manifestFilePath).Green());
-        }
-
-        [Fact]
-        public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
-        {
-            ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
-            var _appliedCommand = result["dotnet"]["tool"]["install"];
-            Cli.CommandLine.Parser parser = Parser.Instance;
-            var _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "non-exist"});
-
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
-                _appliedCommand,
-                _parseResult,
-                _toolPackageInstallerMock,
-                _toolManifestFinder,
-                _toolManifestEditor,
-                _localToolsResolverCache,
-                _fileSystem,
-                _nugetGlobalPackagesFolder,
-                _reporter);
-
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
-            a.ShouldThrow<GracefulException>()
-                .And.Message.Should()
-                .Contain(LocalizableStrings.ToolInstallationRestoreFailed);
-        }
-
-        [Fact]
-        public void GivenManifestFileConflictItShouldNotAddToCache()
-        {
-        }
-
-        [Fact]
-        public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
-        {
-        }
-
-        [Fact]
-        public void WhenRunWithExactVersionItShouldSucceed()
-        {
-        }
-
-        [Fact]
-        public void WhenRunWithValidVersionRangeItShouldSucceed()
-        {
-        }
-
-        [Fact]
-        public void WhenRunWithoutAMatchingRangeItShouldFail()
-        {
-        }
-
 
         private string _jsonContent =
             @"{
@@ -277,6 +274,5 @@ namespace Microsoft.DotNet.Tests.Commands
    ""tools"":{
    }
 }";
-
     }
 }
