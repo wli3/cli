@@ -245,11 +245,51 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
+            ParseResult result = Parser.Instance.Parse(
+                $"dotnet tool install {_packageIdA.ToString()} --version {_packageVersionA.ToNormalizedString()}");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            Cli.CommandLine.Parser parser = Parser.Instance;
+            var parseResult = parser.ParseFrom("dotnet tool",
+                new[] {"install", _packageIdA.ToString(), "--version", _packageVersionA.ToNormalizedString()});
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            AssertDefaultInstallSuccess();
         }
 
         [Fact]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
+            ParseResult result = Parser.Instance.Parse(
+                $"dotnet tool install {_packageIdA.ToString()} --version 1.*");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            Cli.CommandLine.Parser parser = Parser.Instance;
+            var parseResult = parser.ParseFrom("dotnet tool",
+                new[] {"install", _packageIdA.ToString(), "--version", "1.*"});
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            AssertDefaultInstallSuccess();
         }
 
         [Fact]
