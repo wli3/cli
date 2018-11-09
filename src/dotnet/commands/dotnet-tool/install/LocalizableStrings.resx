@@ -160,6 +160,10 @@
     <value>You can invoke the tool using the following command: {0}
 Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
+    <data name="LocalToolInstallationSucceeded" xml:space="preserve">
+    <value>You can invoke the tool using the following command with prefix: {0}
+Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</value>
+  </data>
   <data name="GlobalOptionDescription" xml:space="preserve">
     <value>Install the tool to the current user's tools directory.</value>
   </data>

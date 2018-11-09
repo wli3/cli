@@ -209,8 +209,14 @@ namespace Microsoft.DotNet.Tests.Commands
                 _reporter);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-            
-            _reporter.Lines.Should().Contain()
+
+            _reporter.Lines[0].Should()
+                .Contain(
+                    string.Format(LocalizableStrings.LocalToolInstallationSucceeded,
+                        _toolCommandNameA.ToString(),
+                        _packageIdA,
+                        _packageVersionA.ToNormalizedString(),
+                        _manifestFilePath).Green());
         }
 
         [Fact]

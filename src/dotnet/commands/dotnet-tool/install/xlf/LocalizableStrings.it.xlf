@@ -19,6 +19,13 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
         <target state="new">Install the tool and add to the local tool manifest.</target>
         <note />
       </trans-unit>
+      <trans-unit id="LocalToolInstallationSucceeded">
+        <source>You can invoke the tool using the following command with prefix: {0}
+Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</source>
+        <target state="new">You can invoke the tool using the following command with prefix: {0}
+Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestPathOptionDescription">
         <source>Path to the manifest file.</source>
         <target state="new">Path to the manifest file.</target>

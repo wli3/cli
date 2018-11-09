@@ -147,6 +147,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     _nugetGlobalPackagesFolder);
             }
 
+            _reporter.WriteLine(
+                string.Format(
+                    LocalizableStrings.LocalToolInstallationSucceeded,
+                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                    toolDownloadedPackage.Id,
+                    toolDownloadedPackage.Version.ToNormalizedString(),
+                    manifestFile.Value).Green());
+
             return 0;
         }
     }
