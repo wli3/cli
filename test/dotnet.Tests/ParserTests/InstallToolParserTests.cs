@@ -98,6 +98,17 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
+        public void InstallToolParserCanGetManifestOption()
+        {
+            var result =
+                Parser.Instance.Parse(
+                    "dotnet tool install --local console.test.app --tool-manifest folder/my-manifest.format");
+
+            var appliedOptions = result["dotnet"]["tool"]["install"];
+            appliedOptions.ValueOrDefault<string>("tool-manifest").Should().Be("folder/my-manifest.format");
+        }
+
+        [Fact]
         public void InstallToolParserCanParseVerbosityOption()
         {
             const string expectedVerbosityLevel = "diag";
