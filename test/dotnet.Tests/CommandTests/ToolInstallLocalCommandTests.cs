@@ -178,11 +178,20 @@ namespace Microsoft.DotNet.Tests.Commands
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
-            var _appliedCommand = result["dotnet"]["tool"]["install"];
+            var appliedCommand = result["dotnet"]["tool"]["install"];
             Cli.CommandLine.Parser parser = Parser.Instance;
-            var _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "non-exist"});
+            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "non-exist"});
 
-            var installLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            var installLocalCommand = new ToolInstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
 
             Action a = () => installLocalCommand.Execute();
             a.ShouldThrow<GracefulException>()
