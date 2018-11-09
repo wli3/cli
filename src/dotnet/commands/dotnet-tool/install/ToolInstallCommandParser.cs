@@ -39,6 +39,11 @@ namespace Microsoft.DotNet.Cli
                     Accept.ExactlyOneArgument()
                         .With(name: LocalizableStrings.ConfigFileOptionName)),
                 Create.Option(
+                    "--tool-manifest",
+                    LocalizableStrings.ManifestPathOptionDescription,
+                    Accept.ZeroOrOneArgument()
+                        .With(name: LocalizableStrings.ManifestPathOptionName)),
+                Create.Option(
                     "--add-source",
                     LocalizableStrings.AddSourceOptionDescription,
                     Accept.OneOrMoreArguments()

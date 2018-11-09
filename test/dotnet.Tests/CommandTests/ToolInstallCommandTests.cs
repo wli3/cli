@@ -35,34 +35,88 @@ namespace Microsoft.DotNet.Tests.Commands
             var result = Parser.Instance.Parse($"dotnet tool install -g --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
+            var parseResult = parser.ParseFrom(
+                "dotnet tool",
+                new[] {"install", "-g", "--tool-path", "/tmp/folder", PackageId});
 
-            var installGlobalOrToolPathCommand = new ToolInstallCommand(
+            var toolInstallCommand = new ToolInstallCommand(
                 appliedCommand,
                 parseResult);
 
-            Action a = () => installGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath, "global tool-path"));
+                .Should().Contain(string.Format(
+                    LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                    "global tool-path"));
         }
-        
+
         [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool install --local --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
+            var parseResult = parser.ParseFrom(
+                "dotnet tool",
+                new[] {"install", "--local", "--tool-path", "/tmp/folder", PackageId});
 
-            var installGlobalOrToolPathCommand = new ToolInstallCommand(
+            var toolInstallCommand = new ToolInstallCommand(
                 appliedCommand,
                 parseResult);
 
-            Action a = () => installGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath, "local tool-path"));
+                .Should().Contain(
+                    string.Format(LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                        "local tool-path"));
+        }
+
+        [Fact]
+        public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
+        {
+            var result =
+                Parser.Instance.Parse($"dotnet tool install -g --tool-manifest folder/my-manifest.format {PackageId}");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            var parser = Parser.Instance;
+            var parseResult = parser.ParseFrom(
+                "dotnet tool",
+                new[] {"install", "-g", "--tool-manifest", "folder/my-manifest.format", "PackageId"});
+
+            var toolInstallCommand = new ToolInstallCommand(
+                appliedCommand,
+                parseResult);
+
+            Action a = () => toolInstallCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain(LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+        }
+
+        [Fact]
+        public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
+        {
+            var result =
+                Parser.Instance.Parse(
+                    $"dotnet tool install --tool-path /tmp/folder --tool-manifest folder/my-manifest.format {PackageId}");
+            var appliedCommand = result["dotnet"]["tool"]["install"];
+            var parser = Parser.Instance;
+            var parseResult = parser.ParseFrom(
+                "dotnet tool",
+                new[]
+                {
+                    "install", "--tool-path", "/tmp/folder", "--tool-manifest", "folder/my-manifest.format", PackageId
+                });
+
+            var toolInstallCommand = new ToolInstallCommand(
+                appliedCommand,
+                parseResult);
+
+            Action a = () => toolInstallCommand.Execute();
+
+            a.ShouldThrow<GracefulException>().And.Message
+                .Should().Contain(LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
     }
 }

@@ -25,6 +25,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _global;
         private readonly string _toolPath;
         private readonly bool _local;
+        private readonly string _toolManifestOption;
         private const string GlobalOption = "global";
         private const string LocalOption = "local";
         private const string ToolPathOption = "tool-path";
@@ -44,6 +45,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _global = appliedCommand.ValueOrDefault<bool>(GlobalOption);
             _local = appliedCommand.ValueOrDefault<bool>(LocalOption);
             _toolPath = appliedCommand.SingleArgumentOrDefault(ToolPathOption);
+            _toolManifestOption = appliedCommand.ValueOrDefault<string>("tool-manifest");
         }
 
         public override int Execute()
@@ -52,6 +54,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
+                if (!string.IsNullOrWhiteSpace(_toolManifestOption))
+                {
+                    throw new GracefulException(
+                        string.Format(
+                            LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+                }
+
                 return _toolInstallGlobalOrToolPathCommand.Execute();
             }
 

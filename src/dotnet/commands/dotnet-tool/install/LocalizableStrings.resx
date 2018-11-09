@@ -207,4 +207,13 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolPathOptionDescription" xml:space="preserve">
     <value>The directory where the tool will be installed. The directory will be created if it does not exist.</value>
   </data>
+  <data name="ManifestPathOptionDescription" xml:space="preserve">
+    <value>Path to the manifest file.</value>
+  </data>
+  <data name="ManifestPathOptionName" xml:space="preserve">
+    <value>PATH</value>
+  </data>
+  <data name="OnlyLocalOptionSupportManifestFileOption" xml:space="preserve">
+    <value>Only the local option(--local) support manifest file option (--tool-manifest).</value>
+  </data>
 </root>
