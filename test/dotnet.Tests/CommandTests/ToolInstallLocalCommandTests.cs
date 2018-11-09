@@ -146,33 +146,71 @@ namespace Microsoft.DotNet.Tests.Commands
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
 
+            AssertDefaultInstallSuccess();
+        }
+
+        private void AssertDefaultInstallSuccess()
+        {
             var manifestPackages = _toolManifestFinder.Find();
             manifestPackages.Should().HaveCount(1);
             var addedPackage = manifestPackages.Single();
             _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
-                addedPackage.PackageId,
-                addedPackage.Version,
-                NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
-                Constants.AnyRid,
-                addedPackage.CommandNames.Single()),
+                    addedPackage.PackageId,
+                    addedPackage.Version,
+                    NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                    Constants.AnyRid,
+                    addedPackage.CommandNames.Single()),
                 _nugetGlobalPackagesFolder,
                 out RestoredCommand restoredCommand
-                ).Should().BeTrue();
+            ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
-        //TODO no manifest file throw
-        //TODO can find file in the current directory
+        // TODO no manifest file throw
+        // TODO can find file in the current directory
+        // TODO throw when framework is specified
 
         [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+            
+            var toolInstallCommand = new ToolInstallCommand(
+                _appliedCommand,
+                _parseResult,
+                toolInstallLocalCommand: toolInstallGlobalOrToolPathCommand);
+
+            toolInstallCommand.Execute().Should().Be(0);
+            AssertDefaultInstallSuccess();
         }
 
         [Fact]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallLocalCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _fileSystem,
+                _nugetGlobalPackagesFolder,
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            
+            _reporter.Lines.Should().Contain()
         }
 
         [Fact]

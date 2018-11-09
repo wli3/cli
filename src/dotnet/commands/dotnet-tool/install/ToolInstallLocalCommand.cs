@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -111,28 +112,42 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
-            var manfiestFile = _toolManifestFinder.FindFirst();
+            var manifestFile = _toolManifestFinder.FindFirst();
 
-            IToolPackage toolPackage =
+            IToolPackage toolDownloadedPackage =
                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
                        new PackageLocation(
                            nugetConfig: configFile,
                            additionalFeeds: _sources,
-                           rootConfigDirectory: manfiestFile.GetDirectoryPath()),
+                           rootConfigDirectory: manifestFile.GetDirectoryPath()),
                        _packageId,
                        versionRange,
                        targetFramework,
                        verbosity: _verbosity);
 
             _toolManifestEditor.Add(
-                manfiestFile,
-                toolPackage.Id,
-                toolPackage.Version,
-                toolPackage.Commands.Select(c => c.Name).ToArray());
+                manifestFile,
+                toolDownloadedPackage.Id,
+                toolDownloadedPackage.Version,
+                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
 
-            _localToolsResolverCache.Save(new Dictionary(), _nugetGlobalPackagesFolder);
+            foreach (var restoredCommand in toolDownloadedPackage.Commands)
+            {
+                _localToolsResolverCache.Save(
+                    new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+                    {
+                        [new RestoredCommandIdentifier(
+                                toolDownloadedPackage.Id,
+                                toolDownloadedPackage.Version,
+                                NuGetFramework.Parse(targetFramework),
+                                Constants.AnyRid,
+                                restoredCommand.Name)] =
+                            restoredCommand
+                    },
+                    _nugetGlobalPackagesFolder);
+            }
 
-            return 1;
+            return 0;
         }
     }
 }

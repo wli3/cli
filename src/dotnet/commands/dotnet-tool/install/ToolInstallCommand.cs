@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         private readonly AppliedOption _appliedCommand;
         private readonly ParseResult _parseResult;
+        private readonly ToolInstallLocalCommand _toolInstallLocalCommand;
         private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
@@ -33,11 +34,16 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         public ToolInstallCommand(
             AppliedOption appliedCommand,
             ParseResult parseResult,
-            ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null)
+            ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
+            ToolInstallLocalCommand toolInstallLocalCommand = null)
             : base(parseResult)
         {
             _appliedCommand = appliedCommand ?? throw new ArgumentNullException(nameof(appliedCommand));
             _parseResult = parseResult ?? throw new ArgumentNullException(nameof(parseResult));
+            _toolInstallLocalCommand =
+                toolInstallLocalCommand
+                ?? new ToolInstallLocalCommand(_appliedCommand, _parseResult);
+
             _toolInstallGlobalOrToolPathCommand =
                 toolInstallGlobalOrToolPathCommand
                 ?? new ToolInstallGlobalOrToolPathCommand(_appliedCommand, _parseResult);
@@ -63,8 +69,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                 return _toolInstallGlobalOrToolPathCommand.Execute();
             }
-
-            return 1;
+            else
+            {
+                return _toolInstallLocalCommand.Execute();
+            }
         }
 
         private void EnsureNoConflictGlobalLocalToolPathOption()
