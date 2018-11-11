@@ -9,20 +9,20 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.ShellShim;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Uninstall
 {
 
     internal class ToolUninstallCommand : CommandBase
     {
-        private readonly AppliedOption _options;
         private readonly ToolUninstallGlobalOrToolPathCommand _toolUninstallGlobalOrToolPathCommand;
-        private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
+        private readonly bool _global;
+        private readonly bool _local;
+        private readonly string _toolPath;
+        private readonly string _toolManifestOption;
+        private const string GlobalOption = "global";
+        private const string LocalOption = "local";
+        private const string ToolPathOption = "tool-path";
 
         public ToolUninstallCommand(
             AppliedOption options,
@@ -31,44 +31,63 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
             ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null)
             : base(result)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _reporter = reporter ?? Reporter.Output;
-            _errorReporter = reporter ?? Reporter.Error;
+            
             _toolUninstallGlobalOrToolPathCommand =
                 toolUninstallGlobalOrToolPathCommand
                 ?? new ToolUninstallGlobalOrToolPathCommand(options, result);
+            
+            _global = options.ValueOrDefault<bool>(GlobalOption);
+            _local = options.ValueOrDefault<bool>(LocalOption);
+            _toolPath = options.SingleArgumentOrDefault(ToolPathOption);
+            _toolManifestOption = options.ValueOrDefault<string>("tool-manifest");
         }
 
         public override int Execute()
         {
-            var global = _options.ValueOrDefault<bool>("global");
-            var toolPath = _options.SingleArgumentOrDefault("tool-path");
+            EnsureNoConflictGlobalLocalToolPathOption();
 
-            DirectoryPath? toolDirectoryPath = null;
-            if (!string.IsNullOrWhiteSpace(toolPath))
+            if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
-                if (!Directory.Exists(toolPath))
+                if (!string.IsNullOrWhiteSpace(_toolManifestOption))
                 {
                     throw new GracefulException(
                         string.Format(
-                            LocalizableStrings.InvalidToolPathOption,
-                            toolPath));
+                            LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
                 }
 
-                toolDirectoryPath = new DirectoryPath(toolPath);
+                return _toolUninstallGlobalOrToolPathCommand.Execute();
             }
-
-            if (toolDirectoryPath == null && !global)
+            else
             {
-                throw new GracefulException(LocalizableStrings.UninstallToolCommandNeedGlobalOrToolPath);
+                return 1;
             }
+        }
 
-            if (toolDirectoryPath != null && global)
+        private void EnsureNoConflictGlobalLocalToolPathOption()
+        {
+            List<string> options = new List<string>();
+            if (_global)
             {
-                throw new GracefulException(LocalizableStrings.UninstallToolCommandInvalidGlobalAndToolPath);
+                options.Add(GlobalOption);
             }
 
-            return _toolUninstallGlobalOrToolPathCommand.Execute();
+            if (_local)
+            {
+                options.Add(LocalOption);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_toolPath))
+            {
+                options.Add(ToolPathOption);
+            }
+
+            if (options.Count > 1)
+            {
+                throw new GracefulException(
+                    string.Format(
+                        LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                        string.Join(" ", options)));
+            }
         }
     }
 }
