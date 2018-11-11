@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Tool
                     appliedOption["install"],
                     ParseResult),
                 ["uninstall"] =
-                appliedOption => new ToolUninstallCommand(
+                appliedOption => new ToolUninstallGlobalOrToolPathCommand(
                     appliedOption["uninstall"],
                     ParseResult),
                 ["update"] =
