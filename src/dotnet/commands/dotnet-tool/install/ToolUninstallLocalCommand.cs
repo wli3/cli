@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 ? _toolManifestFinder.FindFirst()
                 : new FilePath(_explicitManifestFile);
 
-
+            _toolManifestEditor.Remove(manifestFile, _packageId);
             return 0;
         }
     }

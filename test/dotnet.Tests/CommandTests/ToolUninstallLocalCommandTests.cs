@@ -70,16 +70,16 @@ namespace Microsoft.DotNet.Tests.Commands
             
             var _jsonContent =
             @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""t-rex"":{
-         ""version"":""1.0.53"",
-         ""commands"":[
-            ""t-rex""
-         ]
-      }
-   }
+  ""version"": 1,
+  ""isRoot"": true,
+  ""tools"": {
+    ""t-rex"": {
+      ""version"": ""1.0.53"",
+      ""commands"": [
+        ""t-rex""
+      ]
+    }
+  }
 }";
             _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_jsonContent);
         }
