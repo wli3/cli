@@ -11,8 +11,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Frameworks;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Uninstall
 {
@@ -55,6 +53,11 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
                 : new FilePath(_explicitManifestFile);
 
             _toolManifestEditor.Remove(manifestFile, _packageId);
+            _reporter.WriteLine(
+                string.Format(
+                    LocalizableStrings.UninstallLocalToolSucceeded,
+                    _packageId,
+                    manifestFile.Value));
             return 0;
         }
     }

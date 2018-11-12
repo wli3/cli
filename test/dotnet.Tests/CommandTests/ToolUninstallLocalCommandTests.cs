@@ -11,7 +11,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.ShellShim;
@@ -22,9 +22,8 @@ using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using System.Runtime.InteropServices;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using NuGet.Frameworks;
 
 
@@ -38,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
         private readonly string _manifestFilePath;
-        private readonly PackageId _packageIdA = new PackageId("dotnetsay");
+        private readonly PackageId _packageIdDotnsay = new PackageId("dotnetsay");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
         private readonly ToolUninstallLocalCommand _defaultToolUninstallLocalCommand;
@@ -54,7 +53,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _toolManifestFinder = new ToolManifestFinder(new DirectoryPath(_temporaryDirectory), _fileSystem);
             _toolManifestEditor = new ToolManifestEditor(_fileSystem);
 
-            _parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdA.ToString()}");
+            _parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdDotnsay.ToString()}");
             _appliedCommand = _parseResult["dotnet"]["tool"]["uninstall"];
             _defaultToolUninstallLocalCommand = new ToolUninstallLocalCommand(
                 _appliedCommand,
@@ -92,7 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             var parseResult
                 = Parser.Instance.Parse(
-                    $"dotnet tool uninstall {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
+                    $"dotnet tool uninstall {_packageIdDotnsay.ToString()} --tool-manifest {explicitManifestFilePath}");
             var appliedCommand = parseResult["dotnet"]["tool"]["uninstall"];
             var toolUninstallLocalCommand = new ToolUninstallLocalCommand(
                 appliedCommand,
@@ -108,7 +107,7 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunFromToolUninstallRedirectCommandWithPackageIdItShouldRemoveFromManifestFile()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdA.ToString()}");
+            var parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdDotnsay.ToString()}");
             var appliedCommand = parseResult["dotnet"]["tool"]["uninstall"];
             var toolUninstallLocalCommand = new ToolUninstallLocalCommand(
                 appliedCommand,
@@ -129,7 +128,13 @@ namespace Microsoft.DotNet.Tests.Commands
         [Fact]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
-            // TODO wul no check in
+            _defaultToolUninstallLocalCommand.Execute();
+            _reporter.Lines.Single()
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UninstallLocalToolSucceeded,
+                        _packageIdDotnsay,
+                        _manifestFilePath));
         }
 
         private string _jsonContent =
