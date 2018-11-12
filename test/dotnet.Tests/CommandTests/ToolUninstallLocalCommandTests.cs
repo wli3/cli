@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Microsoft.DotNet.ToolManifest;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using NuGet.Frameworks;
 
 
@@ -40,6 +41,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly PackageId _packageIdA = new PackageId("dotnetsay");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
+        private readonly ToolUninstallLocalCommand _defaultToolUninstallLocalCommand;
 
         public ToolUninstallLocalCommandTests()
         {
@@ -52,54 +54,76 @@ namespace Microsoft.DotNet.Tests.Commands
             _toolManifestFinder = new ToolManifestFinder(new DirectoryPath(_temporaryDirectory), _fileSystem);
             _toolManifestEditor = new ToolManifestEditor(_fileSystem);
 
-            _parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()}");
-            _appliedCommand = _parseResult["dotnet"]["tool"]["install"];
+            _parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdA.ToString()}");
+            _appliedCommand = _parseResult["dotnet"]["tool"]["uninstall"];
+            _defaultToolUninstallLocalCommand = new ToolUninstallLocalCommand(
+                _appliedCommand,
+                _parseResult,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _reporter);
         }
 
         [Fact]
         public void WhenRunWithPackageIdItShouldRemoveFromManifestFile()
         {
-            var toolUninstallLocalCommand = new ToolUninstallLocalCommand(
-                _appliedCommand, 
-                _parseResult,
-                _toolManifestFinder,
-                _toolManifestEditor,
-                _reporter);
+            _defaultToolUninstallLocalCommand.Execute().Should().Be(0);
 
-            toolUninstallLocalCommand.Execute().Should().Be(0);
-            
-            var _jsonContent =
-            @"{
-  ""version"": 1,
-  ""isRoot"": true,
-  ""tools"": {
-    ""t-rex"": {
-      ""version"": ""1.0.53"",
-      ""commands"": [
-        ""t-rex""
-      ]
-    }
-  }
-}";
-            _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_jsonContent);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
 
         [Fact]
         public void GivenNoManifestFileItShouldThrow()
         {
-            // TODO wul no check in
+            _fileSystem.File.Delete(_manifestFilePath);
+            Action a = () => _defaultToolUninstallLocalCommand.Execute().Should().Be(0);
+            a.ShouldThrow<GracefulException>()
+                .And.Message.Should()
+                .Contain(string.Format(ToolManifest.LocalizableStrings.CannotFindAnyManifestsFileSearched, ""));
         }
 
         [Fact]
         public void WhenRunWithExplicitManifestFileItShouldRemoveFromExplicitManifestFile()
         {
-            // TODO wul no check in
+            var explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
+            _fileSystem.File.Delete(_manifestFilePath);
+            _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, "subdirectory"));
+            _fileSystem.File.WriteAllText(explicitManifestFilePath, _jsonContent);
+
+            var parseResult
+                = Parser.Instance.Parse(
+                    $"dotnet tool uninstall {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
+            var appliedCommand = parseResult["dotnet"]["tool"]["uninstall"];
+            var toolUninstallLocalCommand = new ToolUninstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _reporter);
+
+            toolUninstallLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(explicitManifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
 
         [Fact]
         public void WhenRunFromToolUninstallRedirectCommandWithPackageIdItShouldRemoveFromManifestFile()
         {
-            // TODO wul no check in
+            var parseResult = Parser.Instance.Parse($"dotnet tool uninstall {_packageIdA.ToString()}");
+            var appliedCommand = parseResult["dotnet"]["tool"]["uninstall"];
+            var toolUninstallLocalCommand = new ToolUninstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _reporter);
+            var toolUninstallCommand = new ToolUninstallCommand(
+                appliedCommand,
+                parseResult,
+                toolUninstallLocalCommand: toolUninstallLocalCommand);
+
+            toolUninstallCommand.Execute().Should().Be(0);
+
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
 
         [Fact]
@@ -107,7 +131,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             // TODO wul no check in
         }
- 
+
         private string _jsonContent =
             @"{
    ""version"":1,
@@ -126,6 +150,20 @@ namespace Microsoft.DotNet.Tests.Commands
          ]
       }
    }
+}";
+
+        private string _entryRemovedJsonContent =
+            @"{
+  ""version"": 1,
+  ""isRoot"": true,
+  ""tools"": {
+    ""t-rex"": {
+      ""version"": ""1.0.53"",
+      ""commands"": [
+        ""t-rex""
+      ]
+    }
+  }
 }";
     }
 }

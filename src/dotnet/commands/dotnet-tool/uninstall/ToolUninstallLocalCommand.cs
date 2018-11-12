@@ -14,7 +14,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Tools.Tool.Install
+namespace Microsoft.DotNet.Tools.Tool.Uninstall
 {
     internal class ToolUninstallLocalCommand : CommandBase
     {
