@@ -10,7 +10,7 @@ using Microsoft.DotNet.CommandFactory;
 
 namespace Microsoft.DotNet.Tools.Tool.Run
 {
-    internal class ToolRunCommand : CommandBase
+    internal class ToolRunCommand
     {
         public const string CommandDelimiter = ", ";
         private readonly string _toolCommandName;
