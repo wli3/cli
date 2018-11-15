@@ -30,5 +30,16 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             packageId.Should().Be("dotnetsay");
         }
+
+        [Fact]
+        public void ListToolParserCanGetToolCommandNameArgumentAndCommandsArgument()
+        {
+            var result = Parser.Instance.Parse("dotnet tool run dotnetsay hi");
+
+            var appliedOptions = result["dotnet"]["tool"]["run"];
+            var packageId = appliedOptions.Arguments.Single();
+
+            packageId.Should().Be("dotnetsay");
+        }
     }
 }
