@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.ToolManifest
             // The dictionary's key is the package id
             public Dictionary<string, SerializableLocalToolSinglePackage> tools { get; set; }
 
-            public SerializableLocalToolsManifest With(Dictionary<string, SerializableLocalToolSinglePackage> newTools)
+            public SerializableLocalToolsManifest NewCopyWithTools(Dictionary<string, SerializableLocalToolSinglePackage> newTools)
             {
                 return new SerializableLocalToolsManifest
                 {
@@ -251,7 +251,7 @@ namespace Microsoft.DotNet.ToolManifest
                 .Where(pair => !pair.Key.Equals(packageId.ToString(), StringComparison.Ordinal))
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            var newSerializableLocalToolsManifest = deserializedManifest.With(removed);
+            var newSerializableLocalToolsManifest = deserializedManifest.NewCopyWithTools(removed);
 
             _fileSystem.File.WriteAllText(
                 fromFilePath.Value,
