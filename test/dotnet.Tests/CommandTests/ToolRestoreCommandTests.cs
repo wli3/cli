@@ -324,7 +324,7 @@ namespace Microsoft.DotNet.Tests.Commands
         public void WhenCannotFindManifestFileItPrintsWarning()
         {
             IToolManifestFinder realManifestFinderImplementationWithMockFinderSystem =
-                new ToolManifestFinder(new DirectoryPath(Path.GetTempPath()), _fileSystem);
+                new ToolManifestFinder(new DirectoryPath(Path.GetTempPath()), _fileSystem, new FakeMarkOfTheWebDetector());
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_appliedCommand,
                 _parseResult,

@@ -11,7 +11,6 @@ using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -47,7 +46,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
                 _jsonContent.Replace("$TOOLCOMMAND$", toolCommand));
             ToolManifestFinder toolManifest =
-                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem, new FakeMarkOfTheWebDetector());
             ToolCommandName toolCommandNameA = new ToolCommandName(toolCommand);
             var fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
@@ -90,7 +89,7 @@ namespace Microsoft.DotNet.Tests
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
                 _jsonContent.Replace("$TOOLCOMMAND$", toolCommandNameA.Value));
             ToolManifestFinder toolManifest =
-                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem);
+                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem, new FakeMarkOfTheWebDetector());
 
             var fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
             _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
@@ -137,5 +136,13 @@ namespace Microsoft.DotNet.Tests
       }
    }
 }";
+    }
+
+    internal class FakeMarkOfTheWebDetector : IMarkOfTheWebDetector
+    {
+        public bool HasMarkOfTheWeb(string filePath)
+        {
+            return false;
+        }
     }
 }

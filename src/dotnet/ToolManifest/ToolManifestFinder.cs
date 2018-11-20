@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ToolManifest
             _probeStart = probeStart;
             _fileSystem = fileSystem ?? new FileSystemWrapper();
             _markOfTheWebDetector = markOfTheWebDetector ?? new MarkOfTheWebDetector();
-            _toolManifestEditor = new ToolManifestEditor(_fileSystem);
+            _toolManifestEditor = new ToolManifestEditor(_fileSystem, markOfTheWebDetector);
         }
 
         public IReadOnlyCollection<ToolManifestPackage> Find(FilePath? filePath = null)
