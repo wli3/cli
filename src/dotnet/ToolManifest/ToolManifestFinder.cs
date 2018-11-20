@@ -3,15 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json;
-using NuGet.Frameworks;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolManifest
 {
@@ -19,13 +13,18 @@ namespace Microsoft.DotNet.ToolManifest
     {
         private readonly DirectoryPath _probeStart;
         private readonly IFileSystem _fileSystem;
+        private readonly IMarkOfTheWebDetector _markOfTheWebDetector;
         private readonly ToolManifestEditor _toolManifestEditor;
         private const string ManifestFilenameConvention = "dotnet-tools.json";
 
-        public ToolManifestFinder(DirectoryPath probeStart, IFileSystem fileSystem = null)
+        public ToolManifestFinder(
+            DirectoryPath probeStart,
+            IFileSystem fileSystem = null,
+            IMarkOfTheWebDetector markOfTheWebDetector = null)
         {
             _probeStart = probeStart;
             _fileSystem = fileSystem ?? new FileSystemWrapper();
+            _markOfTheWebDetector = markOfTheWebDetector ?? new MarkOfTheWebDetector();
             _toolManifestEditor = new ToolManifestEditor(_fileSystem);
         }
 

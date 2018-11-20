@@ -12,36 +12,41 @@ using Xunit;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
-    public class MarkOfTheWebDetectorTests: TestBase
+    public class MarkOfTheWebDetectorTests : TestBase
     {
         [WindowsOnlyFact]
-        public void DetectFileWithMarkOfTheWeb()
+        public void ItShouldDetectFileWithMarkOfTheWeb()
         {
             var testFile = Path.Combine(TempRoot.Root, Path.GetRandomFileName());
+            File.WriteAllText(testFile, string.Empty);
+            AlternateStream.WriteAlternateStream(
+                testFile,
+                "Zone.Identifier",
+                "[ZoneTransfer]\r\nZoneId=3\r\nReferrerUrl=C:\\Users\\test.zip\r\n");
 
-            AlternateStream.WriteAlternateStream(testFile, "Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\nReferrerUrl=C:\\Users\\test.zip\r\n");
-            MarkOfTheWebDetector.HasMarkOfTheWeb(testFile).Should().BeTrue();
+            new MarkOfTheWebDetector().HasMarkOfTheWeb(testFile).Should().BeTrue();
         }
 
         [Fact]
-        public void NoFile()
+        public void WhenThereIsNoFileItThrows()
         {
-            throw new NotImplementedException();
+            var testFile = Path.Combine(TempRoot.Root, Path.GetRandomFileName());
+
+            Action a = () => new MarkOfTheWebDetector().HasMarkOfTheWeb(testFile);
+            a.ShouldThrow<FileNotFoundException>();
         }
 
         [NonWindowsOnlyFact]
         public void WhenRunOnNonWindowsReturnFalse()
         {
-            throw new NotImplementedException();
+            var testFile = Path.Combine(TempRoot.Root, Path.GetRandomFileName());
+            File.WriteAllText(testFile, string.Empty);
+
+            new MarkOfTheWebDetector().HasMarkOfTheWeb(testFile).Should().BeFalse();
         }
 
         private class AlternateStream
         {
-            private enum StreamInfoLevels
-            {
-                FindStreamInfoStandard = 0
-            }
-
             private const int ErrorHandleEOF = 38;
             private const uint GenericWrite = 0x40000000;
 

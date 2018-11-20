@@ -9,12 +9,18 @@ using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironm
 
 namespace Microsoft.DotNet.Cli.Utils
 {
-    internal class MarkOfTheWebDetector
+    internal class MarkOfTheWebDetector : IMarkOfTheWebDetector
     {
-        const string ZoneIdentifierStreamName = "Zone.Identifier";
-        const string ZoneIdIs3String = "ZoneId=3";
-        public static bool HasMarkOfTheWeb(string filePath)
+        private const string ZoneIdentifierStreamName = "Zone.Identifier";
+        private const string ZoneIdIs3String = "ZoneId=3";
+
+        public bool HasMarkOfTheWeb(string filePath)
         {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"{filePath} cannot be found");
+            }
+
             if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Windows)
             {
                 return false;
@@ -28,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return false;
         }
 
-        private static bool ZoneIdIs3(string filePath)
+        private bool ZoneIdIs3(string filePath)
         {
             return AlternateStream.ReadAlternateStream(filePath, ZoneIdentifierStreamName)
                             .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)

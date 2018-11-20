@@ -354,6 +354,42 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenManifestFileOnSameDirectoryWithMarkOfTheWebDetectorItThrows()
+        {
+            string manifestFilePath = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFilePath, _jsonContent);
+
+            var fakeMarkOfTheWebDetector = new FakeMarkOfTheWebDetector(manifestFilePath);
+            var toolManifest = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem, fakeMarkOfTheWebDetector);
+            Action a = () => toolManifest.Find();
+            a.ShouldThrow<ToolManifestException>()
+                .And.Message
+                .Should().Contain(
+                string.Format("File {0} came from another computer and might be blocked to help oritect this computer. To unblock https://aka.ms/motw", manifestFilePath),
+                "The message is similar to Windows file property page");
+        }
+
+        private class FakeMarkOfTheWebDetector : IMarkOfTheWebDetector
+        {
+            public FakeMarkOfTheWebDetector(params string[] filesHaveIt)
+            {
+                FilesHaveIt = filesHaveIt;
+            }
+
+            public string[] FilesHaveIt { get; }
+
+            public bool HasMarkOfTheWeb(string filePath)
+            {
+                if (FilesHaveIt != null && FilesHaveIt.Contains(filePath))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        [Fact]
         public void DifferentVersionOfManifestFileItThrows()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename),
