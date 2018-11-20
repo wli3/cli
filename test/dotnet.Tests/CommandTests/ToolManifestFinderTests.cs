@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace Microsoft.DotNet.Tests.Commands
 {
-    public partial class ToolManifestFinderTests
+    public class ToolManifestFinderTests
     {
         private readonly IFileSystem _fileSystem;
         private readonly List<ToolManifestPackage> _defaultExpectedResult;
