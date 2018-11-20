@@ -29,30 +29,19 @@ namespace Microsoft.DotNet.Cli.Utils
                 return false;
             }
 
-            if (ZoneIdIs3(filePath))
-            {
-                return true;
-            }
-
-            return false;
+            return ZoneIdIs3(filePath);
         }
 
-        private bool ZoneIdIs3(string filePath)
+        private static bool ZoneIdIs3(string filePath)
         {
-            return AlternateStream.ReadAlternateStream(filePath, ZoneIdentifierStreamName)
-                            .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
-                            .Where(l => l.Equals(ZoneIdIs3String, StringComparison.Ordinal))
-                            .Any();
+            return AlternateStream
+                            .ReadAlternateStream(filePath, ZoneIdentifierStreamName)
+                            .Split(new [] { Environment.NewLine }, StringSplitOptions.None)
+                            .Any(l => l.Equals(ZoneIdIs3String, StringComparison.Ordinal));
         }
 
-        private class AlternateStream
+        private static class AlternateStream
         {
-            private enum StreamInfoLevels
-            {
-                FindStreamInfoStandard = 0
-            }
-
-            private const int ErrorHandleEOF = 38;
             private const uint GenericRead = 0x80000000;
 
             public static string ReadAlternateStream(string filePath, string altStreamName)
@@ -62,16 +51,23 @@ namespace Microsoft.DotNet.Cli.Utils
                     return null;
                 }
 
-                SafeFileHandle fileHandle = null;
-                string returnstring = string.Empty;
+                string returnString = string.Empty;
                 string altStream = filePath + ":" + altStreamName;
 
-                fileHandle = CreateFile(altStream, GenericRead, 0, IntPtr.Zero, (uint)FileMode.Open, 0, IntPtr.Zero);
+                SafeFileHandle fileHandle
+                    = CreateFile(
+                        filename: altStream,
+                        desiredAccess: GenericRead,
+                        shareMode: 0,
+                        attributes: IntPtr.Zero,
+                        creationDisposition: (uint)FileMode.Open,
+                        flagsAndAttributes: 0,
+                        templateFile: IntPtr.Zero);
                 if (!fileHandle.IsInvalid)
                 {
                     using (StreamReader reader = new StreamReader(new FileStream(fileHandle, FileAccess.Read)))
                     {
-                        returnstring = reader.ReadToEnd();
+                        returnString = reader.ReadToEnd();
                     }
                 }
                 else
@@ -83,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     }
                 }
 
-                return returnstring;
+                return returnString;
             }
 
             [DllImport("kernel32", SetLastError = true)]

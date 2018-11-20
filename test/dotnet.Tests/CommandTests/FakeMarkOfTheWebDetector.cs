@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tests.Commands
             FilesHaveIt = filesHaveIt;
         }
 
-        public string[] FilesHaveIt { get; }
+        private string[] FilesHaveIt { get; }
 
         public bool HasMarkOfTheWeb(string filePath)
         {

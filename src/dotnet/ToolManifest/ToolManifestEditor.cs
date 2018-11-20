@@ -82,7 +82,8 @@ namespace Microsoft.DotNet.ToolManifest
         {
             if (_markOfTheWebDetector.HasMarkOfTheWeb(manifest.Value))
             {
-                throw new ToolManifestException(string.Format(LocalizableStrings.ManifestHasMarkOfTheWeb, manifest.Value));
+                throw new ToolManifestException(
+                    string.Format(LocalizableStrings.ManifestHasMarkOfTheWeb, manifest.Value));
             }
 
             SerializableLocalToolsManifest deserializedManifest =

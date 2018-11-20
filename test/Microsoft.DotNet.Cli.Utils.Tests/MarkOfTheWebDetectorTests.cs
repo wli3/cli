@@ -45,9 +45,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             new MarkOfTheWebDetector().HasMarkOfTheWeb(testFile).Should().BeFalse();
         }
 
-        private class AlternateStream
+        private static class AlternateStream
         {
-            private const int ErrorHandleEOF = 38;
             private const uint GenericWrite = 0x40000000;
 
             public static void WriteAlternateStream(string filePath, string altStreamName, string content)
@@ -67,11 +66,18 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     throw new ArgumentNullException(nameof(content));
                 }
 
-                SafeFileHandle fileHandle = null;
-                string returnstring = string.Empty;
                 string altStream = filePath + ":" + altStreamName;
 
-                fileHandle = CreateFile(altStream, GenericWrite, 0, IntPtr.Zero, (uint)FileMode.CreateNew, 0, IntPtr.Zero);
+                SafeFileHandle fileHandle
+                    = CreateFile(
+                        filename: altStream,
+                        desiredAccess: GenericWrite,
+                        shareMode: 0,
+                        attributes: IntPtr.Zero,
+                        creationDisposition: (uint)FileMode.CreateNew,
+                        flagsAndAttributes: 0,
+                        templateFile: IntPtr.Zero);
+
                 if (!fileHandle.IsInvalid)
                 {
                     using (var streamWriter = new StreamWriter(new FileStream(fileHandle, FileAccess.Write)))
