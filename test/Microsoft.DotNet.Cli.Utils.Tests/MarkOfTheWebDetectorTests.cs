@@ -5,18 +5,22 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Win32.SafeHandles;
 using Xunit;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
-    public class MarkOfTheWebDetectorTests
+    public class MarkOfTheWebDetectorTests: TestBase
     {
         [WindowsOnlyFact]
         public void DetectFileWithMarkOfTheWeb()
         {
-            throw new NotImplementedException();
+            var testFile = Path.Combine(TempRoot.Root, Path.GetRandomFileName());
+
+            AlternateStream.WriteAlternateStream(testFile, "Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\nReferrerUrl=C:\\Users\\test.zip\r\n");
+            MarkOfTheWebDetector.HasMarkOfTheWeb(testFile).Should().BeTrue();
         }
 
         [Fact]
@@ -39,25 +43,36 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
 
             private const int ErrorHandleEOF = 38;
-            private const uint GenericRead = 0x80000000;
+            private const uint GenericWrite = 0x40000000;
 
-            public static string WriteAlternateStream(string filePath, string altStreamName)
+            public static void WriteAlternateStream(string filePath, string altStreamName, string content)
             {
-                if (altStreamName == null)
+                if (string.IsNullOrWhiteSpace(filePath))
                 {
-                    return null;
+                    throw new ArgumentException("message", nameof(filePath));
+                }
+
+                if (string.IsNullOrWhiteSpace(altStreamName))
+                {
+                    throw new ArgumentException("message", nameof(altStreamName));
+                }
+
+                if (content == null)
+                {
+                    throw new ArgumentNullException(nameof(content));
                 }
 
                 SafeFileHandle fileHandle = null;
                 string returnstring = string.Empty;
                 string altStream = filePath + ":" + altStreamName;
 
-                fileHandle = CreateFile(altStream, GenericRead, 0, IntPtr.Zero, (uint)FileMode.Open, 0, IntPtr.Zero);
+                fileHandle = CreateFile(altStream, GenericWrite, 0, IntPtr.Zero, (uint)FileMode.CreateNew, 0, IntPtr.Zero);
                 if (!fileHandle.IsInvalid)
                 {
-                    using (StreamReader reader = new StreamWriter(new FileStream(fileHandle, FileAccess.Read)))
+                    using (var streamWriter = new StreamWriter(new FileStream(fileHandle, FileAccess.Write)))
                     {
-                        returnstring = reader.ReadToEnd();
+                        streamWriter.WriteLine(content);
+                        streamWriter.Flush();
                     }
                 }
                 else
@@ -68,8 +83,6 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                         throw ex;
                     }
                 }
-
-                return returnstring;
             }
 
             [DllImport("kernel32", SetLastError = true)]
