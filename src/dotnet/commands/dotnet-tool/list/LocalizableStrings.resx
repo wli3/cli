@@ -121,7 +121,10 @@
     <value>List tools installed globally or locally.</value>
   </data>
   <data name="GlobalOptionDescription" xml:space="preserve">
-    <value>List tools in the current user's tools directory.</value>
+    <value>List tools installed for the current user.</value>
+  </data>
+   <data name="LocalOptionDescription" xml:space="preserve">
+    <value>List the tools installed in the local tool manifest.</value>
   </data>
   <data name="ToolPathOptionName" xml:space="preserve">
     <value>PATH</value>

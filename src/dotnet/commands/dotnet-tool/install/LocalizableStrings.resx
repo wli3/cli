@@ -165,10 +165,10 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
 Tool '{1}' (version '{2}') was successfully installed. Entry is added to the manifest file {3}.</value>
   </data>
   <data name="GlobalOptionDescription" xml:space="preserve">
-    <value>Install the tool to the current user's tools directory.</value>
+    <value>Install the tool for the current user.</value>
   </data>
   <data name="LocalOptionDescription" xml:space="preserve">
-    <value>Install the tool and add to the local tool manifest.</value>
+    <value>Install the tool and add to the local tool manifest (default).</value>
   </data>
   <data name="InstallFullCommandNameLocalized" xml:space="preserve">
     <value>.NET Install Command</value>
