@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ManifestPackageIdCollision">
-        <source>Cannot add package {0} version {1} to manifest file {2}. Package {3} version {4} exists.</source>
-        <target state="new">Cannot add package {0} version {1} to manifest file {2}. Package {3} version {4} exists.</target>
+        <source>Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to change to version {3}.</source>
+        <target state="new">Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to change to version {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionIsInvalid">
