@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), _nugetGlobalPackagesFolder, out RestoredCommand restoredCommand)
+                        _toolCommandNameA), out RestoredCommand restoredCommand)
                 .Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value)
@@ -285,7 +285,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), _nugetGlobalPackagesFolder, out _)
+                        _toolCommandNameA), out _)
                 .Should().BeTrue("Existing package will succeed despite other package failed");
         }
 

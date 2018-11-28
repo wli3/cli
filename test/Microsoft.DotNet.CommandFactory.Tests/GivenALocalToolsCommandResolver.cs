@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests
                             Constants.AnyRid,
                             toolCommandNameA)]
                         = new RestoredCommand(toolCommandNameA, "dotnet", fakeExecutable)
-                }, _nugetGlobalPackagesFolder);
+                });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
                 toolManifest,
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tests
                             Constants.AnyRid,
                             toolCommandNameA)]
                         = new RestoredCommand(toolCommandNameA, "dotnet", fakeExecutable)
-                }, _nugetGlobalPackagesFolder);
+                });
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
                 toolManifest,

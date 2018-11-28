@@ -69,7 +69,6 @@ namespace Microsoft.DotNet.CommandFactory
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     toolCommandName),
-                _nugetGlobalPackagesFolder,
                 out var restoredCommand))
             {
                 if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))

@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             EnsureNoCommandNameCollision(downloaded);
 
-            _localToolsResolverCache.Save(downloaded, _nugetGlobalPackagesFolder);
+            _localToolsResolverCache.Save(downloaded);
 
             return PrintConclusionAndReturn(toolRestoreResults);
         }
@@ -241,7 +241,6 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             return _localToolsResolverCache.TryLoad(
                        sampleRestoredCommandIdentifierOfThePackage,
-                       _nugetGlobalPackagesFolder,
                        out var restoredCommand)
                    && _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }

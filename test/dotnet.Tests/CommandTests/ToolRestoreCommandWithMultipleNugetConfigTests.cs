@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), _nugetGlobalPackagesFolder, out RestoredCommand _)
+                        _toolCommandNameA), out RestoredCommand _)
                 .Should().BeTrue();
 
             _localToolsResolverCache.TryLoad(
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         _packageVersionB,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameB), _nugetGlobalPackagesFolder, out RestoredCommand _)
+                        _toolCommandNameB), out RestoredCommand _)
                 .Should().BeTrue();
         }
 

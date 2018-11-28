@@ -141,8 +141,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                                     Constants.AnyRid,
                                     restoredCommand.Name)] =
                                 restoredCommand
-                        },
-                        _nugetGlobalPackagesFolder);
+                        });
                 }
 
                 _reporter.WriteLine(

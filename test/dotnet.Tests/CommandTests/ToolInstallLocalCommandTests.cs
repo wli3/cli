@@ -235,7 +235,6 @@ namespace Microsoft.DotNet.Tests.Commands
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     _toolCommandNameA),
-                _nugetGlobalPackagesFolder,
                 out RestoredCommand restoredCommand
             ).Should().BeFalse("it should not add to cache if add to manifest failed. " +
                                "But restore do not need to 'revert' since it just set in nuget global directory");
@@ -313,7 +312,6 @@ namespace Microsoft.DotNet.Tests.Commands
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                _nugetGlobalPackagesFolder,
                 out RestoredCommand restoredCommand
             ).Should().BeTrue();
 
