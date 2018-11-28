@@ -44,7 +44,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
-        private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
 
@@ -54,7 +53,6 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             ToolPackageStoreMock toolPackageStoreMock =
@@ -151,7 +149,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _nugetGlobalPackagesFolder,
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
@@ -203,7 +200,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _nugetGlobalPackagesFolder,
                 _reporter);
 
             Action a = () => installLocalCommand.Execute();
@@ -249,7 +245,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _nugetGlobalPackagesFolder,
                 _reporter);
         }
 
@@ -270,7 +265,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _nugetGlobalPackagesFolder,
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
@@ -294,7 +288,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _nugetGlobalPackagesFolder,
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);

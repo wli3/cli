@@ -12,6 +12,7 @@ using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tests.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -67,8 +68,7 @@ namespace Microsoft.DotNet.Tests
             var localToolsCommandResolver = new LocalToolsCommandResolver(
                 toolManifest,
                 _localToolsResolverCache,
-                _fileSystem,
-                _nugetGlobalPackagesFolder);
+                _fileSystem);
 
             var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
@@ -110,8 +110,7 @@ namespace Microsoft.DotNet.Tests
             var localToolsCommandResolver = new LocalToolsCommandResolver(
                 toolManifest,
                 _localToolsResolverCache,
-                _fileSystem,
-                _nugetGlobalPackagesFolder);
+                _fileSystem);
 
             _fileSystem.File.Delete(fakeExecutable.Value);
 

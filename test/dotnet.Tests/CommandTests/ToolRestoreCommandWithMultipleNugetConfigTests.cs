@@ -39,7 +39,6 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly NuGetVersion _packageVersionB;
         private readonly ToolCommandName _toolCommandNameB = new ToolCommandName("b");
 
-        private readonly DirectoryPath _nugetGlobalPackagesFolder;
         private string _nugetConfigUnderTestRoot;
         private string _nugetConfigUnderSubDir;
 
@@ -50,7 +49,6 @@ namespace Microsoft.DotNet.Tests.Commands
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
             string temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
 
             string pathToPlacePackages = Path.Combine(temporaryDirectory, "pathToPlacePackage");
@@ -142,7 +140,6 @@ namespace Microsoft.DotNet.Tests.Commands
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
-                _nugetGlobalPackagesFolder,
                 _reporter
             );
 
