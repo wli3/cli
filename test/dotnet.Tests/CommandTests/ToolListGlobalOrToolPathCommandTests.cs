@@ -33,43 +33,6 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenAMissingGlobalOrToolPathOptionItErrors()
-        {
-            var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
-
-            var command = CreateCommand(store.Object);
-
-            Action a = () => {
-                command.Execute();
-            };
-
-            a.ShouldThrow<GracefulException>()
-             .And
-             .Message
-             .Should()
-             .Be(LocalizableStrings.NeedGlobalOrToolPath);
-        }
-
-        [Fact]
-        public void GivenBothGlobalAndToolPathOptionsItErrors()
-        {
-            var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
-
-            var toolPath = Path.GetTempPath();
-            var command = CreateCommand(store.Object, $"-g --tool-path {toolPath}", toolPath);
-
-            Action a = () => {
-                command.Execute();
-            };
-
-            a.ShouldThrow<GracefulException>()
-             .And
-             .Message
-             .Should()
-             .Be(LocalizableStrings.GlobalAndToolPathConflict);
-        }
-
-        [Fact]
         public void GivenNoInstalledPackagesItPrintsEmptyTable()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
@@ -261,10 +224,10 @@ namespace Microsoft.DotNet.Tests.Commands
             return package.Object;
         }
 
-        private ListToolGlobalOrToolPathCommand CreateCommand(IToolPackageStoreQuery store, string options = "", string expectedToolPath = null)
+        private ToolListGlobalOrToolPathCommand CreateCommand(IToolPackageStoreQuery store, string options = "", string expectedToolPath = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool list " + options);
-            return new ListToolGlobalOrToolPathCommand(
+            return new ToolListGlobalOrToolPathCommand(
                 result["dotnet"]["tool"]["list"],
                 result,
                 toolPath => { AssertExpectedToolPath(toolPath, expectedToolPath); return store; },
@@ -288,7 +251,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             string GetCommandsString(IToolPackage package)
             {
-                return string.Join(ListToolGlobalOrToolPathCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
+                return string.Join(ToolListGlobalOrToolPathCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
             }
 
             var packages = store.EnumeratePackages().Where(PackageHasCommands).OrderBy(package => package.Id);
