@@ -84,6 +84,36 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenAToolPathItPassesToolPathToStoreFactoryFromRedirectCommand()
+        {
+            var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
+            store
+                .Setup(s => s.EnumeratePackages())
+                .Returns(new IToolPackage[0]);
+
+            var toolPath = Path.GetTempPath();
+            var result = Parser.Instance.Parse("dotnet tool list " + $"--tool-path {toolPath}");
+            var toolListGlobalOrToolPathCommand = new ToolListGlobalOrToolPathCommand(
+                result["dotnet"]["tool"]["list"],
+                result,
+                toolPath1 =>
+                {
+                    AssertExpectedToolPath(toolPath1, toolPath);
+                    return store.Object;
+                },
+                _reporter);
+
+            var toolListCommand = new ToolListCommand(
+                result["dotnet"]["tool"]["list"],
+                result,
+                toolListGlobalOrToolPathCommand);
+
+            toolListCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
+        }
+
+        [Fact]
         public void GivenASingleInstalledPackageItPrintsThePackage()
         {
             var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
