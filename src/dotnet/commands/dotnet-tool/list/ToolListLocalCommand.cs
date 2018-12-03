@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.List
@@ -18,9 +16,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
     {
         private readonly IToolManifestInspector _toolManifestInspector;
         private readonly IReporter _reporter;
-        public const string CommandDelimiter = ", ";
-
-        private readonly PackageId _packageId;
+        private const string CommandDelimiter = ", ";
 
         public ToolListLocalCommand(
             AppliedOption appliedCommand,
@@ -34,8 +30,6 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 throw new ArgumentNullException(nameof(appliedCommand));
             }
 
-            _packageId = new PackageId(appliedCommand.Arguments.Single());
-
             _reporter = (reporter ?? Reporter.Output);
 
             _toolManifestInspector = toolManifestInspector ??
@@ -44,20 +38,22 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var toolManifestPackageAndSourceManifest = _toolManifestInspector.Inspect();
-            var table = new PrintableTable<IReadOnlyCollection<(ToolManifestPackage, FilePath)>>();
+            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
 
             table.AddColumn(
                 LocalizableStrings.PackageIdColumn,
-                p => p.Id.ToString());
+                p => p.toolManifestPackage.PackageId.ToString());
             table.AddColumn(
                 LocalizableStrings.VersionColumn,
-                p => p.Version.ToNormalizedString());
+                p => p.toolManifestPackage.Version.ToNormalizedString());
             table.AddColumn(
                 LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
+                p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
+            table.AddColumn(
+                LocalizableStrings.ManifestFileColumn,
+                p => p.SourceManifest.Value);
 
-            table.PrintRows(GetPackages(toolPath), l => _reporter.WriteLine(l));
+            table.PrintRows(_toolManifestInspector.Inspect(), l => _reporter.WriteLine(l));
             return 0;
         }
     }

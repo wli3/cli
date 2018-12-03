@@ -1,24 +1,16 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using FluentAssertions;
-using FluentAssertions.Common;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Moq;
 using NuGet.Versioning;
 using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -34,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands
         private readonly string _temporaryDirectory;
         private readonly FakeManifestInspector _toolManifestInspector;
         private readonly ToolListLocalCommand _defaultToolListLocalCommand;
-        private string _testManifestPath;
+        private readonly string _testManifestPath;
 
         public ToolListLocalCommandTests()
         {
@@ -52,7 +44,7 @@ namespace Microsoft.DotNet.Tests.Commands
                         new DirectoryPath(_temporaryDirectory)), new FilePath(_testManifestPath)),
                 }
             );
-            _parseResult = Parser.Instance.Parse($"dotnet tool list");
+            _parseResult = Parser.Instance.Parse("dotnet tool list");
             _appliedCommand = _parseResult["dotnet"]["tool"]["list"];
             _defaultToolListLocalCommand = new ToolListLocalCommand(
                 _appliedCommand,
@@ -67,7 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands
             _defaultToolListLocalCommand.Execute();
             _reporter.Lines.Should().Contain(l => l.Contains("package.id"));
             _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
-            _reporter.Lines.Should().Contain(l => l.Contains("_testManifestPath"));
+            _reporter.Lines.Should().Contain(l => l.Contains(_testManifestPath));
             _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
         }
 
