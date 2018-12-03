@@ -15,7 +15,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.ToolManifest
 {
-    internal class ToolManifestFinder : IToolManifestFinder
+    internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
     {
         private readonly DirectoryPath _probeStart;
         private readonly IFileSystem _fileSystem;
