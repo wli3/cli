@@ -63,6 +63,19 @@ namespace Microsoft.DotNet.Tests.Commands
             _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
         }
 
+        [Fact]
+        public void GivenManifestInspectorWhenCalledFromRedirectCommandItPrintsTheTable()
+        {
+            var command = new ToolListCommand(_appliedCommand,
+                result: _parseResult,
+                toolListLocalCommand: _defaultToolListLocalCommand);
+            _defaultToolListLocalCommand.Execute();
+            _reporter.Lines.Should().Contain(l => l.Contains("package.id"));
+            _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
+            _reporter.Lines.Should().Contain(l => l.Contains(_testManifestPath));
+            _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
+        }
+
         private class FakeManifestInspector : IToolManifestInspector
         {
             private readonly IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>
