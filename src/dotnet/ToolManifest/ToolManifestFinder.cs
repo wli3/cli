@@ -49,6 +49,19 @@ namespace Microsoft.DotNet.ToolManifest
             return toolManifestPackageAndSource.Select(t => t.toolManifestPackage).ToArray();
         }
 
+        public IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
+            FilePath? filePath = null)
+        {
+            IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests =
+                filePath != null
+                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath())}
+                    : EnumerateDefaultAllPossibleManifests();
+
+            TryFindToolManifestPackages(allPossibleManifests, out var toolManifestPackageAndSource);
+
+            return toolManifestPackageAndSource.ToArray();
+        }
+
         private bool TryFindToolManifestPackages(
             IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests, 
             out List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> toolManifestPackageAndSource)
