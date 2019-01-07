@@ -82,11 +82,8 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static string DefaultVerbosity(AppliedOption parsedTest)
         {
-            var valuesToBeForwarded = parsedTest.OptionValuesToBeForwarded();
-
             var defaultVerbosity = "quiet";
-            if (valuesToBeForwarded != null
-                && valuesToBeForwarded.Contains(Constants.MsBuildInteractiveOption, StringComparer.Ordinal))
+            if (parsedTest.HasOption(Constants.RestoreInteractiveOption))
             {
                 defaultVerbosity = "minimal";
             }
