@@ -474,8 +474,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string testAppName = "VSTestCore";
             var testInstance = TestAssets.Get(testAppName)
                 .CreateInstance()
-                .WithProjectChanges(AddDisplayMessageToProject)
-                .WithSourceFiles();
+                .WithSourceFiles()
+                .WithProjectChanges(AddDisplayMessageToProject);
 
             var testProjectDirectory = testInstance.Root.FullName;
 
@@ -499,8 +499,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string testAppName = "VSTestCore";
             var testInstance = TestAssets.Get(testAppName)
                 .CreateInstance()
-                .WithProjectChanges(AddDisplayMessageToProject)
-                .WithSourceFiles();
+                .WithSourceFiles()
+                .WithProjectChanges(AddDisplayMessageToProject);
 
             var testProjectDirectory = testInstance.Root.FullName;
 
@@ -522,7 +522,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var ns = project.Root.Name.Namespace;
 
-            var itemGroup = new XElement(ns + "Target", new XAttribute("Name", "DisplayMessages"));
+            var itemGroup = new XElement(ns + "Target", new XAttribute("Name", "DisplayMessages"),
+                new XAttribute("BeforeTargets", "VSTest"));
             project.Root.Add(itemGroup);
 
             itemGroup.Add(new XElement(ns + "Message", new XAttribute("Text", "Important text"),
