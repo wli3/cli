@@ -475,7 +475,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testInstance = TestAssets.Get(testAppName)
                 .CreateInstance()
                 .WithSourceFiles()
-                .WithProjectChanges(AddDisplayMessageToProject);
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
 
             var testProjectDirectory = testInstance.Root.FullName;
 
@@ -500,7 +500,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testInstance = TestAssets.Get(testAppName)
                 .CreateInstance()
                 .WithSourceFiles()
-                .WithProjectChanges(AddDisplayMessageToProject);
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeVsTestToProject);
 
             var testProjectDirectory = testInstance.Root.FullName;
 
@@ -516,18 +516,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(1);
-        }
-
-        private static void AddDisplayMessageToProject(XDocument project)
-        {
-            var ns = project.Root.Name.Namespace;
-
-            var itemGroup = new XElement(ns + "Target", new XAttribute("Name", "DisplayMessages"),
-                new XAttribute("BeforeTargets", "VSTest"));
-            project.Root.Add(itemGroup);
-
-            itemGroup.Add(new XElement(ns + "Message", new XAttribute("Text", "Important text"),
-                new XAttribute("Importance", "high")));
         }
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
