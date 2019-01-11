@@ -173,7 +173,8 @@ namespace Microsoft.DotNet.Tools.Run
                 // This property disables default item globbing to improve performance
                 // This should be safe because we are not evaluating items, only properties
                 { Constants.EnableDefaultItems,    "false" },
-                { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
+                { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory },
+                { "NuGetInteractive", "true"}
             };
 
             if (!string.IsNullOrWhiteSpace(Configuration))
@@ -192,7 +193,6 @@ namespace Microsoft.DotNet.Tools.Run
             }
 
             var project = new ProjectInstance(Project, globalProperties, null);
-
             string runProgram = project.GetPropertyValue("RunCommand");
             if (string.IsNullOrEmpty(runProgram))
             {

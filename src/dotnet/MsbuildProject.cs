@@ -205,7 +205,10 @@ namespace Microsoft.DotNet.Tools
         {
             try
             {
-                return _projects.LoadProject(ProjectRootElement.FullPath);
+                return _projects.LoadProject(
+                    ProjectRootElement.FullPath,
+                    new Dictionary<string, string>() {["NuGetInteractive"] = "true"},
+                    null);
             }
             catch (InvalidProjectFileException e)
             {
