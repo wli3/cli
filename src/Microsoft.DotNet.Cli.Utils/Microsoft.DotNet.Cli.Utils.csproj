@@ -25,6 +25,9 @@
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+
+    <!-- No longer existing package in 5.0 still used by ProjectJsonMigration-->
+    <PackageReference Include="NuGet.Packaging.Core" Version="4.3.0-rtm-4324" ExcludeAssets="Compile" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">

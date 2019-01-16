@@ -82,10 +82,10 @@ namespace Microsoft.DotNet.CommandFactory
 
         private static void CollectDependencies(
             IDictionary<string, LockFileTargetLibrary> libraryLookup,
-            IEnumerable<PackageDependency> dependencies,
+            IEnumerable<NuGet.Packaging.Core.PackageDependency> dependencies,
             HashSet<string> exclusionList)
         {
-            foreach (PackageDependency dependency in dependencies)
+            foreach (NuGet.Packaging.Core.PackageDependency dependency in dependencies)
             {
                 LockFileTargetLibrary library = libraryLookup[dependency.Id];
                 if (library.Version.Equals(dependency.VersionRange.MinVersion))
