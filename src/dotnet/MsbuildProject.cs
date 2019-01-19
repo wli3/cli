@@ -8,6 +8,8 @@ using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.ProjectExtensions;
@@ -205,10 +207,14 @@ namespace Microsoft.DotNet.Tools
         {
             try
             {
-                return _projects.LoadProject(
+                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+                _projects.RegisterLogger(new ConsoleLogger(LoggerVerbosity.Minimal));
+                var project = _projects.LoadProject(
                     ProjectRootElement.FullPath,
-                    new Dictionary<string, string>() {["NuGetInteractive"] = "true"},
+                    new Dictionary<string, string>() { ["NuGetInteractive"] = "true" },
                     null);
+                Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", null);
+                return project;
             }
             catch (InvalidProjectFileException e)
             {
