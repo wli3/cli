@@ -214,6 +214,7 @@ namespace Microsoft.DotNet.Tools
                     new Dictionary<string, string>() { ["NuGetInteractive"] = "true" },
                     null);
                 Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", null);
+
                 return project;
             }
             catch (InvalidProjectFileException e)

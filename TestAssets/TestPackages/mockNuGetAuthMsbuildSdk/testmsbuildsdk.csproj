@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageTags>MSBuild MSBuildSdk</PackageTags>
+    <NuspecFile>testmsbuildsdk.nuspec</NuspecFile>
+  </PropertyGroup>
+
+</Project>
