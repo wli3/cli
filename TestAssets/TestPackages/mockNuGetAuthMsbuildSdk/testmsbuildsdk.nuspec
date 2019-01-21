@@ -5,10 +5,6 @@
     <version>1.0.0</version>
     <authors>test</authors>
     <owners>test</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>test</licenseUrl>
-    <projectUrl>test</projectUrl>
-    <iconUrl>test</iconUrl>
     <description>test</description>
     <packageTypes>
       <packageType name="MSBuildSdk" />
