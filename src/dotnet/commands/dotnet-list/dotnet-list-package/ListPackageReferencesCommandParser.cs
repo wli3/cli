@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.DotNet.Cli.CommandLine;
 using LocalizableStrings = Microsoft.DotNet.Tools.List.PackageReferences.LocalizableStrings;
+using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -45,8 +46,8 @@ namespace Microsoft.DotNet.Cli
                               Accept.OneOrMoreArguments()
                                     .With(name: LocalizableStrings.CmdSource)
                                     .ForwardAsMany(o => ForwardedArguments("--source", o.Arguments))),
-                Create.Option("--interactive", 
-                             LocalizableStrings.CmdInteractiveDescription,
+                Create.Option("--interactive",
+                             CommonLocalizableStrings.CommandInteractiveOptionDescription,
                              Accept.NoArguments().ForwardAs("--interactive")));
 
         private static IEnumerable<string> ForwardedArguments(string token, IEnumerable<string> arguments)
