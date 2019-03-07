@@ -77,7 +77,6 @@
     <PackageReference Include="Microsoft.TemplateEngine.Cli.Localization" Version="$(MicrosoftTemplateEngineCliLocalizationPackageVersion)" />
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="$(MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion)" />
     <PackageReference Include="Microsoft.TemplateEngine.Utils" Version="$(MicrosoftTemplateEngineUtilsPackageVersion)" />
-    <PackageReference Include="System.Text.JsonLab.Serialization" Version="0.1.1-e190223-1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
