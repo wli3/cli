@@ -72,6 +72,33 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenManifestFileWithoutToolsEntryItCanAddEntryToIt()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonContentWithoutToolsEntry);
+
+            var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
+
+            toolManifestFileEditor.Add(new FilePath(manifestFile),
+                new PackageId("new-tool"),
+                NuGetVersion.Parse("3.0.0"),
+                new[] { new ToolCommandName("newtool") });
+
+            _fileSystem.File.ReadAllText(manifestFile).Should().Be(
+                @"{
+  ""isRoot"": true,
+  ""tools"": {
+    ""new-tool"": {
+      ""version"": ""3.0.0"",
+      ""commands"": [
+        ""newtool""
+      ]
+    }
+  }
+}");
+        }
+
+        [Fact]
         public void GivenManifestFileWhenAddingTheSamePackageIdToolItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -241,6 +268,11 @@ namespace Microsoft.DotNet.Tests.Commands
          ]
       }
    }
+}";
+
+        private string _jsonContentWithoutToolsEntry =
+            @"{
+   ""isRoot"":true
 }";
 
         private string _jsonWithInvalidField =

@@ -63,6 +63,11 @@ namespace Microsoft.DotNet.ToolManifest
                     nuGetVersion.ToNormalizedString()));
             }
 
+            if (deserializedManifest.Tools == null)
+            {
+                deserializedManifest.Tools = new Dictionary<string, SerializableLocalToolSinglePackage>();
+            }
+
             deserializedManifest.Tools.Add(
                 packageId.ToString(),
                 new SerializableLocalToolSinglePackage
@@ -105,7 +110,7 @@ namespace Microsoft.DotNet.ToolManifest
                     _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
                     {
                         MissingMemberHandling = MissingMemberHandling.Ignore
-                    });
+                    }) ?? new SerializableLocalToolsManifest();
             }
             catch (JsonReaderException e)
             {
@@ -122,14 +127,15 @@ namespace Microsoft.DotNet.ToolManifest
             List<ToolManifestPackage> result = new List<ToolManifestPackage>();
             var errors = new List<string>();
 
-            ValidateVersion(deserializedManifest, path, errors);
+            ValidateVersion(deserializedManifest, errors);
 
             if (!deserializedManifest.IsRoot.HasValue)
             {
                 errors.Add(string.Format(LocalizableStrings.ManifestMissingIsRoot, path.Value));
             }
 
-            foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools in deserializedManifest.Tools)
+            foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools
+                in (deserializedManifest.Tools ?? new Dictionary<string, SerializableLocalToolSinglePackage>()))
             {
                 var packageLevelErrors = new List<string>();
                 var packageIdString = tools.Key;
@@ -183,7 +189,8 @@ namespace Microsoft.DotNet.ToolManifest
             return result;
         }
 
-        private static void ValidateVersion(SerializableLocalToolsManifest deserializedManifest, FilePath path, List<string> errors)
+        private static void ValidateVersion(SerializableLocalToolsManifest deserializedManifest,
+                                            List<string> errors)
         {
             var deserializedManifestVersion = deserializedManifest.Version;
             if (deserializedManifestVersion == null)
@@ -234,8 +241,10 @@ namespace Microsoft.DotNet.ToolManifest
 
             public bool? IsRoot { get; set; }
 
-            [JsonProperty(Required = Required.Always)]
-            // The dictionary's key is the package id
+            /// <summary>
+            /// The dictionary's key is the package id
+            /// this field could be null
+            /// </summary>
             public Dictionary<string, SerializableLocalToolSinglePackage> Tools { get; set; }
         }
 
@@ -254,6 +263,14 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 throw new ToolManifestException(string.Format(
                     LocalizableStrings.CannotFindPackageIdInManifest, packageId));
+            }
+
+            if (serializableLocalToolsManifest.Tools == null)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid state {nameof(serializableLocalToolsManifest)} if out of sync with {nameof(toolManifestPackages)}. " +
+                    $"{nameof(serializableLocalToolsManifest)} cannot be null when " +
+                    $"the package id can be found in {nameof(toolManifestPackages)}.");
             }
 
             serializableLocalToolsManifest.Tools = serializableLocalToolsManifest.Tools
