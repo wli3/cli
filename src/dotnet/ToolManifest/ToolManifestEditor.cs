@@ -22,8 +22,8 @@ namespace Microsoft.DotNet.ToolManifest
         private readonly IDangerousFileDetector _dangerousFileDetector;
         private readonly IFileSystem _fileSystem;
 
-        // The supported tool manifest file version.
-        private const int SupportedVersion = 1;
+        private const int SupportedToolManifestFileVersion = 1;
+        private const int DefaultToolManifestFileVersion = 1;
 
         public ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null)
         {
@@ -122,23 +122,7 @@ namespace Microsoft.DotNet.ToolManifest
             List<ToolManifestPackage> result = new List<ToolManifestPackage>();
             var errors = new List<string>();
 
-            if (deserializedManifest.Version == 0)
-            {
-                errors.Add(LocalizableStrings.ManifestVersion0);
-            }
-
-            if (deserializedManifest.Version > SupportedVersion)
-            {
-                errors.Add(
-                    string.Format(
-                        LocalizableStrings.ManifestVersionHigherThanSupported,
-                        deserializedManifest.Version, SupportedVersion));
-            }
-
-            if (!deserializedManifest.IsRoot.HasValue)
-            {
-                errors.Add(string.Format(LocalizableStrings.ManifestMissingIsRoot, path.Value));
-            }
+            ValidateVersion(deserializedManifest, path, errors);
 
             foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools in deserializedManifest.Tools)
             {
@@ -194,6 +178,33 @@ namespace Microsoft.DotNet.ToolManifest
             return result;
         }
 
+        private static void ValidateVersion(SerializableLocalToolsManifest deserializedManifest, FilePath path, List<string> errors)
+        {
+            var deserializedManifestVersion = deserializedManifest.Version;
+            if (deserializedManifestVersion == null)
+            {
+                deserializedManifestVersion = DefaultToolManifestFileVersion;
+            }
+
+            if (deserializedManifestVersion == 0)
+            {
+                errors.Add(LocalizableStrings.ManifestVersion0);
+            }
+
+            if (deserializedManifestVersion > SupportedToolManifestFileVersion)
+            {
+                errors.Add(
+                    string.Format(
+                        LocalizableStrings.ManifestVersionHigherThanSupported,
+                        deserializedManifestVersion, SupportedToolManifestFileVersion));
+            }
+
+            if (!deserializedManifest.IsRoot.HasValue)
+            {
+                errors.Add(string.Format(LocalizableStrings.ManifestMissingIsRoot, path.Value));
+            }
+        }
+
         [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
         private class SerializableLocalToolSinglePackage
         {
@@ -219,9 +230,7 @@ namespace Microsoft.DotNet.ToolManifest
         [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
         private class SerializableLocalToolsManifest
         {
-            [DefaultValue(1)]
-            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
-            public int Version { get; set; }
+            public int? Version { get; set; }
 
             public bool? IsRoot { get; set; }
 

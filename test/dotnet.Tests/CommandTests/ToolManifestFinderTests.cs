@@ -727,6 +727,7 @@ namespace Microsoft.DotNet.Tests.Commands
       }
    }
 }";
+
         private string _jsonContentIsRootMissing =
     @"{
    ""version"":1,

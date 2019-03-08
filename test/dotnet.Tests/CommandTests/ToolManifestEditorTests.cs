@@ -145,6 +145,19 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
+        public void GivenAnMissingManifestFileVersionItShouldNotThrow()
+        {
+            string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
+            _fileSystem.File.WriteAllText(manifestFile, _jsonContentMissingVersion);
+
+            var toolManifestFileEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
+
+            Action a = () => toolManifestFileEditor.Read(new FilePath(manifestFile), new DirectoryPath(_testDirectoryRoot));
+
+            a.ShouldNotThrow<ToolManifestException>();
+        }
+
+        [Fact]
         public void GivenManifestFileItCanRemoveEntryFromIt()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -237,6 +250,19 @@ namespace Microsoft.DotNet.Tests.Commands
    ""tools"":{
       ""t-rex"":{
          ""version"":""1.*"",
+         ""commands"":[
+            ""t-rex""
+         ]
+      }
+   }
+}";
+
+        private string _jsonContentMissingVersion =
+@"{
+   ""isRoot"":true,
+   ""tools"":{
+      ""t-rex"":{
+         ""version"":""1.0.53"",
          ""commands"":[
             ""t-rex""
          ]
