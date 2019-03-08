@@ -10,10 +10,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.DotNet.ToolManifest
 {
@@ -78,7 +80,18 @@ namespace Microsoft.DotNet.ToolManifest
 
             _fileSystem.File.WriteAllText(
                 to.Value,
-                JsonConvert.SerializeObject(deserializedManifest, Formatting.Indented));
+                System.Text.Json.Serialization.JsonSerializer.ToString(deserializedManifest, new JsonSerializerOptions { WriterOptions = new JsonWriterOptions { Indented = true } }));
+
+
+            using (var output = new ArrayBufferWriter<byte>(options.EffectiveBufferSize))
+            {
+                var writer = new Utf8JsonWriter(output, state);
+
+                writer.Write...
+
+            }
+
+            var myresult = output.ToString();
         }
 
         public (List<ToolManifestPackage> content, bool isRoot)
@@ -112,7 +125,7 @@ namespace Microsoft.DotNet.ToolManifest
                         MissingMemberHandling = MissingMemberHandling.Ignore
                     }) ?? new SerializableLocalToolsManifest();
             }
-            catch (JsonReaderException e)
+            catch (Newtonsoft.Json.JsonReaderException e)
             {
                 throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
                     possibleManifest.Value, e.Message));
