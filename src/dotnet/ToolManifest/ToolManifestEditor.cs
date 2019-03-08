@@ -124,6 +124,11 @@ namespace Microsoft.DotNet.ToolManifest
 
             ValidateVersion(deserializedManifest, path, errors);
 
+            if (!deserializedManifest.IsRoot.HasValue)
+            {
+                errors.Add(string.Format(LocalizableStrings.ManifestMissingIsRoot, path.Value));
+            }
+
             foreach (KeyValuePair<string, SerializableLocalToolSinglePackage> tools in deserializedManifest.Tools)
             {
                 var packageLevelErrors = new List<string>();
@@ -197,11 +202,6 @@ namespace Microsoft.DotNet.ToolManifest
                     string.Format(
                         LocalizableStrings.ManifestVersionHigherThanSupported,
                         deserializedManifestVersion, SupportedToolManifestFileVersion));
-            }
-
-            if (!deserializedManifest.IsRoot.HasValue)
-            {
-                errors.Add(string.Format(LocalizableStrings.ManifestMissingIsRoot, path.Value));
             }
         }
 
