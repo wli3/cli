@@ -16,6 +16,7 @@ using NuGet.Versioning;
 using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace Microsoft.DotNet.ToolManifest
 {
@@ -78,21 +79,10 @@ namespace Microsoft.DotNet.ToolManifest
                     Commands = toolCommandNames.Select(c => c.Value).ToArray()
                 });
 
-            _fileSystem.File.WriteAllText(
-                to.Value,
-                System.Text.Json.Serialization.JsonSerializer.ToString(deserializedManifest, new JsonSerializerOptions { WriterOptions = new JsonWriterOptions { Indented = true } }));
-
-
-            using (var output = new ArrayBufferWriter<byte>(options.EffectiveBufferSize))
-            {
-                var writer = new Utf8JsonWriter(output, state);
-
-                writer.Write...
-
-            }
-
-            var myresult = output.ToString();
+            _fileSystem.File.WriteAllText(to.Value, deserializedManifest.ToJson());
         }
+
+
 
         public (List<ToolManifestPackage> content, bool isRoot)
             Read(FilePath manifest, DirectoryPath correspondingDirectory)
@@ -259,6 +249,46 @@ namespace Microsoft.DotNet.ToolManifest
             /// this field could be null
             /// </summary>
             public Dictionary<string, SerializableLocalToolSinglePackage> Tools { get; set; }
+
+            public string ToJson()
+            {
+                var state = new JsonWriterState(options: new JsonWriterOptions { Indented = true });
+                var arrayBufferWriter = new ArrayBufferWriter<byte>();
+                var writer = new Utf8JsonWriter(arrayBufferWriter, state);
+
+                writer.WriteStartObject();
+
+                if (Version.HasValue)
+                {
+                    writer.WriteNumber(propertyName: "version", value: Version.Value);
+                }
+
+                if (IsRoot.HasValue)
+                {
+                    writer.WriteBoolean("isRoot", IsRoot.Value);
+                }
+
+                writer.WriteStartObject("tools");
+
+                foreach (var tool in Tools)
+                {
+                    writer.WriteStartObject(tool.Key);
+                    writer.WriteString("version", tool.Value.Version);
+                    writer.WriteStartArray("commands");
+                    foreach (var toolCommandName in tool.Value.Commands)
+                    {
+                        writer.WriteStringValue(toolCommandName);
+                    }
+
+                    writer.WriteEndArray();
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndObject();
+                writer.WriteEndObject();
+                writer.Flush(true);
+                return Encoding.UTF8.GetString(arrayBufferWriter.WrittenMemory.ToArray());
+            }
         }
 
         public void Remove(FilePath fromFilePath, PackageId packageId)
