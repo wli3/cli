@@ -95,8 +95,6 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        // https://github.com/JamesNK/Newtonsoft.Json/issues/931#issuecomment-224104005
-        // Due to a limitation of newtonsoft json
         public void GivenManifestWithDuplicatedPackageIdItReturnsTheLastValue()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename),
@@ -107,15 +105,11 @@ namespace Microsoft.DotNet.Tests.Commands
                     _fileSystem,
                     new FakeDangerousFileDetector());
 
-            var manifestResult = toolManifest.Find();
+            Action a = () => toolManifest.Find();
 
-            manifestResult.Should()
-                .Contain(
-                    new ToolManifestPackage(
-                        new PackageId("t-rex"),
-                        NuGetVersion.Parse("2.1.4"),
-                        new[] { new ToolCommandName("t-rex") },
-                        new DirectoryPath(_testDirectoryRoot)));
+            a.ShouldThrow<ToolManifestException>().And.Message.Should()
+                .Contain(string.Format(LocalizableStrings.JsonParsingError,
+                Path.Combine(_testDirectoryRoot, _manifestFilename), ""));
         }
 
         [Fact]

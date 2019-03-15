@@ -107,15 +107,61 @@ namespace Microsoft.DotNet.ToolManifest
 
         private SerializableLocalToolsManifest DeserializeLocalToolsManifest(FilePath possibleManifest)
         {
+            var json = _fileSystem.File.ReadAllText(possibleManifest.Value);
+            var serializableLocalToolsManifest = new SerializableLocalToolsManifest();
             try
             {
-                return JsonConvert.DeserializeObject<SerializableLocalToolsManifest>(
-                    _fileSystem.File.ReadAllText(possibleManifest.Value), new JsonSerializerSettings
+                using (JsonDocument doc = JsonDocument.Parse(json))
+                {
+                    JsonElement root = doc.RootElement;
+
+                    if (root.TryGetProperty("version", out var version))
                     {
-                        MissingMemberHandling = MissingMemberHandling.Ignore
-                    }) ?? new SerializableLocalToolsManifest();
+                        serializableLocalToolsManifest.Version = version.GetInt32();
+                    }
+
+                    if (root.TryGetProperty("isRoot", out var isRoot))
+                    {
+                        serializableLocalToolsManifest.IsRoot = isRoot.GetBoolean();
+                    }
+
+                    if (root.TryGetProperty("tools", out var tools))
+                    {
+                        serializableLocalToolsManifest.Tools =
+                            new Dictionary<string, SerializableLocalToolSinglePackage>();
+
+                        foreach (var toolJson in tools.EnumerateObject())
+                        {
+                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage();
+                            if (toolJson.Value.TryGetProperty("version", out var versionJson))
+                            {
+                                serializableLocalToolSinglePackage.Version = versionJson.GetString();
+                            }
+
+                            var commands = new List<string>();
+                            if (toolJson.Value.TryGetProperty("commands", out var commandsJson))
+                            {
+                                foreach (var command in commandsJson.EnumerateArray())
+                                {
+                                    commands.Add(command.GetString());
+                                }
+
+                                serializableLocalToolSinglePackage.Commands = commands.ToArray();
+                            }
+
+                            serializableLocalToolsManifest.Tools.Add(toolJson.Name, serializableLocalToolSinglePackage);
+                        }
+                    }
+                }
+
+                return serializableLocalToolsManifest;
             }
-            catch (Newtonsoft.Json.JsonReaderException e)
+            catch (System.Text.Json.JsonReaderException e)
+            {
+                throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
+                    possibleManifest.Value, e.Message));
+            }
+            catch (ArgumentException e) // duplicate key is an argument exception
             {
                 throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
                     possibleManifest.Value, e.Message));
@@ -287,6 +333,7 @@ namespace Microsoft.DotNet.ToolManifest
                 writer.WriteEndObject();
                 writer.WriteEndObject();
                 writer.Flush(true);
+
                 return Encoding.UTF8.GetString(arrayBufferWriter.WrittenMemory.ToArray());
             }
         }
