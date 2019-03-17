@@ -73,6 +73,14 @@ namespace Microsoft.DotNet.Cli
                 yield break;
             }
 
+            foreach (var packageId in EnumerablePackageIdFromQueryResponse(result))
+            {
+                yield return packageId;
+            }
+        }
+
+        internal static IEnumerable<string> EnumerablePackageIdFromQueryResponse(Stream result)
+        {
             JObject json;
             using (var reader = new JsonTextReader(new StreamReader(result)))
             {
