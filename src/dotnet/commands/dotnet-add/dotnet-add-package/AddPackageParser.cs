@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.DotNet.Cli.CommandLine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -81,15 +80,17 @@ namespace Microsoft.DotNet.Cli
 
         internal static IEnumerable<string> EnumerablePackageIdFromQueryResponse(Stream result)
         {
-            JObject json;
-            using (var reader = new JsonTextReader(new StreamReader(result)))
+            using (JsonDocument doc = JsonDocument.Parse(result))
             {
-                json = JObject.Load(reader);
-            }
+                JsonElement root = doc.RootElement;
 
-            foreach (var id in json["data"])
-            {
-                yield return id.Value<string>();
+                if (root.TryGetProperty("data", out var data))
+                {
+                    foreach (JsonElement packageIdElement in data.EnumerateArray())
+                    {
+                        yield return packageIdElement.GetString();
+                    }
+                }
             }
         }
     }
