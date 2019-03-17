@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenMissingFieldManifestFileItReturnError()
+        public void GivenMissingFieldManifestFileItThrows()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithMissingField);
             var toolManifest =
@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands
         }
 
         [Fact]
-        public void GivenInvalidFieldsManifestFileItReturnError()
+        public void GivenInvalidFieldsManifestFileItThrows()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithInvalidField);
             var toolManifest =
@@ -211,6 +211,22 @@ namespace Microsoft.DotNet.Tests.Commands
 
             a.ShouldThrow<ToolManifestException>().And.Message.Should()
                 .Contain(string.Format(LocalizableStrings.VersionIsInvalid, "1.*"));
+        }
+
+        [Fact]
+        public void GivenInvalidTypeManifestFileItThrows()
+        {
+            _fileSystem.File.WriteAllText(
+                Path.Combine(_testDirectoryRoot, _manifestFilename), _jsonWithInvalidType);
+            var toolManifest =
+                new ToolManifestFinder(
+                    new DirectoryPath(_testDirectoryRoot),
+                    _fileSystem,
+                    new FakeDangerousFileDetector());
+
+            Action a = () => toolManifest.Find();
+
+            a.ShouldThrow<ToolManifestException>();
         }
 
         [Fact]
@@ -635,6 +651,20 @@ namespace Microsoft.DotNet.Tests.Commands
    ""tools"":{
       ""t-rex"":{
          ""version"":""1.*"",
+         ""commands"":[
+            ""t-rex""
+         ]
+      }
+   }
+}";
+
+        private string _jsonWithInvalidType =
+            @"{
+   ""version"":1,
+   ""isRoot"":""true"",
+   ""tools"":{
+      ""t-rex"":{
+         ""version"":""1.0.53"",
          ""commands"":[
             ""t-rex""
          ]

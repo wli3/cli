@@ -154,12 +154,10 @@ namespace Microsoft.DotNet.ToolManifest
 
                 return serializableLocalToolsManifest;
             }
-            catch (System.Text.Json.JsonReaderException e)
-            {
-                throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
-                    possibleManifest.Value, e.Message));
-            }
-            catch (ArgumentException e) // "duplicate key" is an argument exception
+            catch (Exception e) when (
+                e is JsonReaderException ||
+                e is ArgumentException || // "duplicated key"
+                e is InvalidOperationException) // field type mismatch
             {
                 throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
                     possibleManifest.Value, e.Message));
