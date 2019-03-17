@@ -14,8 +14,6 @@ using System.Text.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using System.Text.Json;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System.Text;
 
 namespace Microsoft.DotNet.ToolManifest
@@ -161,7 +159,7 @@ namespace Microsoft.DotNet.ToolManifest
                 throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
                     possibleManifest.Value, e.Message));
             }
-            catch (ArgumentException e) // duplicate key is an argument exception
+            catch (ArgumentException e) // "duplicate key" is an argument exception
             {
                 throw new ToolManifestException(string.Format(LocalizableStrings.JsonParsingError,
                     possibleManifest.Value, e.Message));
@@ -261,7 +259,6 @@ namespace Microsoft.DotNet.ToolManifest
             }
         }
 
-        [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
         private class SerializableLocalToolSinglePackage
         {
             public string Version { get; set; }
@@ -283,7 +280,6 @@ namespace Microsoft.DotNet.ToolManifest
             return left.SequenceEqual(right);
         }
 
-        [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
         private class SerializableLocalToolsManifest
         {
             public int? Version { get; set; }
@@ -369,7 +365,7 @@ namespace Microsoft.DotNet.ToolManifest
 
             _fileSystem.File.WriteAllText(
                            fromFilePath.Value,
-                           JsonConvert.SerializeObject(serializableLocalToolsManifest, Formatting.Indented));
+                           serializableLocalToolsManifest.ToJson());
         }
     }
 }
