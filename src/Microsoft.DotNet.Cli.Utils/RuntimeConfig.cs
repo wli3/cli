@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 
 namespace Microsoft.DotNet.Cli.Utils
-{ 
-    public class RuntimeConfig 
-    { 
-        public bool IsPortable { get; } 
+{
+    public class RuntimeConfig
+    {
+        public bool IsPortable { get; }
         internal RuntimeConfigFramework Framework { get; }
- 
-        public RuntimeConfig(string runtimeConfigPath) 
+
+        public RuntimeConfig(string runtimeConfigPath)
         {
             using (var stream = File.OpenRead(runtimeConfigPath))
             using (JsonDocument doc = JsonDocument.Parse(stream))
@@ -26,52 +26,44 @@ namespace Microsoft.DotNet.Cli.Utils
                         var runtimeConfigFramework = new RuntimeConfigFramework();
                         foreach (var property in framework.EnumerateObject())
                         {
+                            string name = null;
+                            string version = null;
                             if (property.Name.Equals("name", StringComparison.OrdinalIgnoreCase))
                             {
-                                runtimeConfigFramework.Name = property.Value.GetString();
+                                name = property.Value.GetString();
                             }
-                            
+
                             if (property.Name.Equals("version", StringComparison.OrdinalIgnoreCase))
                             {
-                                runtimeConfigFramework.Version = property.Value.GetString();
+                                version = property.Value.GetString();
+                            }
+
+                            if (name == null || version == null)
+                            {
+                                Framework = null;
+                            }
+                            else
+                            {
+                                Framework = new RuntimeConfigFramework
+                                {
+                                    Name = name,
+                                    Version = version
+                                };
                             }
                         }
                     }
-                }
+                    else
+                    {
+                        Framework = null;
+                    }
 
-            }
-
-       //     var runtimeOptionsRoot = runtimeConfigJson["runtimeOptions"];
-
-       //     var framework = (JObject) runtimeOptionsRoot?["framework"]; 
-            if (framework == null)
-            {
-                Framework = null;
-            }
-            else
-            {
-                var properties = framework.Properties(); 
- 
-                var name = properties.FirstOrDefault(p => p.Name.Equals("name", StringComparison.OrdinalIgnoreCase)); 
-                var version = properties.FirstOrDefault(p => p.Name.Equals("version", StringComparison.OrdinalIgnoreCase)); 
- 
-                if (name == null || version == null)
-                {
-                    Framework = null;
-                }
-                else
-                {
-                    Framework = new RuntimeConfigFramework 
-                    { 
-                        Name = name.Value.ToString(), 
-                        Version = version.Value.ToString() 
-                    };
+                    
                 }
             }
 
             IsPortable = Framework != null;
-        } 
- 
+        }
+
         public static bool IsApplicationPortable(string entryAssemblyPath) 
         { 
             var runtimeConfigFile = Path.ChangeExtension(entryAssemblyPath, FileNameSuffixes.RuntimeConfigJson); 
@@ -82,32 +74,5 @@ namespace Microsoft.DotNet.Cli.Utils
             } 
             return false; 
         }
-
-        private RuntimeConfigFramework ParseFramework(JObject runtimeConfigRoot) 
-        { 
-            var runtimeOptionsRoot = runtimeConfigRoot["runtimeOptions"];
-
-            var framework = (JObject) runtimeOptionsRoot?["framework"]; 
-            if (framework == null) 
-            { 
-                return null; 
-            }
-
-            var properties = framework.Properties(); 
- 
-            var name = properties.FirstOrDefault(p => p.Name.Equals("name", StringComparison.OrdinalIgnoreCase)); 
-            var version = properties.FirstOrDefault(p => p.Name.Equals("version", StringComparison.OrdinalIgnoreCase)); 
- 
-            if (name == null || version == null) 
-            { 
-                return null; 
-            } 
- 
-            return new RuntimeConfigFramework 
-            { 
-                Name = name.Value.ToString(), 
-                Version = version.Value.ToString() 
-            };
-        } 
     } 
 }
