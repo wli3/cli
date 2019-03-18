@@ -10,25 +10,6 @@ namespace Microsoft.DotNet.Cli.Utils
     internal class RuntimeConfigFramework
     { 
         public string Name { get; set; } 
-        public string Version { get; set; } 
- 
-        public static RuntimeConfigFramework ParseFromFrameworkRoot(JObject framework) 
-        { 
-            var properties = framework.Properties(); 
- 
-            var name = properties.FirstOrDefault(p => p.Name.Equals("name", StringComparison.OrdinalIgnoreCase)); 
-            var version = properties.FirstOrDefault(p => p.Name.Equals("version", StringComparison.OrdinalIgnoreCase)); 
- 
-            if (name == null || version == null) 
-            { 
-                return null; 
-            } 
- 
-            return new RuntimeConfigFramework 
-            { 
-                Name = name.Value.ToString(), 
-                Version = version.Value.ToString() 
-            }; 
-        } 
+        public string Version { get; set; }
     } 
 }
