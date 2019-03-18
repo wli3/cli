@@ -10,7 +10,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Newtonsoft.Json.Linq;
 
 using NuGet.Versioning;
 
