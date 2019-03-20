@@ -4,9 +4,9 @@
 using System;
 using System.Text.Json;
 using System.IO;
-using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Tools.Common
 {
     public class RuntimeConfig
     {
@@ -21,13 +21,13 @@ namespace Microsoft.DotNet.Cli.Utils
                 JsonElement root = doc.RootElement;
                 if (root.TryGetProperty("runtimeOptions", out var runtimeOptionsRoot))
                 {
-                    if (root.TryGetProperty("framework", out var framework))
+                    if (runtimeOptionsRoot.TryGetProperty("framework", out var framework))
                     {
                         var runtimeConfigFramework = new RuntimeConfigFramework();
+                        string name = null;
+                        string version = null;
                         foreach (var property in framework.EnumerateObject())
                         {
-                            string name = null;
-                            string version = null;
                             if (property.Name.Equals("name", StringComparison.OrdinalIgnoreCase))
                             {
                                 name = property.Value.GetString();
@@ -37,19 +37,19 @@ namespace Microsoft.DotNet.Cli.Utils
                             {
                                 version = property.Value.GetString();
                             }
+                        }
 
-                            if (name == null || version == null)
+                        if (name == null || version == null)
+                        {
+                            Framework = null;
+                        }
+                        else
+                        {
+                            Framework = new RuntimeConfigFramework
                             {
-                                Framework = null;
-                            }
-                            else
-                            {
-                                Framework = new RuntimeConfigFramework
-                                {
-                                    Name = name,
-                                    Version = version
-                                };
-                            }
+                                Name = name,
+                                Version = version
+                            };
                         }
                     }
                     else
@@ -57,22 +57,10 @@ namespace Microsoft.DotNet.Cli.Utils
                         Framework = null;
                     }
 
-                    
                 }
             }
 
             IsPortable = Framework != null;
         }
-
-        public static bool IsApplicationPortable(string entryAssemblyPath) 
-        { 
-            var runtimeConfigFile = Path.ChangeExtension(entryAssemblyPath, FileNameSuffixes.RuntimeConfigJson); 
-            if (File.Exists(runtimeConfigFile)) 
-            { 
-                var runtimeConfig = new RuntimeConfig(runtimeConfigFile); 
-                return runtimeConfig.IsPortable; 
-            } 
-            return false; 
-        }
-    } 
+    }
 }

@@ -5,10 +5,9 @@ using System.IO;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.DotNet.Cli.Utils.Tests
+namespace Microsoft.DotNet.Tests
 {
     public class RuntimeConfigTests : TestBase
     {
@@ -20,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             Asset(runtimeConfig);
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithTrailingComma()
         {
@@ -29,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             Asset(runtimeConfig);
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithDifferentOrder()
         {
@@ -38,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             Asset(runtimeConfig);
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithDifferentCasingOnNameAndVersionField()
         {
@@ -47,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             Asset(runtimeConfig);
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithDifferentCasingOnFrameworkField()
         {
@@ -56,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             runtimeConfig.Framework.Should().BeNull();
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithDifferentCasingOnRuntimeOptionsField()
         {
@@ -65,16 +64,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             runtimeConfig.Framework.Should().BeNull();
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithEmpty()
         {
             var tempPath = GetTempPath();
             File.WriteAllText(tempPath, "");
             Action a = () => new RuntimeConfig(tempPath);
-            a.ShouldThrow<JsonReaderException>();
+            a.ShouldThrow<System.Text.Json.JsonReaderException>();
         }
-        
+
         [Fact]
         void ParseRuntimeConfigWithDifferentWithExtraField()
         {
@@ -83,7 +82,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var runtimeConfig = new RuntimeConfig(tempPath);
             Asset(runtimeConfig);
         }
-        
+
+        [Fact]
+        void ParseRuntimeConfigWithDifferentWithNoFramework()
+        {
+            var tempPath = GetTempPath();
+            File.WriteAllText(tempPath, NoFramework);
+            var runtimeConfig = new RuntimeConfig(tempPath);
+            runtimeConfig.Framework.Should().BeNull();
+            runtimeConfig.IsPortable.Should().BeFalse();
+        }
+
         [Fact]
         void ParseRuntimeConfigWithDifferentWithMissingField()
         {
@@ -97,6 +106,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             runtimeConfig.Framework.Version.Should().Be("2.1.0");
             runtimeConfig.Framework.Name.Should().Be("Microsoft.NETCore.App");
+            runtimeConfig.IsPortable.Should().BeTrue();
         }
 
         private static string GetTempPath()
@@ -114,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     }
   }
 }";
-        
+
         private const string TrailingComma =
             @"{
   ""runtimeOptions"": {
@@ -135,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     ""tfm"": ""netcoreapp2.1"",
   }
 }";
-        
+
         private const string CasingOnNameAndVersionField =
             @"{
   ""runtimeOptions"": {
@@ -156,7 +166,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
        }
      }
    }";
-        
+
         private const string CasingOnRuntimeOptionsField =
             @"{
   ""RuntimeOptions"": {
@@ -167,7 +177,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     }
   }
 }";
-        
+
         private const string ExtraField =
             @"{
   ""runtimeOptions"": {
@@ -179,7 +189,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     ""extra"": ""field"",
   }
 }";
-        
+
         private const string Missing =
             @"{
   ""runtimeOptions"": {
@@ -187,6 +197,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
       ""name"": ""Microsoft.NETCore.App"",
       ""version"": ""2.1.0""
     }
+  }
+}";
+        private const string NoFramework =
+            @"{
+  ""runtimeOptions"": {
   }
 }";
 
