@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _global;
         private readonly string _toolPath;
         private readonly bool _local;
-        private readonly string _toolManifestOption;
         private readonly string _framework;
 
         public ToolInstallCommand(
@@ -50,7 +49,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _global = appliedCommand.ValueOrDefault<bool>(ToolAppliedOption.GlobalOption);
             _local = appliedCommand.ValueOrDefault<bool>(ToolAppliedOption.LocalOption);
             _toolPath = appliedCommand.SingleArgumentOrDefault(ToolAppliedOption.ToolPathOption);
-            _toolManifestOption = appliedCommand.ValueOrDefault<string>("tool-manifest");
             _framework = appliedCommand.ValueOrDefault<string>("framework");
         }
 
@@ -60,15 +58,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 _appliedCommand,
                 LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
+            ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
+                _appliedCommand);
+
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
-                if (!string.IsNullOrWhiteSpace(_toolManifestOption))
-                {
-                    throw new GracefulException(
-                        string.Format(
-                            LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
-                }
-
                 return _toolInstallGlobalOrToolPathCommand.Execute();
             }
             else

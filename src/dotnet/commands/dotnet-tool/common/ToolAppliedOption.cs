@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.List;
 
 namespace Microsoft.DotNet.Tools.Tool.Common
 {
@@ -15,6 +14,8 @@ namespace Microsoft.DotNet.Tools.Tool.Common
         public const string GlobalOption = "global";
         public const string LocalOption = "local";
         public const string ToolPathOption = "tool-path";
+        public const string ToolManifest = "tool-manifest";
+
         internal static void EnsureNoConflictGlobalLocalToolPathOption(
             AppliedOption appliedOption,
             string message)
@@ -38,10 +39,28 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             if (options.Count > 1)
             {
                 throw new GracefulException(
-                    String.Format(
+                    string.Format(
                         message,
-                        String.Join(" ", options)));
+                        string.Join(" ", options)));
             }
+        }
+
+        internal static void EnsureToolManifestAndOnlyLocalFlagCombination(
+            AppliedOption appliedOption)
+        {
+            if (GlobalOrToolPath(appliedOption) &&
+                !string.IsNullOrWhiteSpace(appliedOption.ValueOrDefault<string>(ToolManifest)))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+            }
+        }
+
+        private static bool GlobalOrToolPath(AppliedOption appliedOption)
+        {
+            return appliedOption.ValueOrDefault<bool>(GlobalOption) ||
+                   !string.IsNullOrWhiteSpace(appliedOption.SingleArgumentOrDefault(ToolPathOption));
         }
     }
 }

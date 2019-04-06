@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli
                     Accept.ExactlyOneArgument()
                         .With(name: LocalizableStrings.ConfigFileOptionName)),
                 Create.Option(
-                    "--tool-manifest",
+                    $"--{ToolAppliedOption.ToolManifest}",
                     LocalizableStrings.ManifestPathOptionDescription,
                     Accept.ZeroOrOneArgument()
                         .With(name: LocalizableStrings.ManifestPathOptionName)),
