@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
     }
 }
