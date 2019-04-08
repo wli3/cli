@@ -80,10 +80,17 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         public override int Execute()
         {
             FilePath manifestFile = FindManifestFile();
-            var toolPackage = _toolLocalPackageInstaller.Install(manifestFile);
+
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
+
+            _toolManifestEditor.Edit(
+                manifestFile,
+                _packageId,
+                toolDownloadedPackage.Version,
+                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
 
             _localToolsResolverCache.SaveToolPackage(
-                toolPackage,
+                toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
             return 0;

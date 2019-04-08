@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new ProjectRestorerMock(
                     _fileSystem,
                     _reporter,
-                    new[]
+                    new List<MockFeed>
                     {
                         _mockFeed
                     }));
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithPackageIdItShouldUpdateFromManifestFile()
         {
             _toolRestoreCommand.Execute();
-            _mockFeed.Packages.Single().Version = _packageOriginalVersionA.ToNormalizedString();
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
 
@@ -140,10 +140,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _fileSystem.File.Delete(_manifestFilePath);
             Action a = () => _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
-
-            a.ShouldThrow<GracefulException>()
-                .And.Message.Should()
-                .Contain(LocalizableStrings.NoManifestGuide);
 
             a.ShouldThrow<GracefulException>()
                 .And.Message.Should()
@@ -167,7 +163,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AppliedOption appliedCommand = parseResult["dotnet"]["tool"]["update"];
 
             _toolRestoreCommand.Execute();
-            _mockFeed.Packages.Single().Version = _packageOriginalVersionA.ToNormalizedString();
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 appliedCommand,
@@ -179,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             toolUpdateLocalCommand.Execute().Should().Be(0);
-            AssertDefaultUpdateSuccess();
+            AssertDefaultUpdateSuccess(new FilePath(explicitManifestFilePath));
         }
 
         [Fact]
@@ -189,7 +185,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AppliedOption appliedCommand = parseResult["dotnet"]["tool"]["update"];
 
             _toolRestoreCommand.Execute();
-            _mockFeed.Packages.Single().Version = _packageOriginalVersionA.ToNormalizedString();
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 appliedCommand,
@@ -213,7 +209,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             _toolRestoreCommand.Execute();
-            _mockFeed.Packages.Single().Version = _packageOriginalVersionA.ToNormalizedString();
+            _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
 
             _defaultToolUpdateLocalCommand.Execute();
             _reporter.Lines.Single()
@@ -226,11 +222,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath).Green());
         }
 
-        private void AssertDefaultUpdateSuccess()
+        private void AssertDefaultUpdateSuccess(FilePath? manifestFile = null)
         {
-            IReadOnlyCollection<ToolManifestPackage> manifestPackages = _toolManifestFinder.Find();
+            IReadOnlyCollection<ToolManifestPackage> manifestPackages = _toolManifestFinder.Find(manifestFile);
             manifestPackages.Should().HaveCount(1);
             ToolManifestPackage addedPackage = manifestPackages.Single();
+            addedPackage.Version.Should().Be(_packageNewVersionA);
             _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
                     addedPackage.PackageId,
                     addedPackage.Version,
@@ -241,7 +238,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
-            _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryUpdatedJsonContent);
         }
 
         // TODO throw on version lower
@@ -262,30 +258,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private readonly string _jsonContent =
             @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""local.tool.console.a"":{
-         ""version"":""1.0.0"",
-         ""commands"":[
-            ""a""
-         ]
-      }
-   }
-}";
-
-        private readonly string _entryUpdatedJsonContent =
-            @"{
-   ""version"":1,
-   ""isRoot"":true,
-   ""tools"":{
-      ""local.tool.console.a"":{
-         ""version"":""2.0.0"",
-         ""commands"":[
-            ""a""
-         ]
-      }
-   }
+  ""version"": 1,
+  ""isRoot"": true,
+  ""tools"": {
+    ""local.tool.console.a"": {
+      ""version"": ""1.0.0"",
+      ""commands"": [
+        ""a""
+      ]
+    }
+  }
 }";
     }
 }
