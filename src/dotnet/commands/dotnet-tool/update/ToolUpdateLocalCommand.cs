@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
@@ -21,6 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageInstaller _toolPackageInstaller;
+        private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly IReporter _reporter;
 
         private readonly PackageId _packageId;
@@ -72,30 +74,37 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(appliedCommand, toolPackageInstaller);
         }
 
         public override int Execute()
         {
-            FilePath manifestFile;
+            FilePath manifestFile = FindManifestFile();
+            var toolPackage = _toolLocalPackageInstaller.Install(manifestFile);
 
-            try
-            {
-                manifestFile = string.IsNullOrWhiteSpace(_explicitManifestFile)
-                   ? _toolManifestFinder.FindFirst()
-                   : new FilePath(_explicitManifestFile);
-            }
-            catch (ToolManifestCannotBeFoundException e)
-            {
-                throw new GracefulException(new[]
-                    {
-                        e.Message,
-                        LocalizableStrings.NoManifestGuide
-                    },
-                    verboseMessages: new[] { e.VerboseMessage },
-                    isUserError: false);
-            }
+            _localToolsResolverCache.SaveToolPackage(
+                toolPackage,
+                _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
             return 0;
+        }
+
+        private FilePath FindManifestFile()
+        {
+            if (!string.IsNullOrWhiteSpace(_explicitManifestFile))
+            {
+                return new FilePath(_explicitManifestFile);
+            }
+
+            var manifestFilesContainPackageId
+                = _toolManifestFinder.FindContainPackageId(_packageId);
+
+            if (manifestFilesContainPackageId.Any())
+            {
+                return manifestFilesContainPackageId.First();
+            }
+
+            return _toolManifestFinder.FindFirst();
         }
     }
 }
