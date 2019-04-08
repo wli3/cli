@@ -93,6 +93,14 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
+            _reporter.WriteLine(
+               string.Format(
+                   LocalizableStrings.UpdateLocalToolSucceeded,
+                   string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                   toolDownloadedPackage.Id,
+                   toolDownloadedPackage.Version.ToNormalizedString(),
+                   manifestFile.Value).Green());
+
             return 0;
         }
 

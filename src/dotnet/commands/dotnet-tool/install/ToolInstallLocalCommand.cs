@@ -70,7 +70,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _reporter.WriteLine(
                 string.Format(
                     LocalizableStrings.LocalToolInstallationSucceeded,
-                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
                     toolDownloadedPackage.Id,
                     toolDownloadedPackage.Version.ToNormalizedString(),
                     manifestFile.Value).Green());

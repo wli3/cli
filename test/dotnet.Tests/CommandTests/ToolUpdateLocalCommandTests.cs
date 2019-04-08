@@ -211,7 +211,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolRestoreCommand.Execute();
             _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
 
+            _reporter.Clear();
             _defaultToolUpdateLocalCommand.Execute();
+
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
