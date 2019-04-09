@@ -258,6 +258,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         // TODO framework cannot combine with local
 
+        // TODO can be used from redirector
+
         private readonly string _jsonContent =
             @"{
   ""version"": 1,
