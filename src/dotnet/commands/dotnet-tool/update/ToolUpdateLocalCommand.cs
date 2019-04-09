@@ -82,6 +82,11 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             FilePath manifestFile = FindManifestFile();
 
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
+            var existingPackage =
+                _toolManifestFinder
+                .Find(manifestFile)
+                .Where(p => p.PackageId.Equals(_packageId))
+                .Single();
 
             _toolManifestEditor.Edit(
                 manifestFile,
@@ -96,8 +101,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _reporter.WriteLine(
                string.Format(
                    LocalizableStrings.UpdateLocalToolSucceeded,
-                   string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
                    toolDownloadedPackage.Id,
+                   existingPackage.Version.ToNormalizedString(),
                    toolDownloadedPackage.Version.ToNormalizedString(),
                    manifestFile.Value).Green());
 
