@@ -96,23 +96,38 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     manifestFile.Value));
             }
 
-            _toolManifestEditor.Edit(
+            if (existingPackage.Version != toolDownloadedPackage.Version)
+            {
+                _toolManifestEditor.Edit(
                 manifestFile,
                 _packageId,
                 toolDownloadedPackage.Version,
                 toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+            }
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
-            _reporter.WriteLine(
+            if (existingPackage.Version == toolDownloadedPackage.Version)
+            {
+                _reporter.WriteLine(
                string.Format(
-                   LocalizableStrings.UpdateLocalToolSucceeded,
+                   LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                    toolDownloadedPackage.Id,
                    existingPackage.Version.ToNormalizedString(),
-                   toolDownloadedPackage.Version.ToNormalizedString(),
-                   manifestFile.Value).Green());
+                   manifestFile.Value));
+            }
+            else
+            {
+                _reporter.WriteLine(
+                   string.Format(
+                       LocalizableStrings.UpdateLocalToolSucceeded,
+                       toolDownloadedPackage.Id,
+                       existingPackage.Version.ToNormalizedString(),
+                       toolDownloadedPackage.Version.ToNormalizedString(),
+                       manifestFile.Value).Green());
+            }
 
             return 0;
         }

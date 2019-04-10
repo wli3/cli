@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
 
-            AssertDefaultUpdateSuccess();
+            AssertUpdateSuccess();
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             toolUpdateLocalCommand.Execute().Should().Be(0);
-            AssertDefaultUpdateSuccess(new FilePath(explicitManifestFilePath));
+            AssertUpdateSuccess(new FilePath(explicitManifestFilePath));
         }
 
         [Fact]
@@ -201,8 +201,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 toolUpdateLocalCommand: toolUpdateLocalCommand);
 
             toolUpdateCommand.Execute().Should().Be(0);
-
-            AssertDefaultUpdateSuccess();
         }
 
         [Fact]
@@ -225,6 +223,25 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowSuccessMessage()
+        {
+            _toolRestoreCommand.Execute();
+
+            _reporter.Clear();
+            _defaultToolUpdateLocalCommand.Execute();
+
+            AssertUpdateSuccess(packageVersion: _packageOriginalVersionA);
+
+            _reporter.Lines.Single()
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        _packageIdA,
+                        _packageOriginalVersionA.ToNormalizedString(),
+                        _manifestFilePath));
+        }
+
+        [Fact]
         public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
         {
             _toolRestoreCommand.Execute();
@@ -239,12 +256,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _manifestFilePath));
         }
 
-        private void AssertDefaultUpdateSuccess(FilePath? manifestFile = null)
+        private void AssertUpdateSuccess(FilePath? manifestFile = null, NuGetVersion packageVersion = null)
         {
+            packageVersion ??= _packageNewVersionA;
             IReadOnlyCollection<ToolManifestPackage> manifestPackages = _toolManifestFinder.Find(manifestFile);
             manifestPackages.Should().HaveCount(1);
             ToolManifestPackage addedPackage = manifestPackages.Single();
-            addedPackage.Version.Should().Be(_packageNewVersionA);
+            addedPackage.Version.Should().Be(packageVersion);
             _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
                     addedPackage.PackageId,
                     addedPackage.Version,
@@ -257,21 +275,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
-        // TODO throw on version lower
-
         // TODO only deal with the closest manifest
 
-        // TODO throw on cannot find manifest file
-
-        // TODO message on version lower
-
-        // TODO Support version range
+        // TODO warning for parent dir's manifest with same package id
 
         // TODO If not restore install it
 
         // TODO if no install, install it
-
-        // TODO framework cannot combine with local
 
         // TODO can be used from redirector
 

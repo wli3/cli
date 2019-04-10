@@ -42,6 +42,11 @@
         <target state="translated">Укажите один обновляемый идентификатор пакета инструмента.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
+        <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
+        <target state="new">Tool '{0}' is up to date (version '{1}' manifest file {2}) .</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
         <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
