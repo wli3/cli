@@ -85,8 +85,16 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             var existingPackage =
                 _toolManifestFinder
                 .Find(manifestFile)
-                .Where(p => p.PackageId.Equals(_packageId))
-                .Single();
+                .Single(p => p.PackageId.Equals(_packageId));
+
+            if (existingPackage.Version < toolDownloadedPackage.Version)
+            {
+                throw new GracefulException(string.Format(
+                    LocalizableStrings.UpdateLocaToolToLowerVersion,
+                    existingPackage.Version.ToNormalizedString(),
+                    toolDownloadedPackage.Version.ToNormalizedString(),
+                    manifestFile.Value));
+            }
 
             _toolManifestEditor.Edit(
                 manifestFile,

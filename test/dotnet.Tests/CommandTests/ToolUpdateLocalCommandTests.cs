@@ -224,6 +224,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath).Green());
         }
 
+        [Fact]
+        public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
+        {
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages.Single().Version = "0.9.0";
+
+            _reporter.Clear();
+            Action a = () => _defaultToolUpdateLocalCommand.Execute();
+            a.ShouldThrow<GracefulException>().And.Message.Should().Contain(string.Format(
+                LocalizableStrings.UpdateLocaToolToLowerVersion,
+                "0.9.0",
+                _packageOriginalVersionA.ToNormalizedString(),
+                _manifestFilePath));
+        }
+
         private void AssertDefaultUpdateSuccess(FilePath? manifestFile = null)
         {
             IReadOnlyCollection<ToolManifestPackage> manifestPackages = _toolManifestFinder.Find(manifestFile);

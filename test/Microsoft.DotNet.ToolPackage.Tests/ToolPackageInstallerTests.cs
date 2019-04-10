@@ -711,7 +711,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
             var (store, storeQuery, installer, uninstaller, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: new[] { feed },
+                feeds: new List<MockFeed> { feed },
                 writeLocalFeedToNugetConfig: nugetConfigPath);
 
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;
@@ -792,11 +792,11 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             return tempProjectPath;
         }
 
-        private static IEnumerable<MockFeed> GetMockFeedsForConfigFile(FilePath? nugetConfig)
+        private static List<MockFeed> GetMockFeedsForConfigFile(FilePath? nugetConfig)
         {
             if (nugetConfig.HasValue)
             {
-                return new MockFeed[]
+                return new List<MockFeed>
                 {
                     new MockFeed
                     {
@@ -816,7 +816,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             }
             else
             {
-                return Array.Empty<MockFeed>();
+                return new List<MockFeed>();
             }
         }
 
@@ -865,7 +865,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         private static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller, BufferedReporter, IFileSystem
             ) Setup(
                 bool useMock,
-                IEnumerable<MockFeed> feeds = null,
+                List<MockFeed> feeds = null,
                 FilePath? tempProject = null,
                 DirectoryPath? offlineFeed = null,
                 FilePath? writeLocalFeedToNugetConfig = null)
