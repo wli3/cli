@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     public class ToolUpdateLocalCommandTests
     {
         private readonly IFileSystem _fileSystem;
+        private readonly string _temporaryDirectoryParent;
         private readonly AppliedOption _appliedCommand;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
@@ -54,15 +55,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+
+            _temporaryDirectoryParent = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _temporaryDirectory = Path.Combine(_temporaryDirectoryParent, "sub");
+            _fileSystem.Directory.CreateDirectory(_temporaryDirectory);
+            _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
 
             _packageOriginalVersionA = NuGetVersion.Parse("1.0.0");
             _packageNewVersionA = NuGetVersion.Parse("2.0.0");
 
-            _reporter = new BufferedReporter();
-            _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-            _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             ToolPackageStoreMock toolPackageStoreMock =
                 new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
@@ -223,6 +224,23 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenParentDirHasManifestWithSamePackageIdWhenRunWithPackageIdItShouldOnlyChangTheClosestOne()
+        {
+            var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
+
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
+
+            _reporter.Clear();
+            _defaultToolUpdateLocalCommand.Execute();
+
+            AssertUpdateSuccess();
+
+            _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(_jsonContent, "no change");
+        }
+
+        [Fact]
         public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             _toolRestoreCommand.Execute();
@@ -288,7 +306,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _jsonContent =
             @"{
   ""version"": 1,
-  ""isRoot"": true,
+  ""isRoot"": false,
   ""tools"": {
     ""local.tool.console.a"": {
       ""version"": ""1.0.0"",
