@@ -87,12 +87,12 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 .Find(manifestFile)
                 .Single(p => p.PackageId.Equals(_packageId));
 
-            if (existingPackage.Version < toolDownloadedPackage.Version)
+            if (existingPackage.Version > toolDownloadedPackage.Version)
             {
                 throw new GracefulException(string.Format(
                     LocalizableStrings.UpdateLocaToolToLowerVersion,
-                    existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),
+                    existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
             }
 

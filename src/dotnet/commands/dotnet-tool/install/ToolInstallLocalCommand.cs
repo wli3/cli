@@ -68,11 +68,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
             _reporter.WriteLine(
-                string.Format(
-                    LocalizableStrings.LocalToolInstallationSucceeded,
-                    toolDownloadedPackage.Id,
-                    toolDownloadedPackage.Version.ToNormalizedString(),
-                    manifestFile.Value).Green());
+                    string.Format(
+                        LocalizableStrings.LocalToolInstallationSucceeded,
+                        string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                        toolDownloadedPackage.Id,
+                        toolDownloadedPackage.Version.ToNormalizedString(),
+                        manifestFile.Value).Green());
 
             return 0;
         }

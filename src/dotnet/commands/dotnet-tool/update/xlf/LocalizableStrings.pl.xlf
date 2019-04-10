@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {3}).</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {3}).</target>
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
