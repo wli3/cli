@@ -81,9 +81,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             return tempProjectPath;
         }
 
-        private static IEnumerable<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
+        private static List<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
         {
-            return new MockFeed[]
+            return new List<MockFeed>
             {
                 new MockFeed
                 {

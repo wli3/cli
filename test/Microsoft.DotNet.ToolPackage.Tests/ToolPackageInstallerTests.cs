@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         {
             var (store, storeQuery, installer, uninstaller, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
-                feeds: new MockFeed[0]);
+                feeds: new List<MockFeed>());
 
             Action a = () => installer.InstallPackage(new PackageLocation(), packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion), targetFramework: _testTargetframework);
@@ -820,9 +820,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             }
         }
 
-        private static IEnumerable<MockFeed> GetMockFeedsForSource(string source)
+        private static List<MockFeed> GetMockFeedsForSource(string source)
         {
-            return new MockFeed[]
+            return new List<MockFeed>
             {
                 new MockFeed
                 {
@@ -841,9 +841,9 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             };
         }
 
-        private static IEnumerable<MockFeed> GetOfflineMockFeed()
+        private static List<MockFeed> GetOfflineMockFeed()
         {
-            return new MockFeed[]
+            return new List<MockFeed>
             {
                 new MockFeed
                 {
@@ -893,7 +893,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                         reporter: reporter,
                         feeds: feeds == null
                             ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
-                            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig))));
+                            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList()));
                 uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
             }
             else
