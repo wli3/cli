@@ -137,6 +137,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenNoRestoredManifestWhenRunWithPackageIdItShouldUpdateFromManifestFile()
+        {
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
+
+            _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+
+            AssertUpdateSuccess();
+        }
+
+        [Fact]
         public void GivenNoManifestFileItShouldThrow()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -247,10 +257,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
 
             _toolRestoreCommand.Execute();
-            _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
 
             _reporter.Clear();
-            _reporter.Lines.Should().Contain(l => l.Contains(string.Format(LocalizableStrings.SamePackageIdInOtherManifestFile, $"\t{parentManifestFilePath}")));
+            _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
+            _defaultToolUpdateLocalCommand.Execute();
+
+            _reporter.Lines[0].Should().Contain(parentManifestFilePath);
+            _reporter.Lines[0].Should().NotContain(_manifestFilePath);
         }
 
         [Fact]
@@ -305,10 +318,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
-
-        // TODO only deal with the closest manifest
-
-        // TODO warning for parent dir's manifest with same package id
 
         // TODO If not restore install it
 
