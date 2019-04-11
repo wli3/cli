@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageInstaller _toolPackageInstaller;
         private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
+        private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
 
         private readonly PackageId _packageId;
@@ -75,6 +76,14 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(appliedCommand, toolPackageInstaller);
+            _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(() => new ToolInstallLocalCommand(
+                appliedCommand,
+                parseResult,
+                _toolPackageInstaller,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter));
         }
 
         public override int Execute()
@@ -82,11 +91,17 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             (FilePath manifestFile, string warningMessag) = FindManifestFile();
 
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
-            var existingPackage =
+            var existingPackageWithPackageId =
                 _toolManifestFinder
                 .Find(manifestFile)
-                .Single(p => p.PackageId.Equals(_packageId));
+                .Where(p => p.PackageId.Equals(_packageId));
 
+            if (!existingPackageWithPackageId.Any())
+            {
+                return _toolInstallLocalCommand.Value.Install(manifestFile);
+            }
+
+            var existingPackage = existingPackageWithPackageId.Single();
             if (existingPackage.Version > toolDownloadedPackage.Version)
             {
                 throw new GracefulException(string.Format(

@@ -54,6 +54,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             FilePath manifestFile = GetManifestFilePath();
 
+            return Install(manifestFile);
+        }
+
+        public int Install(FilePath manifestFile)
+        {
             IToolPackage toolDownloadedPackage =
                 _toolLocalPackageInstaller.Install(manifestFile);
 
@@ -77,7 +82,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             return 0;
         }
-
 
         private FilePath GetManifestFilePath()
         {

@@ -137,9 +137,39 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunFromDirectorWithPackageIdItShouldUpdateFromManifestFile()
+        {
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
+
+            var toolUpdateCommand = new ToolUpdateCommand(
+               _appliedCommand,
+               _parseResult,
+               _reporter,
+               new ToolUpdateGlobalOrToolPathCommand(_appliedCommand, _parseResult),
+               _defaultToolUpdateLocalCommand);
+
+            toolUpdateCommand.Execute().Should().Be(0);
+
+            AssertUpdateSuccess();
+        }
+
+        [Fact]
         public void GivenNoRestoredManifestWhenRunWithPackageIdItShouldUpdateFromManifestFile()
         {
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
+
+            _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
+
+            AssertUpdateSuccess();
+        }
+
+        [Fact]
+        public void GivenManifestDoesNotHavePackageWhenRunWithPackageIdItShouldUpdate()
+        {
+            _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
+            _fileSystem.File.Delete(_manifestFilePath);
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, _manifestFilePath), _jsonEmptyContent);
 
             _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
 
@@ -319,12 +349,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
         }
 
-        // TODO If not restore install it
-
-        // TODO if no install, install it
-
-        // TODO can be used from redirector
-
         private readonly string _jsonContent =
             @"{
   ""version"": 1,
@@ -337,6 +361,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ]
     }
   }
+}";
+        private readonly string _jsonEmptyContent =
+            @"{
+  ""version"": 1,
+  ""isRoot"": false,
+  ""tools"": {}
 }";
     }
 }
