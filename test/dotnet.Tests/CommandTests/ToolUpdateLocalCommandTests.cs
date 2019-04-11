@@ -241,7 +241,20 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowSuccessMessage()
+        public void GivenParentDirHasManifestWithSamePackageIdWhenRunWithPackageIdItShouldWarningTheOtherManifests()
+        {
+            var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(parentManifestFilePath, _jsonContent);
+
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages.Single().Version = _packageNewVersionA.ToNormalizedString();
+
+            _reporter.Clear();
+            _reporter.Lines.Should().Contain(l => l.Contains(string.Format(LocalizableStrings.SamePackageIdInOtherManifestFile, $"\t{parentManifestFilePath}")));
+        }
+
+        [Fact]
+        public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowDifferentSuccessMessage()
         {
             _toolRestoreCommand.Execute();
 

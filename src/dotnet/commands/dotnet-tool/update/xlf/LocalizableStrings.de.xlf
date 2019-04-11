@@ -37,6 +37,13 @@
         <target state="translated">Die NuGet-Paket-ID des zu aktualisierenden Tools.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SamePackageIdInOtherManifestFile">
+        <source>Warning: There are other manifest files could affect local tools in current directory. They are not changed:
+{0}</source>
+        <target state="new">Warning: There are other manifest files could affect local tools in current directory. They are not changed:
+{0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageId">
         <source>Please specify one tool Package Id to update.</source>
         <target state="translated">Geben Sie eine Toolpaket-ID für das Update an.</target>

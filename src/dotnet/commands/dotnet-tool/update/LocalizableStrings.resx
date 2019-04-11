@@ -219,4 +219,8 @@
   <data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</value>
   </data>
+  <data name="SamePackageIdInOtherManifestFile" xml:space="preserve">
+    <value>Warning: There are other manifest files could affect local tools in current directory. They are not changed:
+{0}</value>
+  </data>
 </root>
