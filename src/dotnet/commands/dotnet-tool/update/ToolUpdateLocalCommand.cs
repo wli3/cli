@@ -104,11 +104,13 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             var existingPackage = existingPackageWithPackageId.Single();
             if (existingPackage.Version > toolDownloadedPackage.Version)
             {
-                throw new GracefulException(string.Format(
+                throw new GracefulException(new[] {
+                    string.Format(
                     LocalizableStrings.UpdateLocaToolToLowerVersion,
-                    toolDownloadedPackage.Version.ToNormalizedString(),
-                    existingPackage.Version.ToNormalizedString(),
-                    manifestFile.Value));
+                        toolDownloadedPackage.Version.ToNormalizedString(),
+                        existingPackage.Version.ToNormalizedString(),
+                        manifestFile.Value)},
+                    isUserError: false);
             }
 
             if (existingPackage.Version != toolDownloadedPackage.Version)
