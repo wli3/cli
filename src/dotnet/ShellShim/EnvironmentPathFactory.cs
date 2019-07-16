@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.ShellShim
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && hasSuperUserAccess)
             {
-                environmentPath = new OSXEnvironmentPath(
+                environmentPath = new OsxBashEnvironmentPath(
                     executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
                     reporter: Reporter.Output,
                     environmentProvider: environmentProvider,
