@@ -27,10 +27,6 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
-            
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/bash");
 
             var environmentPath = new OsxBashEnvironmentPath(
                 toolsPath,
@@ -47,7 +43,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [NonWindowsOnlyFact]
-        public void GivenPathNotSetAndProfileExistsInNonZshItPrintsReopenMessage()
+        public void GivenPathNotSetAndProfileExistsItPrintsReopenMessage()
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -57,10 +53,6 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
-            
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/bash");
 
             var environmentPath = new OsxBashEnvironmentPath(
                 toolsPath,
@@ -79,7 +71,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         [NonWindowsOnlyTheory]
         [InlineData("/home/user/.dotnet/tools")]
         [InlineData("~/.dotnet/tools")]
-        public void GivenPathSetInNonZshItPrintsNothing(string toolsDirectoryOnPath)
+        public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -89,66 +81,6 @@ namespace Microsoft.DotNet.ShellShim.Tests
             provider
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsDirectoryOnPath);
-            
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/bash");
-
-            var environmentPath = new OsxBashEnvironmentPath(
-                toolsPath,
-                reporter,
-                provider.Object,
-                FileSystemMockBuilder.Empty.File);
-
-            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
-
-            reporter.Lines.Should().BeEmpty();
-        }
-        
-        [NonWindowsOnlyTheory]
-        [InlineData("/home/user/.dotnet/tools")]
-        public void GivenPathSetInZshItPrintsNothing(string toolsDirectoryOnPath)
-        {
-            var reporter = new BufferedReporter();
-            var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
-            var pathValue = @"/usr/bin";
-            var provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-
-            provider
-                .Setup(p => p.GetEnvironmentVariable("PATH"))
-                .Returns(pathValue + ":" + toolsDirectoryOnPath);
-            
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/zsh");
-
-            var environmentPath = new OsxBashEnvironmentPath(
-                toolsPath,
-                reporter,
-                provider.Object,
-                FileSystemMockBuilder.Empty.File);
-
-            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
-
-            reporter.Lines.Should().BeEmpty();
-        }
-        
-        [NonWindowsOnlyTheory]
-        [InlineData("~/.dotnet/tools")]
-        public void GivenPathSetInZshItPrintsInstruction(string toolsDirectoryOnPath)
-        {
-            var reporter = new BufferedReporter();
-            var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
-            var pathValue = @"/usr/bin";
-            var provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-
-            provider
-                .Setup(p => p.GetEnvironmentVariable("PATH"))
-                .Returns(pathValue + ":" + toolsDirectoryOnPath);
-            
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/zsh");
 
             var environmentPath = new OsxBashEnvironmentPath(
                 toolsPath,
