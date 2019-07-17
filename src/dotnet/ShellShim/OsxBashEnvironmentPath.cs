@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.ShellShim
                     // similar to https://code.visualstudio.com/docs/setup/mac
                     _reporter.WriteLine(
                         string.Format(
-                            CommonLocalizableStrings.EnvironmentPathOSXManualInstructions,
+                            CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
                             _packageExecutablePath.Path));
                 }
             }

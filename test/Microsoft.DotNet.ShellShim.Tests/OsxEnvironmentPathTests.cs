@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXManualInstructions,
+                    CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
                     toolsPath.Path));
         }
 

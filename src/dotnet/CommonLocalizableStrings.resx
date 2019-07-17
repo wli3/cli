@@ -552,7 +552,7 @@ export PATH="$PATH:{0}"
   <data name="EnvironmentPathLinuxNeedLogout" xml:space="preserve">
     <value>Since you just installed the .NET Core SDK, you will need to logout or restart your session before running the tool you installed.</value>
   </data>
-  <data name="EnvironmentPathOSXManualInstructions" xml:space="preserve">
+  <data name="EnvironmentPathOSXBashManualInstructions" xml:space="preserve">
     <value>Tools directory '{0}' is not currently on the PATH environment variable.
 If you are using bash, you can add it to your profile by running the following command:
 
