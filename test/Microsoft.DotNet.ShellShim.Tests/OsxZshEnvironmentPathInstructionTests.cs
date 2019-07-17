@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
 using Xunit;
@@ -35,8 +34,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var environmentPath = new OsxZshEnvironmentPathInstruction(
                 toolsPath,
                 reporter,
-                provider.Object,
-                FileSystemMockBuilder.Empty.File);
+                provider.Object);
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
@@ -62,8 +60,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var environmentPath = new OsxZshEnvironmentPathInstruction(
                 toolsPath,
                 reporter,
-                provider.Object,
-                FileSystemMockBuilder.Empty.File);
+                provider.Object);
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
@@ -90,8 +87,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var environmentPath = new OsxZshEnvironmentPathInstruction(
                 toolsPath,
                 reporter,
-                provider.Object,
-                FileSystemMockBuilder.Empty.File);
+                provider.Object);
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 

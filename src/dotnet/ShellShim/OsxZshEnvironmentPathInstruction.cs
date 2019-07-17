@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools;
-using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
@@ -14,7 +13,6 @@ namespace Microsoft.DotNet.ShellShim
     {
         private const string PathName = "PATH";
         private readonly BashPathUnderHomeDirectory _packageExecutablePath;
-        private readonly IFile _fileSystem;
         private readonly IEnvironmentProvider _environmentProvider;
         private readonly IReporter _reporter;
 
@@ -22,12 +20,10 @@ namespace Microsoft.DotNet.ShellShim
         public OsxZshEnvironmentPathInstruction(
             BashPathUnderHomeDirectory executablePath,
             IReporter reporter,
-            IEnvironmentProvider environmentProvider,
-            IFile fileSystem
+            IEnvironmentProvider environmentProvider
         )
         {
             _packageExecutablePath = executablePath;
-            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _environmentProvider
                 = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
             _reporter
@@ -44,7 +40,7 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithTilde);
+                .Any(p => p == _packageExecutablePath.Path);
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
