@@ -48,7 +48,9 @@ cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
 export PATH="$PATH:{0}"
 EOF
 
-You can add it to the current session by running the following command:
+And run `zsh -l` to make it available for current session.
+
+You can only add it to the current session by running the following command:
 
 export PATH="$PATH:{0}"
 </source>
@@ -60,7 +62,9 @@ cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
 export PATH="$PATH:{0}"
 EOF
 
-You can add it to the current session by running the following command:
+And run `zsh -l` to make it available for current session.
+
+You can only add it to the current session by running the following command:
 
 export PATH="$PATH:{0}"
 </target>
