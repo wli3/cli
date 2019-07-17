@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ShellShim
 
         private bool PackageExecutablePathExists()
         {
-            var value = _environmentProvider.GetEnvironmentVariable(PathName);
+            string value = _environmentProvider.GetEnvironmentVariable(PathName);
             if (value == null)
             {
                 return false;
@@ -47,11 +47,11 @@ namespace Microsoft.DotNet.ShellShim
         {
             if (!PackageExecutablePathExists())
             {
-                    // similar to https://code.visualstudio.com/docs/setup/mac
-                    _reporter.WriteLine(
-                        string.Format(
-                            CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
-                            _packageExecutablePath.Path));
+                // similar to https://code.visualstudio.com/docs/setup/mac
+                _reporter.WriteLine(
+                    string.Format(
+                        CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                        _packageExecutablePath.Path));
             }
         }
     }

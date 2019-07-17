@@ -3,12 +3,7 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.PlatformAbstractions;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
-using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
@@ -23,8 +18,8 @@ namespace Microsoft.DotNet.ShellShim
         }
 
         /// <summary>
-        /// Return if the user use zsh as "The user's shell" instead of the current shell.
-        /// By detecting $SHELL's value 
+        ///     Return if the user use zsh as "The user's shell" instead of the current shell.
+        ///     By detecting $SHELL's value
         /// </summary>
         public bool IsZshTheUsersShell()
         {
@@ -38,10 +33,8 @@ namespace Microsoft.DotNet.ShellShim
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }
