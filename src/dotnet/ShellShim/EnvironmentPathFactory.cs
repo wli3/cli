@@ -53,6 +53,15 @@ namespace Microsoft.DotNet.ShellShim
         public static IEnvironmentPathInstruction CreateEnvironmentPathInstruction(
             IEnvironmentProvider environmentProvider = null)
         {
+            var zshDetector = new ZshDetector(environmentProvider);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && zshDetector.IsZshTheUsersShell())
+            {
+                return new OsxZshEnvironmentPathInstruction(
+                    executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
+                    reporter: Reporter.Output,
+                    environmentProvider: environmentProvider);
+            }
+
             return CreateEnvironmentPath(true, environmentProvider);
         }
     }
