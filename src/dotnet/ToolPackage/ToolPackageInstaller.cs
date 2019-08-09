@@ -71,7 +71,8 @@ namespace Microsoft.DotNet.ToolPackage
                         }
                         finally
                         {
-                            File.Delete(tempProject.Value);
+                            Console.WriteLine(tempProject.Value);
+                            // File.Delete(tempProject.Value);
                         }
 
                         var version = _store.GetStagedPackageVersion(stageDirectory, packageId);
@@ -149,7 +150,8 @@ namespace Microsoft.DotNet.ToolPackage
             }
             finally
             {
-                File.Delete(tempProject.Value);
+                Console.WriteLine(tempProject.Value);
+               // File.Delete(tempProject.Value);
             }
 
             return ToolPackageInstance.CreateFromAssetFile(packageId, tempDirectoryForAssetJson);
