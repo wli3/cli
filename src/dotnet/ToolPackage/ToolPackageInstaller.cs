@@ -68,6 +68,12 @@ namespace Microsoft.DotNet.ToolPackage
                                 tempProject,
                                 packageLocation,
                                 verbosity: verbosity);
+
+                            var dotnetListDeprecated = new DotNetCommandFactory(alwaysRunOutOfProc: true)
+                                .Create("list", new string[] { tempProject.Value, "package", "--deprecated" });
+
+                            dotnetListDeprecated.OnOutputLine(line => Console.WriteLine(line));
+                            dotnetListDeprecated.Execute();
                         }
                         finally
                         {
@@ -147,6 +153,12 @@ namespace Microsoft.DotNet.ToolPackage
                     tempProject,
                     packageLocation,
                     verbosity: verbosity);
+
+                var dotnetListDeprecated = new DotNetCommandFactory(alwaysRunOutOfProc: true)
+                    .Create("list", new string[] { tempProject.Value, "package", "--deprecated" });
+
+                dotnetListDeprecated.OnOutputLine(line => Console.WriteLine(line));
+                dotnetListDeprecated.Execute();
             }
             finally
             {
